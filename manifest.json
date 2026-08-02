@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Pendulum Simulator",
+  "version": "1.2.0",
+  "description": "Simulate a double or triple pendulum with real physics. Set rod lengths, gravity, and initial angles and speeds, and change them mid-flight.",
+  "action": {
+    "default_title": "Open Pendulum Simulator"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

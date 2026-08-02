@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pendulum Simulator</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <main id="stage-wrap">
+    <canvas id="stage"></canvas>
+  </main>
+
+  <aside class="panel">
+    <div class="buttons">
+      <button id="play" class="primary">Start</button>
+      <button id="reset" data-i18n="btn.reset">Reset</button>
+      <!-- Shows the language you are not in, i.e. what clicking gets you. -->
+      <button id="lang">EN</button>
+    </div>
+
+    <fieldset id="flight">
+      <legend><label class="check activate" data-i18n-title="flight.tip"><input id="flight-on" type="checkbox" checked><span data-i18n="flight.legend">Flight simulator</span></label></legend>
+
+      <canvas id="profile" height="52"></canvas>
+
+      <div class="flight-now">
+        <span id="f-phase">Baseline</span>
+        <b id="f-g">1.00 g</b>
+      </div>
+      <div class="flight-meta">
+        <span id="f-para">Parabola 1</span>
+        <span id="f-t">t = 0.0 s of 180</span>
+      </div>
+
+      <div class="row" data-i18n-title="release.tip">
+        <label for="release"><span data-i18n="release.label">Release</span> <small>s</small></label>
+        <input id="release-range" type="range" min="0" max="180" step="0.5" value="0">
+        <input id="release" type="number" min="0" max="180" step="0.5" value="0">
+      </div>
+      <!-- Built in JS from release.note, since the sentence reorders between
+           languages; the r-* spans are recreated each time. -->
+      <p id="release-note" class="release-note"></p>
+
+      <label class="check foot" data-i18n-title="shortcut.tip"><input id="shortcut" type="checkbox"><span data-i18n="shortcut.label">Shortcut 1g baseline</span></label>
+    </fieldset>
+
+    <fieldset class="energy">
+      <legend><i class="dot p1" id="dot-energy"></i><span id="legend-energy">Energy</span></legend>
+      <div class="e-row"><span data-i18n="energy.potential">Potential</span><b id="e-pe">0.00 J</b></div>
+      <div class="e-row"><span data-i18n="energy.kinetic">Kinetic</span><b id="e-ke">0.00 J</b></div>
+      <div class="e-row total"><span data-i18n="energy.total">Total</span><b id="e-total">0.00 J</b></div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span data-i18n="arch.legend">Architecture</span> <small data-i18n="arch.sub">&mdash; live</small></legend>
+
+      <!-- One tab per pendulum hanging from the pivot, each carrying its own
+           colour as a dot: tab B is red, the red chain is pendulum B, and no
+           other highlighting is needed to tie the panel to the canvas.
+
+           Letters, not numbers. The bobs within a chain are numbered 1 to 3 and
+           the chains used to be too, so half the panel's tooltips had to say
+           which kind of number they meant — bob 2 of pendulum 2. A letter for
+           the chain and a digit for the bob cannot be confused for each other,
+           and B2 needs no explaining at all.
+
+           The dot is a child element rather than part of the label because
+           data-i18n would overwrite the text; the letters are not translated,
+           so the tabs carry their name in the tooltip instead. All three are in
+           the markup from the start and hidden until they are filled. -->
+      <div class="tabs">
+        <button class="tab on" id="tab-1" title=""><i class="dot p1"></i>A</button>
+        <button class="tab" id="tab-2" title="" hidden><i class="dot p2"></i>B</button>
+        <button class="tab" id="tab-3" title="" hidden><i class="dot p3"></i>C</button>
+        <button class="tab-x" id="remove" title="" data-i18n-title="arch.remove" hidden>&times;</button>
+        <button class="tab-add" id="add" title="" data-i18n="arch.add" data-i18n-title="arch.add.tip">Add pendulum</button>
+      </div>
+
+      <div class="row" data-i18n-title="arch.links.tip">
+        <label data-i18n="arch.links">Links</label>
+        <div class="seg">
+          <button id="links-1" class="on" data-i18n="arch.single">Single</button>
+          <button id="links-2" data-i18n="arch.double">Double</button>
+          <button id="links-3" data-i18n="arch.triple">Triple</button>
+        </div>
+      </div>
+
+      <!-- Lengths step in millimetres where everything else steps in hundredths,
+           because the default below is 0.994 m and a control that cannot express
+           its own default is a trap: one nudge of the slider and the value is
+           gone. That length is the seconds pendulum — L = g/π², a half-period of
+           exactly 1 s at 9.81 m/s² — so a single pendulum ticks against the
+           flight clock beside it and the profile can be read off its swing. -->
+      <div class="row gap">
+        <label for="L1">L<sub>1</sub> <small>m</small></label>
+        <input id="L1-range" type="range" min="0.1" max="3" step="0.001" value="0.994">
+        <input id="L1" type="number" min="0.1" max="3" step="0.001" value="0.994">
+      </div>
+      <div class="row">
+        <label for="m1">m<sub>1</sub> <small>kg</small></label>
+        <input id="m1-range" type="range" min="0.1" max="5" step="0.01" value="5">
+        <input id="m1" type="number" min="0.1" max="5" step="0.01" value="5">
+      </div>
+      <!-- The second and third links are always wired; only their rows come and
+           go, so a single pendulum shows one length and one mass. -->
+      <div class="row gap" id="row-L2">
+        <label for="L2">L<sub>2</sub> <small>m</small></label>
+        <input id="L2-range" type="range" min="0.1" max="3" step="0.001" value="0.55">
+        <input id="L2" type="number" min="0.1" max="3" step="0.001" value="0.55">
+      </div>
+      <div class="row" id="row-m2">
+        <label for="m2">m<sub>2</sub> <small>kg</small></label>
+        <input id="m2-range" type="range" min="0.1" max="5" step="0.01" value="1.5">
+        <input id="m2" type="number" min="0.1" max="5" step="0.01" value="1.5">
+      </div>
+      <div class="row gap" id="row-L3" hidden>
+        <label for="L3">L<sub>3</sub> <small>m</small></label>
+        <input id="L3-range" type="range" min="0.1" max="3" step="0.001" value="0.3">
+        <input id="L3" type="number" min="0.1" max="3" step="0.001" value="0.3">
+      </div>
+      <div class="row" id="row-m3" hidden>
+        <label for="m3">m<sub>3</sub> <small>kg</small></label>
+        <input id="m3-range" type="range" min="0.1" max="5" step="0.01" value="0.8">
+        <input id="m3" type="number" min="0.1" max="5" step="0.01" value="0.8">
+      </div>
+      <div class="row gap">
+        <label for="g">g <small>m/s&sup2;</small></label>
+        <input id="g-range" type="range" min="-20" max="30" step="0.01" value="9.81">
+        <input id="g" type="number" min="-20" max="30" step="0.01" value="9.81">
+      </div>
+      <div class="row" data-i18n-title="arch.friction.tip">
+        <label for="b">b <small>N&middot;m&middot;s</small></label>
+        <input id="b-range" type="range" min="0" max="2" step="0.001" value="0.001">
+        <input id="b" type="number" min="0" max="2" step="0.001" value="0.001">
+      </div>
+
+      <p id="g-driven" class="driven" data-i18n="flight.driven" hidden>g is driven by the flight profile</p>
+
+      <!-- Hidden, not deleted: the presets still wire up, so they can be shown
+           again by dropping the attribute. -->
+      <div class="presets" hidden>
+        <button data-g="1.62" data-i18n="preset.moon">Moon</button>
+        <button data-g="3.72" data-i18n="preset.mars">Mars</button>
+        <button data-g="9.81" data-i18n="preset.earth">Earth</button>
+        <button data-g="24.79" data-i18n="preset.jupiter">Jupiter</button>
+        <button data-g="0" data-i18n="preset.zero">Zero</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend><span data-i18n="init.legend">Initial conditions</span> <small data-i18n="init.sub">&mdash; on Reset</small></legend>
+      <!-- One row per link, angle then speed, so a third link appends a row
+           rather than reflowing the pairs already there. -->
+      <div class="grid">
+        <label><span>&theta;<sub>1</sub> <small>&deg;</small></span><input id="t1" type="number" value="90" step="1"></label>
+        <label><span>&omega;<sub>1</sub> <small>&deg;/s</small></span><input id="w1" type="number" value="0" step="1"></label>
+        <label id="init-t2"><span>&theta;<sub>2</sub> <small>&deg;</small></span><input id="t2" type="number" value="0" step="1"></label>
+        <label id="init-w2"><span>&omega;<sub>2</sub> <small>&deg;/s</small></span><input id="w2" type="number" value="0" step="1"></label>
+        <label id="init-t3" hidden><span>&theta;<sub>3</sub> <small>&deg;</small></span><input id="t3" type="number" value="0" step="1"></label>
+        <label id="init-w3" hidden><span>&omega;<sub>3</sub> <small>&deg;/s</small></span><input id="w3" type="number" value="0" step="1"></label>
+      </div>
+      <button id="use-current" class="wide" data-i18n="init.use">Use current state as initial</button>
+    </fieldset>
+
+    <fieldset>
+      <legend data-i18n="trails.legend">Trails</legend>
+      <!-- Every bob that can be traced, on one line at the head of the box,
+           rather than toggles that follow the Architecture tab: tracing two
+           chains and comparing them is the point of a shared pivot, and hiding
+           the others behind the tab would make the common case a three-click
+           operation. Nine at the very most — three chains of three — and at that
+           width they are numerals grouped behind their chain's colour rather
+           than nine spelled-out labels.
+
+           Drawn as the architecture tabs are, lit when they are on rather than
+           ticked: this is the same kind of control, one that says which of the
+           things on the canvas the panel is acting on, and a row of lit buttons
+           reads at a glance where a row of ticks has to be scanned. The checkbox
+           is still underneath — it holds the state, it takes the keyboard focus,
+           and it is why nothing in the JS knows this changed — it is simply not
+           drawn.
+
+           Bob 1 appears only on a single pendulum, where it is the only bob
+           there is. On a double or triple its path is the circle its own rod
+           already sweeps, and the paths worth watching hang below it.
+
+           Each group starts on its chain's tip and nothing else, which is the
+           rule setLinks keeps to as the architecture changes.
+
+           The group is headed by its chain's letter in its chain's colour,
+           where it used to carry a bare colour dot. It costs the same width and
+           it means the group can be named out loud — B2 is a trace you can ask
+           someone to look at, and a red dot is not. -->
+      <div class="trail-bar">
+        <span class="trail-set" id="trail-row-1"><b class="name p1">A</b>
+          <label class="tog" id="trail-1-1-row" title=""><input id="trail-1-1" type="checkbox" checked>1</label>
+          <label class="tog" id="trail-1-2-row" title="" hidden><input id="trail-1-2" type="checkbox">2</label>
+          <label class="tog" id="trail-1-3-row" title="" hidden><input id="trail-1-3" type="checkbox">3</label>
+        </span>
+        <span class="trail-set" id="trail-row-2" hidden><b class="name p2">B</b>
+          <label class="tog" id="trail-2-1-row" title="" hidden><input id="trail-2-1" type="checkbox">1</label>
+          <label class="tog" id="trail-2-2-row" title=""><input id="trail-2-2" type="checkbox" checked>2</label>
+          <label class="tog" id="trail-2-3-row" title="" hidden><input id="trail-2-3" type="checkbox">3</label>
+        </span>
+        <span class="trail-set" id="trail-row-3" hidden><b class="name p3">C</b>
+          <label class="tog" id="trail-3-1-row" title="" hidden><input id="trail-3-1" type="checkbox">1</label>
+          <label class="tog" id="trail-3-2-row" title=""><input id="trail-3-2" type="checkbox" checked>2</label>
+          <label class="tog" id="trail-3-3-row" title="" hidden><input id="trail-3-3" type="checkbox">3</label>
+        </span>
+      </div>
+      <div class="row gap" data-i18n-title="trails.style.tip">
+        <label data-i18n="trails.style">Style</label>
+        <div class="seg">
+          <button id="trail-dots" data-i18n="trails.dots">Dots</button>
+          <button id="trail-line" class="on" data-i18n="trails.line">Line</button>
+        </div>
+      </div>
+      <div class="row">
+        <label for="trail-len"><span data-i18n="trails.length">Length</span> <small>s</small></label>
+        <input id="trail-len-range" type="range" min="1" max="60" step="1" value="25">
+        <input id="trail-len" type="number" min="1" max="60" step="1" value="25">
+      </div>
+      <button id="clear" class="wide" data-i18n="trails.clear">Clear trails</button>
+    </fieldset>
+
+    <!-- Everything below is driven by export.js, which index.js knows nothing
+         about. Delete this fieldset and the <script> tag at the foot of the
+         page and the feature is gone with no other trace.
+
+         Two times rather than a list of the nine phases. The list could only
+         offer the sections the profile is divided into, and the sections worth
+         exporting are not always those: the interesting picture is often the
+         apesanteur plus the injection that threw the piece into it, or the
+         middle twelve seconds of a long baseline. The phases have not gone
+         anywhere — the line under the boxes names whichever of them the span
+         covers, and the span is drawn on the profile above, so 35–57 is still
+         found by reading rather than by remembering. -->
+    <fieldset id="export">
+      <legend data-i18n="export.legend">Export</legend>
+      <div class="row span-row" title="" data-i18n-title="export.tip">
+        <label for="export-from"><span data-i18n="export.span">Span</span> <small>s</small></label>
+        <input id="export-from" type="number" min="0" max="180" step="1" value="35">
+        <input id="export-to" type="number" min="0" max="180" step="1" value="57">
+      </div>
+      <p id="export-phases" class="export-phases"></p>
+      <div class="export-buttons">
+        <button id="export-png" data-i18n="export.png" disabled>PNG</button>
+        <button id="export-svg" data-i18n="export.svg" disabled>SVG</button>
+      </div>
+      <!-- Two independent toggles rather than one switch and a format setting:
+           the two formats already sit side by side as buttons, and this way the
+           unattended run can write the SVG that records its own parameters and
+           the PNG you can actually look at, or either alone. -->
+      <div class="row auto-row" title="" data-i18n-title="export.auto.tip">
+        <label data-i18n="export.auto">Auto</label>
+        <span class="trail-set">
+          <label class="tog" id="auto-png-row"><input id="auto-png" type="checkbox">PNG</label>
+          <label class="tog" id="auto-svg-row"><input id="auto-svg" type="checkbox">SVG</label>
+        </span>
+      </div>
+      <p id="export-status" class="export-status"></p>
+      <p id="export-auto" class="export-status"></p>
+    </fieldset>
+
+    <fieldset class="readout">
+      <legend><i class="dot p1" id="dot-state"></i><span id="legend-state">State</span></legend>
+      <div><span>&theta;<sub>1</sub></span><b id="r-t1">0&deg;</b></div>
+      <div><span>&omega;<sub>1</sub></span><b id="r-w1">0&deg;/s</b></div>
+      <div id="r-row-t2"><span>&theta;<sub>2</sub></span><b id="r-t2">0&deg;</b></div>
+      <div id="r-row-w2"><span>&omega;<sub>2</sub></span><b id="r-w2">0&deg;/s</b></div>
+      <div id="r-row-t3" hidden><span>&theta;<sub>3</sub></span><b id="r-t3">0&deg;</b></div>
+      <div id="r-row-w3" hidden><span>&omega;<sub>3</sub></span><b id="r-w3">0&deg;/s</b></div>
+      <div><span data-i18n="state.time">Time</span><b id="r-time">0.00 s</b></div>
+      <div class="perf lead" title="" data-i18n-title="state.rate.tip"><span data-i18n="state.rate">Rate</span><b id="r-fps">— fps</b></div>
+      <div class="perf" title="" data-i18n-title="state.cost.tip"><span data-i18n="state.cost">JS</span><b id="r-cost">—</b></div>
+    </fieldset>
+  </aside>
+
+  <!-- The one question this page ever asks, in the page's own palette and in
+       the middle of it. A native <dialog> rather than a div with a backdrop:
+       showModal() centres it, dims what is behind it, traps the focus inside it
+       and closes it on Escape, all of which would otherwise be script. The text
+       is written in from the string table, so the dialog itself says nothing. -->
+  <dialog id="ask" class="ask">
+    <h2 id="ask-title"></h2>
+    <p id="ask-text"></p>
+    <div class="ask-buttons">
+      <button id="ask-no" data-i18n="btn.cancel">Cancel</button>
+      <button id="ask-yes" class="primary" data-i18n="btn.continue">Continue</button>
+    </div>
+  </dialog>
+
+  <script src="i18n.js"></script>
+  <script src="index.js"></script>
+  <!-- After index.js, and it has to be: top-level const and let in a classic
+       script live in the shared global lexical environment, which is how
+       export.js reads world, PHASES and the rest without index.js exporting
+       anything. Purely additive — remove this line and the page is unchanged. -->
+  <script src="export.js"></script>
+</body>
+</html>

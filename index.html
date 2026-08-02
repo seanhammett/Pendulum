@@ -2,7 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- Only the web build reads the three tags below. In the extension the page
+       is always a desktop tab, so the viewport is already the window and
+       nothing links to it; on a phone their absence would leave the 720px
+       breakpoint in index.css unreachable, the layout pinned to the 980px
+       default width and the whole thing zoomed out to fit. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Simulate a double or triple pendulum with real physics. Set rod lengths, gravity, and initial angles and speeds, and change them mid-flight.">
+  <!-- Matches --bg in index.css, so mobile browser chrome extends the page. -->
+  <meta name="theme-color" content="#12151d">
   <title>Pendulum Simulator</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pendulum Simulator">
+  <meta property="og:description" content="Simulate a double or triple pendulum with real physics. Set rod lengths, gravity, and initial angles and speeds, and change them mid-flight.">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="icons/icon128.png">
   <link rel="stylesheet" href="index.css">
 </head>
 <body>

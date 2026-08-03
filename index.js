@@ -16,17 +16,32 @@ const MAX_STEPS = 20000;
 // never resizes them.
 const MAX_LINKS = 3;
 
-// Pendulums that can hang from the pivot at once. Three tabs, three colour
-// families, three trail rows; the markup declares all of them from the start
-// and hides the ones with no pendulum in them.
+// Pendulums the page has. Three tabs, three colour families, three trail rows,
+// all of them declared in the markup and all of them there at all times; how
+// many are hanging from the pivot is a separate question, answered by world
+// below.
 const MAX_PENDULUMS = 3;
 
-// A pendulum added to the world is the last one scaled by this in every length
-// and every mass, so the family nests rather than overlaps: each hangs inside
-// the one before it, and the tips trace separate bands instead of three tangles
-// in the same annulus. Rounded to the controls' own step, and clamped to their
-// minimums.
-const SCALE = 0.8;
+// What each pendulum is when the page loads. The three divide the same 0.994 m
+// of rod — the seconds pendulum's length, see the note in index.html beside
+// L1 — into one, two and three links, so the family differs in architecture and
+// in nothing else: hang two of them together and what separates them on the
+// stage is simple against double against triple, not long against short. Each
+// reaches the same circle, which also means the stage does not rescale as they
+// are switched on and off. C's links step by about 114 mm either side of a third
+// of the total, B's two are the same length to within 6 mm.
+//
+// The links a pendulum's own architecture does not use hold C's, so extending A
+// or B finds a link of the same family already there rather than a leftover.
+//
+// A's numbers are in the markup as well, and are read back from it at the foot
+// of this file — the boxes have to open showing something, and what they open
+// showing had better be what is loaded.
+const DEFAULTS = [
+  { n: 1, L: [0.994, 0.33133, 0.21767], m: [2, 1.8, 1] }, // A — simple
+  { n: 2, L: [0.5, 0.494, 0.21767], m: [4, 2, 1] }, // B — double
+  { n: 3, L: [0.445, 0.33133, 0.21767], m: [4, 1.8, 1] } // C — triple
+];
 
 // Shared by every pendulum: the aircraft, not the sculpture. The flight profile
 // writes gravity here and each chain reads it, because three sculptures in the
@@ -49,17 +64,20 @@ const env = { g: 9.81 };
 // it, and it survives the removal of a lower-numbered pendulum, so taking away
 // number 2 of 3 leaves the third where it is rather than re-hueing it under the
 // user's eye.
-function makeChain(slot, n) {
+function makeChain(slot) {
+  const d = DEFAULTS[slot];
   return {
     slot,
-    n, // links in the chain: 1, 2 or 3 — a simple, double or triple pendulum
-    // Point masses m_i (kg) hung in a chain on massless rods of length L_i (m).
-    // b is viscous friction at every hinge of this chain (N·m·s/rad); 0 is the
-    // ideal pendulum. Friction belongs to the hinges of one sculpture rather
-    // than to the air around all three, so two otherwise identical chains at
-    // different b is a usable experiment.
-    L: [0.994, 0.55, 0.3],
-    m: [5, 1.5, 0.8],
+    n: d.n, // links in the chain: 1, 2 or 3 — a simple, double or triple pendulum
+    // Point masses m_i (kg) hung in a chain on massless rods of length L_i (m),
+    // copied out of the table so that editing a pendulum cannot rewrite the
+    // defaults. b is viscous friction at every hinge of this chain
+    // (N·m·s/rad); 0 is the ideal pendulum. Friction belongs to the hinges of
+    // one sculpture rather than to the air around all three, so two otherwise
+    // identical chains at different b is a usable experiment — and all three
+    // start at the same b, which is the setting that makes them comparable.
+    L: d.L.slice(),
+    m: d.m.slice(),
     b: 0.001,
     // Initial conditions in the units the boxes use — degrees — converted on
     // reset, so a chain carries what its panel would show rather than what the
@@ -70,7 +88,7 @@ function makeChain(slot, n) {
     // Packed into one array rather than named, so a single loop integrates any
     // n, and sized to this chain's n rather than to MAX_LINKS because the ω
     // half starts at index n.
-    s: new Float64Array(2 * n),
+    s: new Float64Array(2 * d.n),
     // Real time banked but not yet turned into integration steps (s). Per
     // chain rather than per world: chains run at their own step sizes, so they
     // do not retire the same backlog at the same instant.
@@ -93,16 +111,34 @@ function makeChain(slot, n) {
   };
 }
 
-// Dense and ordered by slot. The frame loop walks it; everything the interface
-// keys off a slot goes through chainAt().
-//
-// One link to begin with, at the seconds-pendulum length: the page opens on the
-// case whose period can be read straight off the flight clock, and the chaotic
-// architectures are one click away. See the note in index.html beside L1.
-const world = [makeChain(0, 1)];
-let sel = 0; // index into world of the pendulum the panel is editing
+// Every pendulum the page has, one per slot, for the whole life of the page. A
+// pendulum that is switched off is not deleted and not emptied: it keeps its
+// rods, masses, friction and initial conditions, the panel goes on showing them
+// when its tab is selected, and switching it back on puts that same pendulum
+// back on the pivot. Nothing here is ever added to or removed from — the array
+// is three chains, indexed by slot, and slot is identity.
+const chains = Array.from({ length: MAX_PENDULUMS }, (_, slot) => makeChain(slot));
 
-const chainAt = (slot) => world.find((c) => c.slot === slot);
+// The pendulums actually hanging from the pivot: a dense subset of chains,
+// ordered by slot, that the frame loop, the drawing and the exporter walk.
+// Dense because the step budget indexes its scratch by position in here, and
+// ordered by slot so the drawing order follows the letters rather than the
+// order the switches were thrown.
+//
+// Never empty. The stage's scale, the clock and the clamped phase all read it,
+// and a world with nothing in it is a state the panel cannot get back from, so
+// the last pendulum hanging cannot be switched off — see paintSelection.
+//
+// One pendulum of one link to begin with, at the seconds-pendulum length: the
+// page opens on the case whose period can be read straight off the flight
+// clock, and the chaotic architectures are one click away. See the note in
+// index.html beside L1.
+const world = [chains[0]];
+let sel = 0; // slot of the pendulum the panel is editing, hanging or not
+
+// Whether this chain is on the pivot. Membership of world is the whole of the
+// answer — there is no second flag to keep in step with it.
+const hanging = (c) => world.includes(c);
 
 // A chain is named by its slot, not numbered by it. The bobs inside a chain are
 // numbered 1 to 3, so numbering the chains as well meant every tooltip, legend
@@ -1009,8 +1045,13 @@ const set = (id, text) => { document.getElementById(id).textContent = text; };
 // energy total: the useful thing to watch in flight is one sculpture's
 // potential term draining to nothing at 0g, and three sculptures' energies
 // added together is a number about nothing.
+//
+// A pendulum that is switched off is not being stepped, so what these show is
+// it sitting at its initial conditions — which is true of it, and is the
+// picture of what switching it on would put on the pivot. The hollow dot in
+// both legends is what says the numbers are not going to move.
 function updateReadout() {
-  const c = world[sel];
+  const c = chains[sel];
   for (let i = 0; i < c.n; i++) {
     set('r-t' + (i + 1), wrapDeg(c.s[i]).toFixed(1) + '°');
     set('r-w' + (i + 1), deg(c.s[c.n + i]).toFixed(0) + '°/s');
@@ -1231,13 +1272,15 @@ function num(id, fallback) {
   return Number.isFinite(v) ? v : fallback;
 }
 
-// One tab, one trail row and one trail checkbox per link per slot, looked up
-// once.
+// One tab, one tab dot, one trail row and one trail checkbox per link per slot,
+// looked up once.
 const TABS = [];
+const DOTS = [];
 const TRAIL_ROW = [];
 const TRAIL_BOX = [];
 for (let p = 0; p < MAX_PENDULUMS; p++) {
   TABS.push(el('tab-' + (p + 1)));
+  DOTS.push(TABS[p].querySelector('.dot'));
   TRAIL_ROW.push(el('trail-row-' + (p + 1)));
   TRAIL_BOX.push([0, 1, 2].map((i) => el('trail-' + (p + 1) + '-' + (i + 1))));
 }
@@ -1289,15 +1332,17 @@ function linkPair(id, onChange) {
 // under the new physics. Every link is wired, including the third while it is
 // hidden, so switching to a triple finds its controls already live.
 //
-// They write into world[sel], which is why selectPendulum has to set sel before
-// it repopulates them — see the note there.
+// They write into chains[sel], which is why selectPendulum has to set sel
+// before it repopulates them — see the note there. The selected pendulum need
+// not be hanging: one that is switched off is set up through the same controls,
+// and finds itself already tuned when it is switched on.
 const setL = [];
 const setM = [];
 for (let i = 0; i < MAX_LINKS; i++) {
-  setL.push(linkPair('L' + (i + 1), (v) => { world[sel].L[i] = v; }));
-  setM.push(linkPair('m' + (i + 1), (v) => { world[sel].m[i] = v; }));
+  setL.push(linkPair('L' + (i + 1), (v) => { chains[sel].L[i] = v; }));
+  setM.push(linkPair('m' + (i + 1), (v) => { chains[sel].m[i] = v; }));
 }
-const setB = linkPair('b', (v) => { world[sel].b = v; });
+const setB = linkPair('b', (v) => { chains[sel].b = v; });
 // Gravity is the aircraft's, not the sculpture's, so it stays outside the
 // selection and the flight profile can drive it for everyone at once.
 const setGravity = linkPair('g', (v) => { env.g = v; });
@@ -1309,7 +1354,7 @@ linkPair('trail-len', (v) => { trailSeconds = v; });
 function bindInit(id, write) {
   el(id).addEventListener('input', () => {
     const v = parseFloat(el(id).value);
-    if (Number.isFinite(v)) write(world[sel], v);
+    if (Number.isFinite(v)) write(chains[sel], v);
   });
 }
 
@@ -1321,40 +1366,66 @@ for (let i = 0; i < MAX_LINKS; i++) {
 // The number of links is the architecture of one pendulum, not a live
 // parameter: changing it re-runs from the initial conditions rather than
 // growing a limb onto a pendulum mid-swing, which would be an energy
-// discontinuity to explain. Same rule as the release time, and as adding or
-// removing a pendulum, for the same reason.
-const linkButtons = { 1: el('links-1'), 2: el('links-2'), 3: el('links-3') };
+// discontinuity to explain. Same rule as the release time, and it is why
+// switching a pendulum on or off re-runs the world too.
+//
+// Zero links is off. Whether a pendulum hangs and how many rods it hangs by are
+// one control because they are one question — a pendulum with no rods is a
+// pendulum that is not there — and one control is also one click: the switch
+// that used to need Add and then Double now says Double.
+const linkButtons = {
+  0: el('links-0'), 1: el('links-1'), 2: el('links-2'), 3: el('links-3')
+};
+
+// What the switch reads for a chain: its link count while it is hanging, 0 once
+// it is not. The chain keeps its n either way, so the panel can go on showing
+// the right rows for a pendulum that is switched off.
+const linksOf = (c) => (hanging(c) ? c.n : 0);
 
 function setLinks(count) {
-  const c = world[sel];
-  c.n = count;
-  c.s = new Float64Array(2 * count);
-  // The chain has a different tip than it had a moment ago, and the trail was
-  // following the old one. Following the new one is the only reading of the
-  // checkbox that survives the change.
-  tipOnly(c);
+  const c = chains[sel];
+  if (count === 0) {
+    // Guarded as well as disabled: an empty world would take the stage scale,
+    // the clock and the clamped phase with it.
+    if (world.length < 2) return;
+    world.splice(world.indexOf(c), 1);
+  } else {
+    c.n = count;
+    c.s = new Float64Array(2 * count);
+    // The chain has a different tip than it had a moment ago, and the trail was
+    // following the old one. Following the new one is the only reading of the
+    // checkbox that survives the change.
+    tipOnly(c);
+    if (!hanging(c)) {
+      world.push(c);
+      world.sort((a, x) => a.slot - x.slot);
+    }
+  }
   paintSelection();
   reset();
 }
 
 for (const [k, button] of Object.entries(linkButtons)) {
+  const count = Number(k);
   button.addEventListener('click', () => {
-    if (Number(k) !== world[sel].n) confirmReset(() => setLinks(Number(k)));
+    if (count !== linksOf(chains[sel])) confirmReset(() => setLinks(count));
   });
 }
 
-// --- Selection, adding and removing ----------------------------------------
+// --- Selection --------------------------------------------------------------
 
 // Sets which pendulum the panel is editing, then repopulates every per-chain
-// control from it.
+// control from it. Takes a slot, and every pendulum can be selected — one that
+// is switched off shows its settings exactly as a hanging one does, which is
+// how it can be set up before it is put on the pivot.
 //
 // sel is assigned first, and it has to be: the setters below call linkPair's
-// push(), which fires onChange, which writes to world[sel]. Repopulate before
-// switching and tab 2's values are written straight into pendulum 1 on the way
+// push(), which fires onChange, which writes to chains[sel]. Repopulate before
+// switching and tab B's values are written straight into pendulum A on the way
 // past — silently, and destroying the data as it goes.
-function selectPendulum(i) {
-  sel = i;
-  const c = world[i];
+function selectPendulum(slot) {
+  sel = slot;
+  const c = chains[slot];
 
   for (let k = 0; k < MAX_LINKS; k++) {
     setL[k](c.L[k]);
@@ -1367,17 +1438,25 @@ function selectPendulum(i) {
   paintSelection();
 }
 
-// Everything on the panel that says which pendulum is selected, or how many
-// there are. Split out from selectPendulum because a language switch and a
-// change of link count need it without touching the values.
+// Everything on the panel that says which pendulum is selected, and which of
+// them are hanging. Split out from selectPendulum because a language switch and
+// a change of link count need it without touching the values.
 function paintSelection() {
-  const c = world[sel];
+  const c = chains[sel];
 
   for (const [k, button] of Object.entries(linkButtons)) {
-    button.classList.toggle('on', Number(k) === c.n);
+    button.classList.toggle('on', Number(k) === linksOf(c));
   }
+  // Something has to be hanging, so the last pendulum on the pivot cannot be
+  // switched off. Disabled rather than hidden: the segment keeps its place in
+  // the switch, and a control that is there but unavailable says the rule,
+  // where one that vanishes just moves the others.
+  linkButtons[0].disabled = hanging(c) && world.length < 2;
+
   // A link's controls and readouts appear and disappear together, so the panel
-  // only ever shows the pendulum that is actually hanging.
+  // only ever shows the links this pendulum actually has. Keyed off c.n rather
+  // than the switch, so a pendulum that is switched off still shows the shape
+  // it will have when it is switched back on.
   for (const id of ['row-L2', 'row-m2', 'init-t2', 'init-w2', 'r-row-t2', 'r-row-w2']) {
     el(id).hidden = c.n < 2;
   }
@@ -1386,11 +1465,16 @@ function paintSelection() {
   }
 
   for (let p = 0; p < MAX_PENDULUMS; p++) {
-    const chain = chainAt(p);
-    TABS[p].hidden = !chain;
-    TABS[p].classList.toggle('on', chain === c);
-    TABS[p].title = fmt('arch.pendulum', { n: CHAIN_NAME[p] });
-    TRAIL_ROW[p].hidden = !chain;
+    const chain = chains[p];
+    const on = hanging(chain);
+    // The tab says which pendulum the panel is on; its dot says whether that
+    // pendulum is on the pivot. Two independent things, so two marks: a tab can
+    // be selected and empty, which is what setting one up before switching it
+    // on looks like.
+    TABS[p].classList.toggle('on', p === sel);
+    TABS[p].title = fmt(on ? 'arch.pendulum' : 'arch.pendulum.off', { n: CHAIN_NAME[p] });
+    DOTS[p].classList.toggle('off', !on);
+    TRAIL_ROW[p].hidden = !on;
     // One toggle per link the chain has, except that bob 1 is offered only on a
     // single, where it is the only bob there is. They carry a bare numeral, so
     // like the tabs above they say what they are in the tooltip — and it names
@@ -1398,82 +1482,33 @@ function paintSelection() {
     // other thing that does.
     for (let i = 0; i < MAX_LINKS; i++) {
       const tog = el('trail-' + (p + 1) + '-' + (i + 1) + '-row');
-      tog.hidden = !chain || (i === 0 ? chain.n !== 1 : chain.n < i + 1);
+      tog.hidden = !on || (i === 0 ? chain.n !== 1 : chain.n < i + 1);
       tog.title = fmt('trails.trace', { i: i + 1, n: CHAIN_NAME[p] });
     }
   }
 
-  // A control that only adds is not a control, so remove appears as soon as
-  // there is more than one pendulum to remove.
-  el('remove').hidden = world.length < 2;
-  const full = world.length >= MAX_PENDULUMS;
-  el('add').disabled = full;
-  // Set as the data attribute rather than only as the title, so a language
-  // switch repaints whichever of the two tooltips currently applies.
-  el('add').dataset.i18nTitle = full ? 'arch.add.full' : 'arch.add.tip';
-  el('add').title = t(el('add').dataset.i18nTitle);
-
   set('legend-state', fmt('state.legend', { n: chainName(c) }));
   set('legend-energy', fmt('energy.legend', { n: chainName(c) }));
-  el('dot-state').className = 'dot p' + (c.slot + 1);
-  el('dot-energy').className = 'dot p' + (c.slot + 1);
+  // Hollow here too when the selected pendulum is not hanging, which is also
+  // the answer to why these numbers are sitting still.
+  const dot = 'dot p' + (c.slot + 1) + (hanging(c) ? '' : ' off');
+  el('dot-state').className = dot;
+  el('dot-energy').className = dot;
 }
 
-// Rounded to the controls' own step, so the panel shows the number the
-// simulation is using rather than 0.44000000000000006.
-const round2 = (v) => Math.round(v * 100) / 100;
-
-// Adding or removing a pendulum resets the world, exactly as changing the link
-// count does. The physics does not require it — the existing chains are
-// bit-identical whether a new one is there or not, so one could be dropped into
-// a running world with no inconsistency at all. The argument for resetting
+// Switching a pendulum on or off resets the world, exactly as changing a link
+// count does. The physics does not require it — the other chains are
+// bit-identical whether this one is hanging or not, so one could be dropped
+// into a running world with no inconsistency at all. The argument for resetting
 // anyway is what a shared pivot is for: chains released at different moments
 // are not comparable, and a chain that starts 40 s after its neighbours is
 // noise on the stage rather than an experiment. One pivot, one t = 0.
-function addPendulum() {
-  if (world.length >= MAX_PENDULUMS) return;
-
-  let slot = 0;
-  while (chainAt(slot)) slot++;
-
-  // Scaled from the last pendulum rather than from the first, so a third one
-  // continues the family instead of landing on top of the second.
-  const prev = world[world.length - 1];
-  const c = makeChain(slot, prev.n);
-  for (let i = 0; i < MAX_LINKS; i++) {
-    c.L[i] = clamp(round2(prev.L[i] * SCALE), 0.1, 3);
-    c.m[i] = clamp(round2(prev.m[i] * SCALE), 0.1, 5);
-    c.th0[i] = prev.th0[i];
-    c.om0[i] = prev.om0[i];
-  }
-  c.b = prev.b;
-
-  world.push(c);
-  world.sort((a, x) => a.slot - x.slot);
-
-  tipOnly(c);
-
-  selectPendulum(world.indexOf(c));
-  reset();
-}
-
-// Removing the selected pendulum selects its neighbour. The slots of the ones
-// left keep their numbers and their colours, so taking away number 2 of 3
-// leaves the third looking exactly as it did.
-function removePendulum() {
-  if (world.length < 2) return;
-  world.splice(sel, 1);
-  selectPendulum(Math.min(sel, world.length - 1));
-  reset();
-}
-
-el('add').addEventListener('click', () => confirmReset(addPendulum));
-el('remove').addEventListener('click', () => confirmReset(removePendulum));
-
+//
+// Selecting a tab is not that, and does not reset anything: it changes which
+// pendulum the panel is pointed at, and the run carries on underneath.
 for (let p = 0; p < MAX_PENDULUMS; p++) {
   TABS[p].addEventListener('click', () => {
-    const i = world.findIndex((c) => c.slot === p);
-    if (i >= 0 && i !== sel) selectPendulum(i);
+    if (p !== sel) selectPendulum(p);
   });
 }
 
@@ -1553,6 +1588,11 @@ function applyLang() {
 
   for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
   for (const node of document.querySelectorAll('[data-i18n-title]')) node.title = t(node.dataset.i18nTitle);
+  // For a control whose name is not written anywhere on the panel — the links
+  // switch, whose label the tabs above it took over.
+  for (const node of document.querySelectorAll('[data-i18n-aria]')) {
+    node.setAttribute('aria-label', t(node.dataset.i18nAria));
+  }
 
   // The switch shows the language it would take you to, not the one you are in.
   const other = lang === 'fr' ? 'en' : 'fr';
@@ -1756,13 +1796,17 @@ function confirmReset(onYes, onNo) {
 
 // Every chain, from its own initial conditions, and the clock once. One pivot,
 // one t = 0.
+//
+// Every chain including the ones not hanging, which cost three assignments each
+// and are then the pendulum a tab shows rather than whatever they were left
+// holding when they were switched off.
 function reset() {
   if (flightOn) {
     flightTime = startTime();
     applyFlight();
     updateFlightReadout();
   }
-  for (const c of world) {
+  for (const c of chains) {
     for (let i = 0; i < c.n; i++) {
       c.s[i] = (c.th0[i] * Math.PI) / 180;
       c.s[c.n + i] = (c.om0[i] * Math.PI) / 180;
@@ -1781,7 +1825,7 @@ function reset() {
 }
 
 function clearTrails() {
-  for (const c of world) {
+  for (const c of chains) {
     c.trails = [[], [], []];
     // Rewound rather than dropped: half a megabyte a bob, and this runs on
     // every parameter change, not only on Clear.
@@ -1792,7 +1836,7 @@ function clearTrails() {
 function setRunning(on) {
   running = on;
   lastFrame = performance.now();
-  for (const c of world) c.pending = 0;
+  for (const c of chains) c.pending = 0;
   el('play').textContent = t(on ? 'btn.pause' : 'btn.start');
 }
 
@@ -1816,7 +1860,7 @@ el('clear').addEventListener('click', () => { clearTrails(); worldChanged(); });
 // Snapshot the selected chain's live state into its initial-condition boxes, so
 // an interesting configuration found mid-flight can be replayed.
 el('use-current').addEventListener('click', () => {
-  const c = world[sel];
+  const c = chains[sel];
   for (let i = 0; i < c.n; i++) {
     c.th0[i] = Number(wrapDeg(c.s[i]).toFixed(1));
     c.om0[i] = Number(deg(c.s[c.n + i]).toFixed(1));
@@ -1836,17 +1880,27 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// The first pendulum takes its parameters from the markup, so the source states
-// the same defaults the page does.
-const DEFAULT_L = [0.994, 0.55, 0.3];
-const DEFAULT_M = [5, 1.5, 0.8];
+// The first pendulum is the one the panel opens on, so it takes its parameters
+// from the boxes rather than from DEFAULTS directly: the two say the same thing,
+// and reading the markup is what keeps them saying it.
 for (let i = 0; i < MAX_LINKS; i++) {
-  world[0].L[i] = num('L' + (i + 1), DEFAULT_L[i]);
-  world[0].m[i] = num('m' + (i + 1), DEFAULT_M[i]);
-  world[0].th0[i] = num('t' + (i + 1), i === 0 ? 90 : 0);
-  world[0].om0[i] = num('w' + (i + 1), 0);
+  chains[0].L[i] = num('L' + (i + 1), DEFAULTS[0].L[i]);
+  chains[0].m[i] = num('m' + (i + 1), DEFAULTS[0].m[i]);
+  chains[0].th0[i] = num('t' + (i + 1), i === 0 ? 90 : 0);
+  chains[0].om0[i] = num('w' + (i + 1), 0);
 }
-world[0].b = num('b', 0.001);
+chains[0].b = num('b', 0.001);
+
+// B and C are already built — they come out of DEFAULTS with their own
+// architecture and their own rods, from the moment the page loads rather than
+// at the moment they are switched on. Deriving them at switch-on would rewrite,
+// under the pointer, settings the panel had been showing all along; tune B
+// before switching it on or after, and either way what you tuned is what hangs.
+//
+// Their trails are the one thing left, because a checkbox cannot be derived
+// from a link count in the markup: each starts on its own tip, which is bob 2
+// for the double and bob 3 for the triple.
+for (let p = 1; p < MAX_PENDULUMS; p++) tipOnly(chains[p]);
 env.g = num('g', 9.81);
 release = num('release', 0);
 trailSeconds = num('trail-len', 25);

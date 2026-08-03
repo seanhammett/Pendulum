@@ -456,22 +456,22 @@ button:disabled:hover { border-color: var(--line); }
 
 /* --- pendulum tabs --- */
 
+/* Three of them, always, sharing the row equally: the strip is a fixed row of
+   the three pendulums the page has rather than a list that grows, so nothing
+   moves under the pointer when one is switched on or off. */
 .tabs {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  margin: 4px 0 10px;
+  margin: 4px 0 6px;
 }
-
-.tabs button[hidden] { display: none; }
 
 .tab {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-width: 42px;
   padding: 4px 8px;
   color: var(--muted);
   font-size: 11px;
@@ -483,39 +483,38 @@ button:disabled:hover { border-color: var(--line); }
   color: var(--text);
 }
 
-.tab-x {
-  margin-left: 4px;
-  padding: 4px 7px;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1;
-}
-
-/* Warm rather than accent, and set slightly apart from the tab it acts on: a
-   mis-click here costs the whole run. */
-.tab-x:hover { border-color: #e06c75; color: #e06c75; }
-
-.tab-add {
-  margin-left: auto;
-  padding: 4px 8px;
-  color: var(--muted);
-  font-size: 11px;
-}
+/* The links switch directly under the tabs, spanning the box. .seg's own
+   grid-column is inert here — this one is not inside a .row. */
+.seg.arch { margin-bottom: 2px; }
 
 /* The swatch that ties a tab, a trail row and a readout legend to the chain on
-   the canvas — the same custom properties the canvas reads. */
+   the canvas — the same custom properties the canvas reads. The colour is set
+   as a variable rather than as the background, so filled and hollow are one
+   rule each instead of one per chain. */
 .dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   flex: none;
   border-radius: 50%;
+  background: var(--c);
   vertical-align: middle;
 }
 
-.dot.p1 { background: var(--p1); }
-.dot.p2 { background: var(--p2); }
-.dot.p3 { background: var(--p3); }
+.dot.p1 { --c: var(--p1); }
+.dot.p2 { --c: var(--p2); }
+.dot.p3 { --c: var(--p3); }
+
+/* A pendulum that is not hanging: the same dot in the same place in the same
+   colour, emptied out. Filled means it is on the pivot, and that reads at a
+   glance across the three tabs in a way a dimmed or greyed dot would not —
+   grey is a fourth colour, and the whole point of these is that there are
+   three. Drawn as an inset shadow rather than a border so the dot is the same
+   8px either way and the letter beside it does not shift. */
+.dot.off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--c);
+}
 
 legend .dot { margin-right: 5px; }
 

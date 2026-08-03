@@ -68,9 +68,9 @@
     <fieldset>
       <legend><span data-i18n="arch.legend">Architecture</span> <small data-i18n="arch.sub">&mdash; live</small></legend>
 
-      <!-- One tab per pendulum hanging from the pivot, each carrying its own
-           colour as a dot: tab B is red, the red chain is pendulum B, and no
-           other highlighting is needed to tie the panel to the canvas.
+      <!-- One tab per pendulum, each carrying its own colour as a dot: tab B is
+           red, the red chain is pendulum B, and no other highlighting is needed
+           to tie the panel to the canvas.
 
            Letters, not numbers. The bobs within a chain are numbered 1 to 3 and
            the chains used to be too, so half the panel's tooltips had to say
@@ -78,33 +78,48 @@
            the chain and a digit for the bob cannot be confused for each other,
            and B2 needs no explaining at all.
 
+           All three are always here, filling the row, and a tab is a selection
+           and nothing else: clicking one brings that pendulum's settings into
+           the rest of the box whether it is hanging or not. Whether it hangs is
+           said by its dot — filled for a pendulum on the pivot, a bare ring in
+           its own colour for one that is not — and changed by the switch below,
+           which is where Add and Remove went. A pendulum that is switched off
+           keeps everything about it except its place on the pivot, so switching
+           it back on gets the pendulum back rather than a new one.
+
            The dot is a child element rather than part of the label because
            data-i18n would overwrite the text; the letters are not translated,
-           so the tabs carry their name in the tooltip instead. All three are in
-           the markup from the start and hidden until they are filled. -->
+           so the tabs carry their name in the tooltip instead. -->
       <div class="tabs">
         <button class="tab on" id="tab-1" title=""><i class="dot p1"></i>A</button>
-        <button class="tab" id="tab-2" title="" hidden><i class="dot p2"></i>B</button>
-        <button class="tab" id="tab-3" title="" hidden><i class="dot p3"></i>C</button>
-        <button class="tab-x" id="remove" title="" data-i18n-title="arch.remove" hidden>&times;</button>
-        <button class="tab-add" id="add" title="" data-i18n="arch.add" data-i18n-title="arch.add.tip">Add pendulum</button>
+        <button class="tab" id="tab-2" title=""><i class="dot p2"></i>B</button>
+        <button class="tab" id="tab-3" title=""><i class="dot p3"></i>C</button>
       </div>
 
-      <div class="row" data-i18n-title="arch.links.tip">
-        <label data-i18n="arch.links">Links</label>
-        <div class="seg">
-          <button id="links-1" class="on" data-i18n="arch.single">Single</button>
-          <button id="links-2" data-i18n="arch.double">Double</button>
-          <button id="links-3" data-i18n="arch.triple">Triple</button>
-        </div>
+      <!-- Off and the three link counts are one control, because "no rods" and
+           "not on the pivot" are the same pendulum. It spans the whole box
+           rather than sitting in a labelled row: the tabs above it are the
+           label, and four segments do not fit beside one. -->
+      <div class="seg arch" role="group" data-i18n-aria="arch.links" data-i18n-title="arch.links.tip">
+        <button id="links-0" data-i18n="arch.off">Off</button>
+        <button id="links-1" class="on" data-i18n="arch.single">Single</button>
+        <button id="links-2" data-i18n="arch.double">Double</button>
+        <button id="links-3" data-i18n="arch.triple">Triple</button>
       </div>
 
-      <!-- Lengths step in millimetres where everything else steps in hundredths,
-           because the default below is 0.994 m and a control that cannot express
+      <!-- The boxes below open on pendulum A, the pendulum the panel opens on,
+           and index.js reads its defaults back out of them: the markup states
+           what the page loads with, in the place a reader looks for it.
+
+           Lengths step in millimetres where everything else steps in hundredths,
+           because the first default is 0.994 m and a control that cannot express
            its own default is a trap: one nudge of the slider and the value is
            gone. That length is the seconds pendulum — L = g/π², a half-period of
            exactly 1 s at 9.81 m/s² — so a single pendulum ticks against the
-           flight clock beside it and the profile can be read off its swing. -->
+           flight clock beside it and the profile can be read off its swing. It
+           is also the reach every pendulum starts with: A spends it on one rod,
+           B on two and C on three, so the three defaults differ in architecture
+           and not in size. -->
       <div class="row gap">
         <label for="L1">L<sub>1</sub> <small>m</small></label>
         <input id="L1-range" type="range" min="0.1" max="3" step="0.001" value="0.994">
@@ -112,30 +127,34 @@
       </div>
       <div class="row">
         <label for="m1">m<sub>1</sub> <small>kg</small></label>
-        <input id="m1-range" type="range" min="0.1" max="5" step="0.01" value="5">
-        <input id="m1" type="number" min="0.1" max="5" step="0.01" value="5">
+        <input id="m1-range" type="range" min="0.1" max="5" step="0.01" value="2">
+        <input id="m1" type="number" min="0.1" max="5" step="0.01" value="2">
       </div>
       <!-- The second and third links are always wired; only their rows come and
-           go, so a single pendulum shows one length and one mass. -->
+           go, so a single pendulum shows one length and one mass. A is a single,
+           so the two below are what it becomes if it is switched to a longer
+           chain: C's links, a third of the total reach each — see DEFAULTS in
+           index.js. They are finer than the slider's millimetre, so nudging it
+           rounds them; the number box holds them exactly. -->
       <div class="row gap" id="row-L2">
         <label for="L2">L<sub>2</sub> <small>m</small></label>
-        <input id="L2-range" type="range" min="0.1" max="3" step="0.001" value="0.55">
-        <input id="L2" type="number" min="0.1" max="3" step="0.001" value="0.55">
+        <input id="L2-range" type="range" min="0.1" max="3" step="0.001" value="0.33133">
+        <input id="L2" type="number" min="0.1" max="3" step="0.001" value="0.33133">
       </div>
       <div class="row" id="row-m2">
         <label for="m2">m<sub>2</sub> <small>kg</small></label>
-        <input id="m2-range" type="range" min="0.1" max="5" step="0.01" value="1.5">
-        <input id="m2" type="number" min="0.1" max="5" step="0.01" value="1.5">
+        <input id="m2-range" type="range" min="0.1" max="5" step="0.01" value="1.8">
+        <input id="m2" type="number" min="0.1" max="5" step="0.01" value="1.8">
       </div>
       <div class="row gap" id="row-L3" hidden>
         <label for="L3">L<sub>3</sub> <small>m</small></label>
-        <input id="L3-range" type="range" min="0.1" max="3" step="0.001" value="0.3">
-        <input id="L3" type="number" min="0.1" max="3" step="0.001" value="0.3">
+        <input id="L3-range" type="range" min="0.1" max="3" step="0.001" value="0.21767">
+        <input id="L3" type="number" min="0.1" max="3" step="0.001" value="0.21767">
       </div>
       <div class="row" id="row-m3" hidden>
         <label for="m3">m<sub>3</sub> <small>kg</small></label>
-        <input id="m3-range" type="range" min="0.1" max="5" step="0.01" value="0.8">
-        <input id="m3" type="number" min="0.1" max="5" step="0.01" value="0.8">
+        <input id="m3-range" type="range" min="0.1" max="5" step="0.01" value="1">
+        <input id="m3" type="number" min="0.1" max="5" step="0.01" value="1">
       </div>
       <div class="row gap">
         <label for="g">g <small>m/s&sup2;</small></label>
@@ -218,8 +237,8 @@
         </span>
         <span class="trail-set" id="trail-row-3" hidden><b class="name p3">C</b>
           <label class="tog" id="trail-3-1-row" title="" hidden><input id="trail-3-1" type="checkbox">1</label>
-          <label class="tog" id="trail-3-2-row" title=""><input id="trail-3-2" type="checkbox" checked>2</label>
-          <label class="tog" id="trail-3-3-row" title="" hidden><input id="trail-3-3" type="checkbox">3</label>
+          <label class="tog" id="trail-3-2-row" title=""><input id="trail-3-2" type="checkbox">2</label>
+          <label class="tog" id="trail-3-3-row" title=""><input id="trail-3-3" type="checkbox" checked>3</label>
         </span>
       </div>
       <div class="row gap" data-i18n-title="trails.style.tip">

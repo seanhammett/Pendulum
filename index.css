@@ -7,42 +7,31 @@
   --accent: #96b3e9;
   --accent-dim: #2f3f7a;
 
-  /* One colour per pendulum — blue, red, yellow — worn by every bob in its
-     chain, its rod's core, its trails, its tab and its readout legends. The
-     chain is the thing being identified: the tabs, the trails and the readouts
-     all key off it, so a pendulum reads as one object of one colour rather than
-     as a gradient you have to decode. Which bob is which is already said by
-     position down the chain and by radius, which follows mass.
+  /* One colour per pendulum, worn by every bob in its chain, its rod's core,
+     its trails, its tab and its energy row — so a pendulum reads as one object
+     of one colour. Which bob is which is said by position and by radius.
 
-     Primaries rather than neons. Three hues that far apart are told apart at a
-     glance even where two trails overlap, and they read as pigment rather than
-     as signal lights, which suits a sculpture. They are deliberately not
-     --accent: the accent marks what you can click, the three primaries mark
-     what is hanging, and letting one of them be both would blur that. Blue is
-     kept saturated enough not to be mistaken for the accent, which is the
-     paler, greyer blue above; none of the three collides with the #ffb347
-     flight playhead or the #8d94a8 release marker. Yellow sits a little
-     brighter than the other two, which is what it takes to carry the same
-     weight as blue and red against this background.
+     Primaries rather than neons: three hues this far apart stay separable where
+     two trails overlap. Deliberately not --accent, which marks what can be
+     clicked; blue stays saturated enough not to be taken for it, and none of
+     the three collides with the #ffb347 playhead or the #8d94a8 release marker.
+     Yellow sits brighter, which is what it takes to carry the same weight
+     against this background.
 
-     Everything else tinted with the accent derives it with color-mix rather
-     than repeating a literal, so changing --accent alone recolours the panel. */
+     Everything tinted with the accent derives it with color-mix, so changing
+     --accent alone recolours the panel. */
   --p1: #3a7bf0;
   --p2: #e33d3d;
   --p3: #ecbe1f;
 
-  /* Rods, opaque: a white bar reads as a physical rod holding the masses up,
-     where a coloured line read as another trace of the same colour family. */
+  /* Rods, opaque, so they read as structure holding the masses up rather than
+     as another trace. */
   --rod: #f2f5fa;
 }
 
 /* The three above, --rod and --text are read by the canvas, for the bobs and
-   their trails, for the rods and for the shared pivot. Recolour them here, not
-   in JS. A colour belongs to the pendulum's slot rather than to its place in
-   the list, so removing pendulum 2 of 3 leaves the third exactly as it was.
-   Rods are drawn white with a thin core in their chain's colour, which is what
-   keeps three overlapping chains separable now that the rods no longer let each
-   other show through. */
+   their trails, the rods and the shared pivot. Recolour them here, not in JS.
+   A colour belongs to the pendulum's slot, not its place in the list. */
 
 * { box-sizing: border-box; }
 
@@ -79,11 +68,10 @@ canvas {
   padding-right: 4px;
 }
 
-/* The panel's scrollbar, in the accent: dimmed at rest so a bar of it does not
-   compete with the readouts, full accent once the pointer is over the panel.
-   scrollbar-color is what Chrome honours now, and it wins outright where it is
-   supported; the ::-webkit- rules stay for the older engines, where the
-   transparent border plus background-clip is what insets the thumb. */
+/* The panel's scrollbar, in the accent: dimmed at rest, full accent on hover.
+   scrollbar-color wins where it is supported; the ::-webkit- rules below are
+   for older engines, where the transparent border plus background-clip is what
+   insets the thumb. */
 .panel, body {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-dim) transparent;
@@ -148,9 +136,8 @@ button.primary {
   font-weight: 600;
 }
 
-/* Clear trails and Use current state as initial: the tail of their boxes rather
-   than the point of them, so they sit at the height of a preset button and in
-   the muted colour, and do not compete with the controls above them. */
+/* Clear trails and Use current state as initial: the tail of their boxes, so
+   they sit at a preset button's height and in the muted colour. */
 button.wide {
   width: 100%;
   margin-top: 8px;
@@ -274,8 +261,8 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* --- flight simulator --- */
 
-/* Highlighted while the profile is flying, so the one mode that takes gravity
-   out of your hands says so from across the room. */
+/* Highlighted while the profile is flying, the one mode that takes gravity out
+   of your hands. */
 #flight.on {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 7%, transparent);
@@ -356,14 +343,10 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* Dot, then one column per term. The three number columns are equal fractions
    of what is left rather than sized to their contents, so the figures sit in
-   the same three places on every frame and in every row: a digit appearing, a
-   sign flipping or one chain running an order of magnitude hotter than another
-   moves nothing, and a column can be read down as a column. Nine live figures
-   in a 320px panel is the whole reason this is a grid and not three flex rows.
-
-   The header and the data rows are display: contents, so all four are items of
-   the one grid and share its columns; they exist as elements only to group a
-   row for the JS and for the dimming rule below. */
+   the same places on every frame and in every row and a column reads down as a
+   column. The header and data rows are display: contents, so all four are items
+   of the one grid; they exist only to group a row for the JS and the rule
+   below. */
 .e-grid {
   display: grid;
   grid-template-columns: 8px repeat(3, 1fr);
@@ -387,20 +370,17 @@ input[type="range"]::-webkit-slider-thumb {
   text-align: right;
 }
 
-/* The total keeps the accent it had when it was its own row, which is what
-   picks the summed column out of the three without a rule or a heavier weight
-   to separate it. */
+/* The total in the plain text colour, which picks the summed column out of the
+   two accented ones without a rule or a heavier weight. */
 .e-row .e-tot { color: var(--text); }
 
-/* A pendulum that is not on the pivot. Its hollow dot already says so; the
-   figures drop to muted as well because three rows of identical-looking numbers
-   where only some of them move is exactly the case where the eye needs telling
-   twice. Dimmed rather than hidden — those numbers are the initial conditions
+/* A pendulum that is not on the pivot: its figures dim as well as its dot going
+   hollow. Dimmed rather than hidden — those numbers are the initial conditions
    switching it on would start from. */
 .e-row.off b { color: var(--muted); }
 
-/* Faded rather than --accent-dim, which is a background colour dark enough to
-   be unreadable as 13px text. */
+/* Faded rather than --accent-dim, which is a background colour too dark to read
+   as 13px text. */
 .e-row.off .e-tot { color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
 input:disabled, button:disabled {
@@ -453,9 +433,8 @@ button:disabled:hover { border-color: var(--line); }
 
 /* --- segmented choice --- */
 
-/* Two buttons behaving as one control, so both trail styles are named on the
-   panel rather than hidden behind a checkbox's on and off. Spans the slider and
-   number columns of .row, to stay in line with the rows above and below. */
+/* Two buttons behaving as one control, so both options are named on the panel.
+   Spans the slider and number columns of .row, to stay in line with them. */
 .seg {
   display: flex;
   grid-column: 2 / -1;
@@ -508,10 +487,10 @@ button:disabled:hover { border-color: var(--line); }
    grid-column is inert here — this one is not inside a .row. */
 .seg.arch { margin-bottom: 2px; }
 
-/* The swatch that ties a tab, a trail row and a readout legend to the chain on
-   the canvas — the same custom properties the canvas reads. The colour is set
-   as a variable rather than as the background, so filled and hollow are one
-   rule each instead of one per chain. */
+/* The swatch that ties a tab, a trail row and an energy row to the chain on the
+   canvas, from the same custom properties the canvas reads. The colour is set
+   as a variable, so filled and hollow are one rule each rather than one per
+   chain. */
 .dot {
   display: inline-block;
   width: 8px;
@@ -526,12 +505,10 @@ button:disabled:hover { border-color: var(--line); }
 .dot.p2 { --c: var(--p2); }
 .dot.p3 { --c: var(--p3); }
 
-/* A pendulum that is not hanging: the same dot in the same place in the same
-   colour, emptied out. Filled means it is on the pivot, and that reads at a
-   glance across the three tabs in a way a dimmed or greyed dot would not —
-   grey is a fourth colour, and the whole point of these is that there are
-   three. Drawn as an inset shadow rather than a border so the dot is the same
-   8px either way and the letter beside it does not shift. */
+/* A pendulum that is not hanging: the same dot, emptied out. Hollow rather than
+   greyed, since grey would be a fourth colour. An inset shadow rather than a
+   border, so the dot stays 8px either way and the letter beside it does not
+   shift. */
 .dot.off {
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--c);
@@ -572,11 +549,9 @@ legend .dot { margin-right: 5px; }
    as .presets and .row. */
 .trail-set[hidden], .tog[hidden] { display: none; }
 
-/* Deliberately the same shape and the same lit state as .tab: both say which of
-   the things on the canvas the panel is acting on, and two spellings of that
-   would be two things to learn. Kept as its own rule rather than sharing .tab's,
-   because a tab is a single choice among several and these are nine independent
-   ones — they only happen to look alike. */
+/* The same shape and lit state as .tab, since both say which things on the
+   canvas the panel is acting on. Its own rule rather than sharing .tab's: a tab
+   is one choice among several, these are nine independent ones. */
 .tog {
   position: relative;
   display: flex;
@@ -629,10 +604,8 @@ legend .dot { margin-right: 5px; }
 /* --- export --- */
 
 /* Start and end in the two columns a slider and a number box normally share, so
-   the pair is one control the width of every other row's and the label still
-   lines up with the labels above it. Equal halves rather than 1fr and 62px:
-   these are two of the same quantity, and one of them looking like the value of
-   the other would be a lie about which is which. */
+   the label lines up with the ones above. Equal halves rather than 1fr and
+   62px: these are two of the same quantity. */
 .span-row { grid-template-columns: 58px 1fr 1fr; }
 
 /* Which phases the chosen seconds land in, under the boxes. This is what
@@ -660,9 +633,7 @@ legend .dot { margin-right: 5px; }
 
 .auto-row .trail-set { grid-column: 2 / -1; }
 
-/* Equal halves, so each toggle sits under the button that names the same
-   format. They are the same two words twice, and reading them as a column is
-   the whole reason there is no separate format setting. */
+/* Equal halves, so each toggle sits under the button naming the same format. */
 .auto-row .tog { flex: 1; }
 
 .export-status {
@@ -672,20 +643,17 @@ legend .dot { margin-right: 5px; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Armed and waiting is a state worth seeing from across the room, since the
-   thing it is waiting for is minutes away. Empty when nothing is armed, and an
-   empty <p> with a margin would still push the panel about. */
+/* Empty when nothing is armed, and an empty <p> with a margin would still push
+   the panel about. */
 #export-auto:empty { display: none; }
 
 #export-auto { color: var(--accent); }
 
 /* --- the confirmation --- */
 
-/* Centred by showModal() rather than by these rules — a modal dialog's default
-   position is the middle of the viewport, and the margin:auto below is only
-   what keeps it there once a width is set. It used to be window.confirm, which
-   arrives from the top of the window in the browser's own colours and reads as
-   the browser interrupting rather than as the page asking. */
+/* Centred by showModal(), not by these rules — a modal dialog's default position
+   is the middle of the viewport, and the margin:auto below is only what keeps it
+   there once a width is set. */
 .ask {
   width: min(360px, calc(100vw - 32px));
   padding: 16px 18px 14px;
@@ -744,10 +712,9 @@ legend .dot { margin-right: 5px; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Instrumentation rather than physics, so it sits quieter than the state above
-   it and behind a rule. .lead starts a new grid row — forcing it into column 1
-   pushes it down when the row it would have joined is already occupied, which
-   is what keeps the pair together whether the readout is showing two links or
+/* Instrumentation rather than physics, so it sits quieter and behind a rule.
+   .lead forces column 1, which pushes it to a new row when the one it would
+   have joined is occupied — that keeps the pair together at two links or
    three. */
 .readout .perf.lead { grid-column-start: 1; }
 

@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <!-- Only the web build reads the three tags below. In the extension the page
-       is always a desktop tab, so the viewport is already the window and
-       nothing links to it; on a phone their absence would leave the 720px
-       breakpoint in index.css unreachable, the layout pinned to the 980px
-       default width and the whole thing zoomed out to fit. -->
+  <!-- Web build only; the extension is always a desktop tab. Without the
+       viewport tag a phone pins the layout to 980px and zooms out, leaving the
+       720px breakpoint in index.css unreachable. -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Simulate a double or triple pendulum with real physics. Set rod lengths, gravity, and initial angles and speeds, and change them mid-flight.">
   <!-- Matches --bg in index.css, so mobile browser chrome extends the page. -->
@@ -59,24 +57,15 @@
     </fieldset>
 
     <!-- All three pendulums at once, one row each, rather than following the
-         selected tab like State does. Energy is the one readout worth comparing
-         across chains — the same architecture at a different release point, or
-         two architectures holding the same total — and comparing means seeing
-         them side by side rather than clicking between them. There is still no
-         all-chains sum: three sculptures' energies added together is a number
-         about nothing.
+         selected tab as State does. There is no all-chains sum.
 
-         So the legend carries no dot and names no pendulum. Each row carries
-         its own instead: filled for a pendulum on the pivot, a bare ring in its
-         colour for one that is not, exactly as the tabs read. A pendulum that
-         is switched off is not being stepped, so its row is it sitting at its
-         initial conditions — true of it, and the picture of what switching it
-         on would put on the pivot. The hollow dot and the dimmed figures are
-         what say those three numbers are not going to move.
+         So the legend names no pendulum and carries no dot; each row carries its
+         own, filled for a pendulum on the pivot and a bare ring for one that is
+         not, as the tabs read. An off pendulum is not being stepped, so its row
+         shows it at its initial conditions — the hollow dot and the dimmed
+         figures are what say those numbers will not move.
 
-         The unit sits in the legend rather than after all nine figures: it is
-         the same J every time, and repeating it costs a third of every column
-         to say nothing. -->
+         The unit is in the legend rather than after all nine figures. -->
     <fieldset class="energy">
       <legend><span data-i18n="energy.legend">Energy</span> <small data-i18n="energy.unit">&mdash; J</small></legend>
       <div class="e-grid">
@@ -95,38 +84,26 @@
     <fieldset>
       <legend><span data-i18n="arch.legend">Architecture</span> <small data-i18n="arch.sub">&mdash; live</small></legend>
 
-      <!-- One tab per pendulum, each carrying its own colour as a dot: tab B is
-           red, the red chain is pendulum B, and no other highlighting is needed
-           to tie the panel to the canvas.
+      <!-- One tab per pendulum, each carrying its chain's colour as a dot, and
+           lettered where bobs are numbered so B2 needs no explaining.
 
-           Letters, not numbers. The bobs within a chain are numbered 1 to 3 and
-           the chains used to be too, so half the panel's tooltips had to say
-           which kind of number they meant — bob 2 of pendulum 2. A letter for
-           the chain and a digit for the bob cannot be confused for each other,
-           and B2 needs no explaining at all.
+           All three are always here, and a tab is a selection and nothing else:
+           clicking one brings that pendulum's settings into the rest of the box
+           whether it is hanging or not. Whether it hangs is said by the dot and
+           changed by the switch below.
 
-           All three are always here, filling the row, and a tab is a selection
-           and nothing else: clicking one brings that pendulum's settings into
-           the rest of the box whether it is hanging or not. Whether it hangs is
-           said by its dot — filled for a pendulum on the pivot, a bare ring in
-           its own colour for one that is not — and changed by the switch below,
-           which is where Add and Remove went. A pendulum that is switched off
-           keeps everything about it except its place on the pivot, so switching
-           it back on gets the pendulum back rather than a new one.
-
-           The dot is a child element rather than part of the label because
-           data-i18n would overwrite the text; the letters are not translated,
-           so the tabs carry their name in the tooltip instead. -->
+           The dot is a child element rather than part of the label, since
+           data-i18n would overwrite the text; the letters are not translated, so
+           the tabs carry their name in the tooltip. -->
       <div class="tabs">
         <button class="tab on" id="tab-1" title=""><i class="dot p1"></i>A</button>
         <button class="tab" id="tab-2" title=""><i class="dot p2"></i>B</button>
         <button class="tab" id="tab-3" title=""><i class="dot p3"></i>C</button>
       </div>
 
-      <!-- Off and the three link counts are one control, because "no rods" and
-           "not on the pivot" are the same pendulum. It spans the whole box
-           rather than sitting in a labelled row: the tabs above it are the
-           label, and four segments do not fit beside one. -->
+      <!-- Off and the three link counts are one control: "no rods" and "not on
+           the pivot" are the same pendulum. It spans the box, with the tabs
+           above as its label, since four segments do not fit beside one. -->
       <div class="seg arch" role="group" data-i18n-aria="arch.links" data-i18n-title="arch.links.tip">
         <button id="links-0" data-i18n="arch.off">Off</button>
         <button id="links-1" class="on" data-i18n="arch.single">Single</button>
@@ -134,19 +111,14 @@
         <button id="links-3" data-i18n="arch.triple">Triple</button>
       </div>
 
-      <!-- The boxes below open on pendulum A, the pendulum the panel opens on,
-           and index.js reads its defaults back out of them: the markup states
-           what the page loads with, in the place a reader looks for it.
+      <!-- The boxes open on pendulum A, and index.js reads its defaults back out
+           of them, so the markup states what the page loads with.
 
            Lengths step in millimetres where everything else steps in hundredths,
-           because the first default is 0.994 m and a control that cannot express
-           its own default is a trap: one nudge of the slider and the value is
-           gone. That length is the seconds pendulum — L = g/π², a half-period of
-           exactly 1 s at 9.81 m/s² — so a single pendulum ticks against the
-           flight clock beside it and the profile can be read off its swing. It
-           is also the reach every pendulum starts with: A spends it on one rod,
-           B on two and C on three, so the three defaults differ in architecture
-           and not in size. -->
+           so the 0.994 m default survives a nudge of the slider. That length is
+           the seconds pendulum, L = g/π², a half-period of exactly 1 s at
+           9.81 m/s². It is also the reach every pendulum starts with: A spends
+           it on one rod, B on two, C on three. -->
       <div class="row gap">
         <label for="L1">L<sub>1</sub> <small>m</small></label>
         <input id="L1-range" type="range" min="0.1" max="3" step="0.001" value="0.994">
@@ -158,11 +130,9 @@
         <input id="m1" type="number" min="0.1" max="5" step="0.01" value="2">
       </div>
       <!-- The second and third links are always wired; only their rows come and
-           go, so a single pendulum shows one length and one mass. A is a single,
-           so the two below are what it becomes if it is switched to a longer
-           chain: C's links, a third of the total reach each — see DEFAULTS in
-           index.js. They are finer than the slider's millimetre, so nudging it
-           rounds them; the number box holds them exactly. -->
+           go. A is a single, so these hold C's links — what A becomes if it is
+           switched to a longer chain; see DEFAULTS in index.js. They are finer
+           than the slider's millimetre, so nudging it rounds them. -->
       <div class="row gap" id="row-L2">
         <label for="L2">L<sub>2</sub> <small>m</small></label>
         <input id="L2-range" type="range" min="0.1" max="3" step="0.001" value="0.33133">
@@ -224,33 +194,16 @@
 
     <fieldset>
       <legend data-i18n="trails.legend">Trails</legend>
-      <!-- Every bob that can be traced, on one line at the head of the box,
-           rather than toggles that follow the Architecture tab: tracing two
-           chains and comparing them is the point of a shared pivot, and hiding
-           the others behind the tab would make the common case a three-click
-           operation. Nine at the very most — three chains of three — and at that
-           width they are numerals grouped behind their chain's colour rather
-           than nine spelled-out labels.
+      <!-- Every traceable bob on one line, not following the Architecture tab,
+           so two chains can be compared without switching tabs. Nine at most,
+           as numerals grouped behind their chain's letter in its own colour.
 
-           Drawn as the architecture tabs are, lit when they are on rather than
-           ticked: this is the same kind of control, one that says which of the
-           things on the canvas the panel is acting on, and a row of lit buttons
-           reads at a glance where a row of ticks has to be scanned. The checkbox
-           is still underneath — it holds the state, it takes the keyboard focus,
-           and it is why nothing in the JS knows this changed — it is simply not
-           drawn.
+           Lit rather than ticked, like the architecture tabs. The checkbox is
+           still underneath — it holds the state and takes the keyboard focus —
+           it is simply not drawn.
 
-           Bob 1 appears only on a single pendulum, where it is the only bob
-           there is. On a double or triple its path is the circle its own rod
-           already sweeps, and the paths worth watching hang below it.
-
-           Each group starts on its chain's tip and nothing else, which is the
-           rule setLinks keeps to as the architecture changes.
-
-           The group is headed by its chain's letter in its chain's colour,
-           where it used to carry a bare colour dot. It costs the same width and
-           it means the group can be named out loud — B2 is a trace you can ask
-           someone to look at, and a red dot is not. -->
+           Bob 1 appears only on a single pendulum. Each group starts on its
+           chain's tip alone, which is the rule setLinks keeps to. -->
       <div class="trail-bar">
         <span class="trail-set" id="trail-row-1"><b class="name p1">A</b>
           <label class="tog" id="trail-1-1-row" title=""><input id="trail-1-1" type="checkbox" checked>1</label>
@@ -283,18 +236,13 @@
       <button id="clear" class="wide" data-i18n="trails.clear">Clear trails</button>
     </fieldset>
 
-    <!-- Everything below is driven by export.js, which index.js knows nothing
-         about. Delete this fieldset and the <script> tag at the foot of the
-         page and the feature is gone with no other trace.
+    <!-- Driven by export.js, which index.js knows nothing about: delete this
+         fieldset and the <script> tag at the foot of the page and the feature
+         is gone with no other trace.
 
-         Two times rather than a list of the nine phases. The list could only
-         offer the sections the profile is divided into, and the sections worth
-         exporting are not always those: the interesting picture is often the
-         apesanteur plus the injection that threw the piece into it, or the
-         middle twelve seconds of a long baseline. The phases have not gone
-         anywhere — the line under the boxes names whichever of them the span
-         covers, and the span is drawn on the profile above, so 35–57 is still
-         found by reading rather than by remembering. -->
+         A span is two times rather than one of the nine phases, since the useful
+         pictures cross them. The line under the boxes names whichever phases the
+         span covers, and the span is drawn on the profile above. -->
     <fieldset id="export">
       <legend data-i18n="export.legend">Export</legend>
       <div class="row span-row" title="" data-i18n-title="export.tip">
@@ -307,10 +255,8 @@
         <button id="export-png" data-i18n="export.png" disabled>PNG</button>
         <button id="export-svg" data-i18n="export.svg" disabled>SVG</button>
       </div>
-      <!-- Two independent toggles rather than one switch and a format setting:
-           the two formats already sit side by side as buttons, and this way the
-           unattended run can write the SVG that records its own parameters and
-           the PNG you can actually look at, or either alone. -->
+      <!-- Two independent toggles, so an unattended run can write both formats
+           or either alone. -->
       <div class="row auto-row" title="" data-i18n-title="export.auto.tip">
         <label data-i18n="export.auto">Auto</label>
         <span class="trail-set">
@@ -336,11 +282,9 @@
     </fieldset>
   </aside>
 
-  <!-- The one question this page ever asks, in the page's own palette and in
-       the middle of it. A native <dialog> rather than a div with a backdrop:
-       showModal() centres it, dims what is behind it, traps the focus inside it
-       and closes it on Escape, all of which would otherwise be script. The text
-       is written in from the string table, so the dialog itself says nothing. -->
+  <!-- The one question this page ever asks. A native <dialog>, so showModal()
+       handles centring, the backdrop, the focus trap and Escape. The text is
+       written in from the string table. -->
   <dialog id="ask" class="ask">
     <h2 id="ask-title"></h2>
     <p id="ask-text"></p>
@@ -352,10 +296,9 @@
 
   <script src="i18n.js"></script>
   <script src="index.js"></script>
-  <!-- After index.js, and it has to be: top-level const and let in a classic
-       script live in the shared global lexical environment, which is how
-       export.js reads world, PHASES and the rest without index.js exporting
-       anything. Purely additive — remove this line and the page is unchanged. -->
+  <!-- After index.js, and it must be: both are classic scripts, so export.js
+       reads index.js's top-level bindings without either exporting anything.
+       Purely additive — remove this line and the page is unchanged. -->
   <script src="export.js"></script>
 </body>
 </html>

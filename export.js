@@ -5,28 +5,19 @@
 // Saves the pattern traced during one section of the flight cycle — the whole
 // apesanteur segment, say — as a PNG or an SVG holding nothing but the traces.
 //
-// Loaded after index.js. Top-level const and let in a classic script live in
-// the shared global lexical environment, so world, PHASES, cycle, startTime,
-// trailSeconds, simTime, flightTime, COLOUR, trailStyle, traced, firstTraced,
-// the tape functions, el, t and fmt are all readable from here without index.js
-// exporting anything.
+// Loaded after index.js. Both are classic scripts, so index.js's top-level
+// bindings — world, PHASES, cycle, startTime, trailSeconds, simTime, flightTime,
+// COLOUR, trailStyle, traced, firstTraced, the tape functions, el, t and fmt —
+// are readable here without either file exporting anything.
 //
-// Nothing here runs per frame. Every function below hangs off a click or a
-// change, so the frame budget is untouched.
+// Nothing here runs per frame; every function hangs off a click or a change.
 //
-// Spans are read from the export tape rather than from the drawn trail. The
-// drawn trail is redrawn in full every frame, so it can only hold about a
-// minute, and a 22 s section sat inside a 25 s trail was downloadable for the
-// three seconds between finishing and having its start pruned. The tape holds
-// two cycles and is not drawn, so a span stays available from the moment it has
-// been flown. See index.js's tape section for the sizing.
-//
-// What is exported is two times rather than one of the nine named phases. The
-// phases are the aircraft's divisions of the cycle, and they are often not the
-// picture: the apesanteur with the injection that threw the piece into it, or
-// the middle of a long baseline, are spans the list could not name. The phases
-// are still what the seconds mean, so the panel names whichever of them the
-// span covers, and index.js draws the span on the profile.
+// A span is two times rather than one of the nine named phases, since the useful
+// pictures cross them — apesanteur with the injection that threw the piece into
+// it, or the middle of a long baseline. The panel names whichever phases the
+// span covers and index.js draws it on the profile. Points come from the export
+// tape, not the drawn trail, so a span stays available from the moment it has
+// been flown; see index.js's tape section.
 
 const EXPORT_R = 2048;        // output square, in pixels (PNG) or user units (SVG)
 const EXPORT_PAD = 0.02;      // margin, as a fraction of the square
@@ -44,9 +35,8 @@ const autoBox = { png: el('auto-png'), svg: el('auto-svg') };
 
 // --- The span --------------------------------------------------------------
 
-// The two boxes, in cycle seconds, clamped to a cycle that the shortcut can
-// shorten under them. Read on every use rather than cached: the boxes are the
-// state, so there is nothing to keep in step with them.
+// The two boxes, in cycle seconds, clamped to a cycle the shortcut can shorten
+// under them. Read on every use: the boxes are the state.
 function spanOf() {
   const C = cycle();
   const read = (box, dflt) => {
@@ -56,9 +46,9 @@ function spanOf() {
   return [read(fromBox, 0), read(toBox, C)];
 }
 
-// The phases the span touches, in order, with the repeats collapsed — two of
-// the nine are called hypergravity and two baseline, and a span crossing from
-// one hypergravity into the next would otherwise name it twice.
+// The phases the span touches, in order, adjacent repeats collapsed: two of the
+// nine are hypergravity and two baseline, and a span crossing from one to the
+// next would otherwise name it twice.
 function spanPhases() {
   const C = cycle();
   const [t0, t1] = spanOf();
@@ -72,12 +62,11 @@ function spanPhases() {
 
 // --- Finding the points ----------------------------------------------------
 
-// The most recent completed pass over the span, as a window in flight time.
-//
-// Returns null when the cycle has not reached the end of the span yet, or when
-// the span is empty. live marks the one window that comes from the drawn trail
-// rather than the tape: with the profile off there are no cycle times at all,
-// so what there is to save is whatever is on the screen.
+// The most recent completed pass over the span, as a window in flight time, or
+// null when the cycle has not reached the end of the span or the span is empty.
+// live marks the window that comes from the drawn trail rather than the tape:
+// with the profile off there are no cycle times, so what there is to save is
+// whatever is on the screen.
 function segmentWindow() {
   if (!flightOn) {
     return { from: -Infinity, to: Infinity, cycleNo: 0, span: trailSeconds, live: true };
@@ -90,61 +79,19 @@ function segmentWindow() {
   return { from: k * C + t0, to: k * C + t1, cycleNo: k + 1, span: t1 - t0, live: false };
 }
 
-// The points a drawn line would not miss. Walking forward, a point is dropped
-// when it lies within tol of the straight line between the last point kept and
-// the one after it. At a tolerance of a quarter of a stroke width the result is
-// the same picture, and it costs a smooth arc most of its points while leaving
-// a chaotic one nearly untouched — which is the right way round, since the
-// points a chaotic trace holds are the ones carrying its shape.
-//
-// Cusps survive by construction: a turning point is the furthest thing there is
-// from the chord drawn across it.
-function thin(pts, tol) {
-  if (pts.length < 3) return pts;
-  const out = [pts[0]];
-  let a = pts[0];
-  for (let i = 1; i < pts.length - 1; i++) {
-    const b = pts[i];
-    const c = pts[i + 1];
-    const dx = c[0] - a[0];
-    const dy = c[1] - a[1];
-    const chord = dx * dx + dy * dy;
-    // Cross product over chord length is the perpendicular distance. A zero
-    // chord means the kept point and the next one coincide, and then how far b
-    // has strayed from the pair of them is the whole answer.
-    const cross = (b[0] - a[0]) * dy - (b[1] - a[1]) * dx;
-    const d2 = chord > 0
-      ? (cross * cross) / chord
-      : (b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1]);
-    if (d2 > tol * tol) {
-      out.push(b);
-      a = b;
-    }
-  }
-  out.push(pts[pts.length - 1]);
-  return out;
-}
-
 // Every traced bob's points inside the window, in world metres. Reads and
-// mutates nothing. firstTraced is index.js's rule for which bobs a chain offers
-// at all — the second one up, except on a single, where it is the only one.
+// mutates nothing.
 //
-// The tape stamps points with the chain's own clock and the window is in flight
-// time, so the two differ by exactly startTime(). index.js keeps flightTime and
-// simTime in lockstep — reset() sets flightTime to startTime() with every c.t at
-// zero, and from then on the two advance by the same amount through the clamped
-// phase and through free flight alike — so flightTime − startTime() === simTime,
-// and a point stamped c.t was recorded at startTime() + c.t. Chains sit up to
-// their own sub-step apart (worst measured 232 µs, 4 % of a frame), which is
-// smaller than the spacing between two points and not worth correcting.
+// Nothing is thinned: every point recorded is a point exported, in both styles.
+// The budget is fixed — 60 Hz, a span of at most one 180 s cycle, at most six
+// traced bobs — so the ceiling is 64 800 points and a 1.05 MB SVG.
+//
+// The tape stamps points with the chain's own clock while the window is in
+// flight time, and the two differ by exactly startTime(): index.js keeps
+// flightTime − startTime() === simTime, so a point stamped c.t was recorded at
+// startTime() + c.t. Chains sit up to their own sub-step apart (232 µs worst
+// measured), smaller than the spacing between two points.
 function collect(w) {
-  const f = frameOf();
-  // Dots are never thinned: there the spacing between marks is the speed of the
-  // bob — crowding at each turning point, stretching through the bottom of the
-  // swing — and dropping the close ones would erase exactly what that style is
-  // drawn for.
-  const tol = trailStyle === 'dots' ? 0 : f.stroke / 4 / f.scale;
-
   const rows = [];
   for (const c of world) {
     for (let i = firstTraced(c); i < c.n; i++) {
@@ -153,12 +100,7 @@ function collect(w) {
         ? c.trails[i]
         : tapePoints(c.tape[i], w.from - startTime(), w.to - startTime());
       if (pts.length) {
-        rows.push({
-          chain: c,
-          bob: i + 1,
-          colour: COLOUR.chain[c.slot],
-          pts: tol > 0 ? thin(pts, tol) : pts
-        });
+        rows.push({ chain: c, bob: i + 1, colour: COLOUR.chain[c.slot], pts });
       }
     }
   }
@@ -190,13 +132,9 @@ function recordedFrom() {
 
 // --- The frame -------------------------------------------------------------
 
-// The stage's own mapping: pivot centred, scaled to the largest reach in the
-// world rather than to what this particular segment happens to cover. Two
-// exports of the same world are then at the same scale whatever is in them,
-// which is the comparison a shared pivot exists for. Cropping each pattern to
-// its own bounding box would make a better single image and a worse set.
-//
-// No bob radius in the margin, unlike draw(): there are no bobs here.
+// The stage's mapping: pivot centred, scaled to the largest reach in the world
+// rather than to what this segment covers, so two exports of the same world are
+// at the same scale. No bob radius in the margin, unlike draw(): no bobs here.
 function frameOf() {
   let reach = 0;
   for (const c of world) {
@@ -208,7 +146,7 @@ function frameOf() {
   const scale = (R / 2 - R * EXPORT_PAD) / reach;
   return {
     R,
-    scale, // pixels per metre, so a tolerance in pixels can be stated in metres
+    scale, // pixels per metre; toX and toY are the only users left
     stroke: R * EXPORT_STROKE,
     dot: R * EXPORT_DOT,
     toX: (x) => R / 2 + x * scale,
@@ -220,10 +158,8 @@ function frameOf() {
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-// What the export is of. An exported pattern that does not say which parameters
-// produced it is a picture rather than a result, and one string is the whole
-// cost of it. There is no PNG equivalent — a text chunk means writing a PNG
-// encoder — which is the asymmetry that makes SVG the format to keep.
+// The parameters that produced the pattern, for the SVG's <desc>. PNG has no
+// equivalent, since a text chunk would mean writing a PNG encoder.
 function describe(w, rows) {
   const lines = [];
   if (w.live) {
@@ -250,10 +186,8 @@ function describe(w, rows) {
   return lines.join('\n');
 }
 
-// Traces only — no rods, no bobs, no pivot, and no background rect, so the
-// pattern drops onto whatever it is placed on. Solid rather than faded: the
-// live view's fade from transparent to solid says "recent", which a still image
-// has no use for.
+// Traces only — no rods, bobs, pivot or background rect, so the pattern drops
+// onto whatever it is placed on. Solid rather than faded.
 function toSVG(rows, meta) {
   const f = frameOf();
   const n = (v) => v.toFixed(2);
@@ -281,8 +215,8 @@ function toSVG(rows, meta) {
 
 // --- PNG -------------------------------------------------------------------
 
-// The same rows through the same mapping, so the two formats are the same
-// picture. Transparent: nothing is painted but the traces.
+// The same rows through the same mapping, so the two formats are one picture.
+// Transparent: nothing is painted but the traces.
 function toPNG(rows) {
   const f = frameOf();
   const cv = document.createElement('canvas');
@@ -303,8 +237,7 @@ function toPNG(rows) {
       const x = f.toX(row.pts[i][0]);
       const y = f.toY(row.pts[i][1]);
       if (dots) {
-        // A fresh subpath at each dot, or the arcs are joined by the very line
-        // this style exists to do without.
+        // A fresh subpath at each dot, or the arcs are joined by a line.
         c2.moveTo(x + f.dot, y);
         c2.arc(x, y, f.dot, 0, Math.PI * 2);
       } else if (i === 0) {
@@ -329,11 +262,9 @@ function download(blob, name) {
   URL.revokeObjectURL(a.href);
 }
 
-// Local wall-clock time as YYYYMMDD-HHMM. Local rather than UTC because the
-// name is read against the session it was made in — "which of these did we save
-// after lunch" — and a directory of them from one flight is all in one zone
-// anyway. Minutes, not seconds: two exports in the same minute are told apart
-// by everything after the stamp.
+// Local wall-clock time as YYYYMMDD-HHMM. Local rather than UTC, since the name
+// is read against the session it was made in. Minutes, not seconds: two exports
+// in the same minute are told apart by the rest of the name.
 function stamp(d = new Date()) {
   const p = (v) => String(v).padStart(2, '0');
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}`
@@ -341,14 +272,9 @@ function stamp(d = new Date()) {
 }
 
 // When it was saved, then what it is: the span within the cycle and which pass
-// over it. The stamp leads because it is what sorts a directory into the order
-// the work happened in, which is the order an unattended run produces them in
-// and the one nothing else in the name can give.
-//
-// Cycle-relative bounds rather than absolute flight times, since 35–57 names the
-// span and 215–237 names an accident of when it was flown. The phase key is in
-// there only when the span sits inside a single phase, where it is the name of
-// the thing; across two of them it would be half a description.
+// over it. The stamp leads, so a directory sorts into the order the work
+// happened in. Bounds are cycle-relative, not absolute flight times, and the
+// phase key appears only when the span sits inside a single phase.
 function fileName(w, ext) {
   if (w.live) return `${stamp()}-pendulum-trail-${simTime.toFixed(0)}s.${ext}`;
   const [t0, t1] = spanOf();
@@ -378,19 +304,15 @@ async function save(ext) {
 // --- Automatically -------------------------------------------------------
 
 // The pass already saved, so one completed span produces one file however often
-// the check below runs. Set to the pass in progress when a format is switched
-// on, because arming it means "from the next one" rather than "and the one that
-// went past while I was reading the panel".
+// the check below runs. Set to the pass in progress when a format is armed, so
+// arming means "from the next one".
 let autoDone = 0;
 
 const autoWanted = () => ['png', 'svg'].filter((k) => autoBox[k].checked);
 
-// Watching the flight clock rather than being called on the moment it crosses
-// the end of the span. index.js runs nothing of ours per frame and this does not
-// change that: a span is defined by the seconds it covers, so noticing that it
-// has finished a quarter of a second late writes exactly the same file. Four
-// times a second is also slow enough that the collect() below is not a cost
-// worth measuring, and it only ever runs at all once a pass has completed.
+// Polled rather than called on the frame the span ends: a span is defined by the
+// seconds it covers, so noticing a quarter of a second late writes the same
+// file, and this keeps the frame loop free of anything of ours.
 const AUTO_POLL = 250;
 
 async function autoTick() {
@@ -398,11 +320,10 @@ async function autoTick() {
   if (!want.length || !flightOn) return;
   const w = segmentWindow();
   if (!w || w.live || w.cycleNo <= autoDone) return;
-  // Marked done before the first await, not after both saves: a PNG encode is
-  // asynchronous, and two polls landing either side of it would write the pass
-  // twice. Marked even when nothing can be written, so a span the tape does not
-  // hold is one skipped pass rather than a collect() four times a second for
-  // the rest of the cycle.
+  // Marked done before the first await: a PNG encode is asynchronous, and two
+  // polls either side of it would write the pass twice. Marked even when nothing
+  // can be written, so a span the tape does not hold is one skipped pass rather
+  // than a collect() four times a second for the rest of the cycle.
   autoDone = w.cycleNo;
   if (anyTraced() && w.from - startTime() >= recordedFrom()) {
     for (const ext of want) await save(ext);
@@ -414,11 +335,8 @@ setInterval(autoTick, AUTO_POLL);
 
 // --- The panel -------------------------------------------------------------
 
-// Exactly one state, recomputed on the events that can change it rather than
-// per frame — which is what costs the frame loop nothing. Nothing it shows
-// counts down, so between those moments it does not go stale: a span that is
-// ready stays ready, and the time the next automatic save falls due is a fixed
-// number rather than a countdown to one.
+// Exactly one state, recomputed on the events that can change it rather than per
+// frame. Nothing it shows counts down, so it does not go stale between them.
 function paintStatus() {
   const C = cycle();
   // With no profile there are no cycle times, so the two boxes have nothing to
@@ -441,12 +359,10 @@ function paintStatus() {
   let text;
   let ready = false;
 
-  // Length of the span itself, independent of whether it has been flown, so
-  // that a span too long to record says so now rather than after a cycle of
-  // waiting to find out. Two cycles of tape against one cycle of profile means
-  // only a span longer than the cycle can trip this, and the boxes cannot
-  // express one — the guard stays because the tape length is a constant that
-  // could be lowered.
+  // The span's own length, independent of whether it has been flown, so one too
+  // long to record says so now rather than after a cycle of waiting. Unreachable
+  // while the tape holds two cycles and the boxes cannot express more than one;
+  // the guard stays because TAPE_SECONDS could be lowered.
   const span = flightOn ? t1 - t0 : 0;
 
   const traces = anyTraced();
@@ -458,9 +374,8 @@ function paintStatus() {
   } else if (!w) {
     text = t('export.unflown');
   } else if (!w.live && w.from - startTime() < recordedFrom()) {
-    // Flown, but not recorded: the tape was rewound after it by a reset or a
-    // parameter change. The cycle brings it round again, so say when rather
-    // than just refusing.
+    // Flown but not recorded: a reset or a parameter change rewound the tape
+    // after it. The cycle brings it round again, so say when.
     text = fmt('export.expired', { s: (w.to + cycle()).toFixed(0) });
   } else {
     const rows = collect(w);
@@ -468,9 +383,8 @@ function paintStatus() {
       // Completed but empty: the piece was clamped through the whole of it.
       text = t('export.empty');
     } else {
-      // Points rather than pendulums: which chains are in it is already said
-      // by the toggles right above, and a count would have to inflect. The
-      // count is the thinned one, so it is what the file will hold.
+      // Points rather than pendulums, which the toggles above already say.
+      // Nothing is dropped after this, so it is what the file will hold.
       const pts = rows.reduce((a, r) => a + r.pts.length, 0);
       text = w.live
         ? fmt('export.readyNow', { n: pts })
@@ -484,18 +398,16 @@ function paintStatus() {
   svgButton.disabled = !ready;
 
   // When the next automatic save falls due, in flight time: the end of the span
-  // in the pass after the one already written. It is a fixed number rather than
-  // a countdown, so it stays true without being redrawn.
+  // in the pass after the one already written. A fixed number, not a countdown.
   autoNote.textContent = good && autoWanted().length
     ? fmt('export.autoNext', { s: (autoDone * cycle() + t1).toFixed(0) })
     : '';
 }
 
-// Everything the span can change, in the one place: the mark on the profile,
-// the phases named under the boxes, and what the next automatic save is waiting
-// for. Arming from here rather than only from the toggles is deliberate — a new
-// span is a new thing to wait for, and the pass it has already been through is
-// not one this asked to save.
+// Everything the span can change, in one place: the mark on the profile, the
+// phases named under the boxes, and what the next automatic save waits for. A
+// new span re-arms, since the pass it has already been through is not one this
+// asked to save.
 function spanChanged() {
   const w = segmentWindow();
   autoDone = w && !w.live ? w.cycleNo : 0;
@@ -512,24 +424,21 @@ for (const k of ['png', 'svg']) autoBox[k].addEventListener('change', spanChange
 pngButton.addEventListener('click', () => save('png').then(paintStatus));
 svgButton.addEventListener('click', () => save('svg').then(paintStatus));
 
-// Everything that can change the answer is a user action, so the status is
-// refreshed on the way in rather than on a timer: by the time the pointer is
-// over the panel, whatever was clicked elsewhere has already happened.
+// Refreshed on the way in rather than on a timer: everything that can change the
+// answer is a user action, and by the time the pointer is over the panel it has
+// already happened.
 el('export').addEventListener('pointerenter', paintStatus);
 
-// The phases under the boxes are named in the current language, and nothing
-// else on the page will repaint them. Registered after index.js's own listener,
-// so the language has already switched by the time this runs.
+// The phases under the boxes are named in the current language. Registered after
+// index.js's own listener, so the language has switched by the time this runs.
 el('lang').addEventListener('click', paintStatus);
 
-// Everything else arrives through index.js's announcement rather than through a
-// listener on the control that caused it. It has to: a click on the flight
-// switch or the shortcut may now be waiting on a confirmation, so a second
-// listener on the same control would repaint the panel from a world that has
-// not changed yet — and would not be called at all when the answer finally came.
+// Everything else arrives through index.js's announcement rather than a listener
+// on the control that caused it, because a click on the flight switch or the
+// shortcut may be waiting on a confirmation — a second listener would repaint
+// from a world that has not changed yet, and not be called when the answer came.
 //
-// The world starting again is also the moment the automatic export has nothing
-// left to wait for, so the count of passes already written goes back to none.
+// A re-run is also the moment the automatic export has nothing left to wait for.
 worldHooks.push(() => {
   autoDone = 0;
   paintStatus();

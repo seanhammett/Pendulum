@@ -2,157 +2,103 @@
 
 const DT_MAX = 0.001;    // coarsest integration step (s)
 const MAX_FRAME = 0.05;  // clamp on real time consumed per frame (s)
-// Ceiling on integration steps per frame, for the world as a whole rather than
-// for any one pendulum. Sized to cover the most demanding corner of the input
-// range (tiny light bobs with maximum friction needs ~17k for a single chain)
-// so the flight clock never silently falls behind real time. Three chains in
-// that corner share this one budget and cost ~7.2 ms; given a ceiling each they
-// would cost ~18.4 ms, past the 16.7 ms frame, and the guarantee the constant
-// exists to give would be gone. At the defaults three chains cost ~0.17 ms.
+// Integration steps per frame, shared by the whole world rather than allowed per
+// chain. Covers the worst corner of the input range (~17k for one chain of tiny
+// light bobs at maximum friction) so the flight clock cannot fall behind real
+// time. Three chains there cost ~7.2 ms; at the defaults, ~0.17 ms.
 const MAX_STEPS = 20000;
 
-// Longest chain the page offers. The parameter arrays are always this long and
-// n says how much of them is in use, so switching between double and triple
-// never resizes them.
+// Longest chain offered. Parameter arrays are always this long and n says how
+// much is in use, so changing link count never resizes them.
 const MAX_LINKS = 3;
 
-// Pendulums the page has. Three tabs, three colour families, three trail rows,
-// all of them declared in the markup and all of them there at all times; how
-// many are hanging from the pivot is a separate question, answered by world
-// below.
+// Pendulums the page has: three tabs, three colours, three trail rows, all
+// present at all times. How many hang from the pivot is `world`, below.
 const MAX_PENDULUMS = 3;
 
-// What each pendulum is when the page loads. The three divide the same 0.994 m
-// of rod — the seconds pendulum's length, see the note in index.html beside
-// L1 — into one, two and three links, so the family differs in architecture and
-// in nothing else: hang two of them together and what separates them on the
-// stage is simple against double against triple, not long against short. Each
-// reaches the same circle, which also means the stage does not rescale as they
-// are switched on and off. C's links step by about 114 mm either side of a third
-// of the total, B's two are the same length to within 6 mm.
-//
-// The links a pendulum's own architecture does not use hold C's, so extending A
-// or B finds a link of the same family already there rather than a leftover.
-//
-// A's numbers are in the markup as well, and are read back from it at the foot
-// of this file — the boxes have to open showing something, and what they open
-// showing had better be what is loaded.
+// Each pendulum at load. All three divide the same 0.994 m of rod (the seconds
+// pendulum; see index.html beside L1) into one, two and three links, so they
+// differ in architecture alone and reach the same circle — the stage does not
+// rescale as they are switched on and off. Unused links hold C's lengths, so
+// extending A or B finds a link of the same family. A's numbers are in the
+// markup too, and are read back from it at the foot of this file.
 const DEFAULTS = [
   { n: 1, L: [0.994, 0.33133, 0.21767], m: [2, 1.8, 1] }, // A — simple
   { n: 2, L: [0.5, 0.494, 0.21767], m: [4, 2, 1] }, // B — double
   { n: 3, L: [0.445, 0.33133, 0.21767], m: [4, 1.8, 1] } // C — triple
 ];
 
-// Shared by every pendulum: the aircraft, not the sculpture. The flight profile
-// writes gravity here and each chain reads it, because three sculptures in the
-// same aircraft feel the same gravity — anything else would be a different
-// experiment rather than a different pendulum.
+// The aircraft, not the sculpture: one gravity, written by the flight profile
+// and read by every chain.
 const env = { g: 9.81 };
 
 // --- The world -------------------------------------------------------------
 
-// The pendulums do not interact, and that is the whole design. Three chains
-// sharing a pivot are three independent Lagrangian systems that happen to be
-// drawn on the same canvas: the pivot is a fixed point of the world, not a
-// body, so hanging a second pendulum from it does not load the first. There is
-// no cross term because there is no cross force — two rods occupying the same
-// space is a rendering fact, not a physical one.
+// The chains do not interact: the shared pivot is a fixed point and not a body,
+// so three chains are three independent Lagrangian systems drawn on one canvas.
+// Everything here is per chain except env.g, the release time and the clock.
 //
-// Everything below is per chain except env.g, the release time and the clock.
-//
-// slot is the chain's identity: colour, tab, trail row and readout all key off
-// it, and it survives the removal of a lower-numbered pendulum, so taking away
-// number 2 of 3 leaves the third where it is rather than re-hueing it under the
-// user's eye.
+// slot is the chain's identity — colour, tab, trail row and readout all key off
+// it, and it never changes.
 function makeChain(slot) {
   const d = DEFAULTS[slot];
   return {
     slot,
     n: d.n, // links in the chain: 1, 2 or 3 — a simple, double or triple pendulum
-    // Point masses m_i (kg) hung in a chain on massless rods of length L_i (m),
-    // copied out of the table so that editing a pendulum cannot rewrite the
-    // defaults. b is viscous friction at every hinge of this chain
-    // (N·m·s/rad); 0 is the ideal pendulum. Friction belongs to the hinges of
-    // one sculpture rather than to the air around all three, so two otherwise
-    // identical chains at different b is a usable experiment — and all three
-    // start at the same b, which is the setting that makes them comparable.
+    // Point masses m_i (kg) on massless rods L_i (m), copied out of DEFAULTS so
+    // editing a pendulum cannot rewrite the table. b is this chain's viscous
+    // friction at every hinge (N·m·s/rad); 0 is the ideal pendulum.
     L: d.L.slice(),
     m: d.m.slice(),
     b: 0.001,
-    // Initial conditions in the units the boxes use — degrees — converted on
-    // reset, so a chain carries what its panel would show rather than what the
-    // integrator wants.
+    // Initial conditions in degrees, the units the boxes use; converted on reset.
     th0: [90, 0, 0],
     om0: [0, 0, 0],
     // [θ_0 … θ_{n-1}, ω_0 … ω_{n-1}], angles from straight down, CCW positive.
-    // Packed into one array rather than named, so a single loop integrates any
-    // n, and sized to this chain's n rather than to MAX_LINKS because the ω
-    // half starts at index n.
+    // Sized to this chain's n, since the ω half starts at index n.
     s: new Float64Array(2 * d.n),
-    // Real time banked but not yet turned into integration steps (s). Per
-    // chain rather than per world: chains run at their own step sizes, so they
-    // do not retire the same backlog at the same instant.
+    // Real time banked but not yet integrated (s). Per chain, since chains run
+    // at their own step sizes.
     pending: 0,
-    // Simulated time this chain has actually reached (s). Equal for chains with
-    // identical parameters; otherwise they sit up to one of their own steps
-    // apart, measured worst case 232 µs.
+    // Simulated time this chain has reached (s). Chains sit up to one of their
+    // own steps apart, worst measured 232 µs.
     t: 0,
-    // Each traced bob's path, as world-space points [x, y, t], indexed by bob.
-    // Stored in world coordinates rather than pixels, so a trail stays valid
-    // when the rod lengths change the view scale mid-flight — it simply redraws
-    // at the new scale. Entry 0 is filled only on a single pendulum, where that
-    // bob is the only one there is; on a longer chain its circle is the one its
-    // own rod already sweeps, so nothing is recorded for it.
+    // Each traced bob's path as world-space [x, y, t], indexed by bob, so a
+    // trail survives a change of view scale. Entry 0 is filled only on a single
+    // pendulum; on a longer chain that bob's circle is its own rod's sweep.
     trails: [[], [], []],
-    // The same points again, kept far longer and read only by the exporter. See
-    // the tape section below; allocated on first write, so a chain that records
-    // two bobs pays for two.
+    // The same points kept longer for the exporter; see the tape section.
+    // Allocated on first write.
     tape: [null, null, null]
   };
 }
 
-// Every pendulum the page has, one per slot, for the whole life of the page. A
-// pendulum that is switched off is not deleted and not emptied: it keeps its
-// rods, masses, friction and initial conditions, the panel goes on showing them
-// when its tab is selected, and switching it back on puts that same pendulum
-// back on the pivot. Nothing here is ever added to or removed from — the array
-// is three chains, indexed by slot, and slot is identity.
+// Every pendulum, one per slot, for the life of the page. Never added to or
+// removed from: switching one off takes it out of `world` and leaves everything
+// else about it intact, so switching it back on returns the same pendulum.
 const chains = Array.from({ length: MAX_PENDULUMS }, (_, slot) => makeChain(slot));
 
-// The pendulums actually hanging from the pivot: a dense subset of chains,
-// ordered by slot, that the frame loop, the drawing and the exporter walk.
-// Dense because the step budget indexes its scratch by position in here, and
-// ordered by slot so the drawing order follows the letters rather than the
-// order the switches were thrown.
+// The chains hanging from the pivot: a dense subset of `chains`, ordered by
+// slot, walked by the frame loop, the drawing and the exporter. Dense because
+// the step budget indexes its scratch by position in here.
 //
-// Never empty. The stage's scale, the clock and the clamped phase all read it,
-// and a world with nothing in it is a state the panel cannot get back from, so
-// the last pendulum hanging cannot be switched off — see paintSelection.
-//
-// One pendulum of one link to begin with, at the seconds-pendulum length: the
-// page opens on the case whose period can be read straight off the flight
-// clock, and the chaotic architectures are one click away. See the note in
-// index.html beside L1.
+// Never empty — the last chain hanging cannot be switched off; see
+// paintSelection.
 const world = [chains[0]];
 let sel = 0; // slot of the pendulum the panel is editing, hanging or not
 
-// Whether this chain is on the pivot. Membership of world is the whole of the
-// answer — there is no second flag to keep in step with it.
+// Whether this chain is on the pivot. Membership of world is the whole answer.
 const hanging = (c) => world.includes(c);
 
-// A chain is named by its slot, not numbered by it. The bobs inside a chain are
-// numbered 1 to 3, so numbering the chains as well meant every tooltip, legend
-// and exported header had to spell out which kind of number it was holding —
-// "bob 2 of pendulum 2". A letter cannot be mistaken for a bob index, so B2
-// names a trace on its own. Slot 0 is A wherever it appears, including in the
-// SVG header, and it keeps its letter when a lower-numbered pendulum is removed.
+// Chains are lettered where bobs are numbered, so B2 names a trace without
+// having to say which kind of number it holds. Slot 0 is A everywhere,
+// including the SVG header.
 const CHAIN_NAME = ['A', 'B', 'C'];
 const chainName = (c) => CHAIN_NAME[c.slot];
 
 let running = false;
-// The world clock, which follows the chain that is furthest along. Chains can
-// only be a fraction of a step apart, so which of them defines it matters far
-// less than there being one of it: one clock, one trail window, one flight.
+// The world clock, taken from the chain furthest along. One clock, one trail
+// window, one flight.
 let simTime = 0;
 let lastFrame = 0;
 
@@ -160,34 +106,24 @@ let trailSeconds = 25;
 
 // --- Physics ---------------------------------------------------------------
 
-// Equations of motion from the Lagrangian of an n-link chain, as the linear
-// system A(θ)·θ'' = r(θ, θ') solved directly rather than in closed form. The
-// closed form is shorter but has no room for a dissipation term; this way
-// friction enters as a generalised force, exactly where the physics puts it.
-// With b = 0 the two agree to machine precision.
-//
-// Writing M_i for the mass hanging at or below joint i, and c_ij for
+// Equations of motion for an n-link chain, as the linear system
+// A(θ)·θ'' = r(θ, θ') solved directly, so friction enters as a generalised
+// force Q_i. Writing M_i for the mass at or below joint i and c_ij for
 // M_max(i,j)·L_i·L_j,
 //
 //   A_ij = c_ij·cos(θ_i − θ_j)
 //   r_i  = −Σ_j c_ij·sin(θ_i − θ_j)·ω_j²  −  M_i·g·L_i·sin(θ_i)  +  Q_i
 //
-// At n = 2 this is the familiar double pendulum term for term — A_11 =
-// (m1+m2)L1², A_12 = m2·L1·L2·cos Δ, A_22 = m2·L2², with the j = i terms
-// dropping out of r because sin 0 = 0. At n = 1 the sum has one term and it
-// collapses to m·L²·θ'' = −m·g·L·sin θ, the textbook θ'' = −(g/L)·sin θ with the
-// friction term added — not a special case in the code, just the general one
-// with nothing to sum over. A is JᵀMJ for the Jacobian of the bob positions, so
-// it is symmetric positive definite for any positive masses and lengths, which
-// the control minimums guarantee.
+// n = 2 is the familiar double pendulum term for term; n = 1 collapses to
+// θ'' = −(g/L)·sin θ with friction, as the general case with nothing to sum
+// over. A is JᵀMJ for the Jacobian of the bob positions, so symmetric positive
+// definite for any positive masses and lengths, which the control minimums
+// guarantee.
 //
-// Every function here takes the chain it is working on, which is what makes
-// them safe to call once per chain per step, and pure but for the scratch.
+// Every function here takes its chain, and is pure but for the scratch.
 
-// Scratch for the physics, one set per link count and shared by every chain of
-// that size. Chains are stepped one at a time and nothing in here survives a
-// call, so sharing is safe; it is measurably neither faster nor slower than one
-// set each, so it is done for not allocating six matrices to hold three.
+// Scratch, one set per link count, shared by every chain of that size. Chains
+// step one at a time and nothing here survives a call.
 function makeKernel(n) {
   const N = 2 * n;
   return {
@@ -249,11 +185,9 @@ function derivatives(c, s, out) {
   }
 
   // Viscous friction at every hinge, from the Rayleigh dissipation function
-  // F = ½b[ω_0² + Σ(ω_i − ω_{i-1})²] with Q_i = -∂F/∂ω_i. The first term is
-  // the pivot, the rest are the elbows, each resisting the rods it joins
-  // folding relative to each other. F ≥ 0 always, so this can only ever remove
-  // energy — and a third link adds a third term, so the same b drains a triple
-  // faster than a double.
+  // F = ½b[ω_0² + Σ(ω_i − ω_{i-1})²] with Q_i = −∂F/∂ω_i: the pivot, then each
+  // elbow. F ≥ 0, so this can only remove energy, and a third link adds a third
+  // term, so the same b drains a triple faster than a double.
   for (let i = 0; i < n; i++) {
     const prev = i === 0 ? s[n] : s[n + i] - s[n + i - 1];
     const next = i === n - 1 ? 0 : s[n + i + 1] - s[n + i];
@@ -268,12 +202,8 @@ function derivatives(c, s, out) {
   }
 }
 
-// Solves A·acc = rhs. The 1x1 and the 2x2 keep their closed forms rather than
-// going through the general path: for the 2x2 it is the arithmetic the double
-// pendulum shipped with, and keeping it is what makes the generalised code
-// reproduce the old results bit for bit rather than merely to within rounding.
-// The 1x1 is one division where Cholesky would take a square root and two, and
-// the division is the exact answer.
+// Solves A·acc = rhs. The 1x1 and 2x2 have closed forms; anything larger goes
+// to Cholesky below.
 function solve(c) {
   const n = c.n;
   const k = KERNEL[n];
@@ -331,8 +261,7 @@ function dissipation(c) {
   return -c.b * sum;
 }
 
-// Classic 4th-order Runge-Kutta, over preallocated stage buffers rather than
-// fresh arrays per stage — the same numbers, without four allocations a step.
+// Classic 4th-order Runge-Kutta, over the preallocated stage buffers.
 function step(c, h) {
   const N = 2 * c.n;
   const s = c.s;
@@ -350,10 +279,9 @@ function step(c, h) {
   }
 }
 
-// Fills A with the mass matrix at the current angles, for the callers that want
-// it on its own. derivatives() builds the same matrix fused with the right-hand
-// side and rebuilds it from scratch every time, so overwriting whatever it left
-// behind costs nothing.
+// Fills A with the mass matrix at the current angles, for callers that want it
+// on its own. derivatives() rebuilds A from scratch every time, so overwriting
+// what it left behind is safe.
 function buildA(c) {
   const n = c.n;
   const L = c.L;
@@ -404,16 +332,10 @@ function stiffness(c) {
   return (K0 * c00 + K1 * c11 + K2 * c22) / det;
 }
 
-// How fine this chain's integration step has to be, from its own state. The
+// How fine this chain's integration step has to be, from its own state: the
 // fast normal mode runs away when an upper bob is light relative to what hangs
-// below it — a light m1 with a heavy m2 on short rods oscillates ~30x faster
-// than the default setup, and a step that is comfortable for one is useless for
-// the other. Current rotation rates are added so a fast spin tightens the step
-// too.
-//
-// Sized per chain rather than per world: the chains do not interact, so
-// integrating them all at the stiffest one's step would cost 3x the steps for
-// identical results.
+// below it. Current rotation rates are added, so a fast spin tightens the step
+// too. Per chain, since the chains do not interact.
 function stepSize(c) {
   const n = c.n;
   const L = c.L;
@@ -436,9 +358,8 @@ function stepSize(c) {
   return Math.min(DT_MAX, 0.004 / w);
 }
 
-// Energy of the motion alone. Each bob rides on the ones above it, so its speed
-// is the vector sum of every rod's contribution, not just L_i·ω_i — which is
-// exactly ½ωᵀAω, the same mass matrix the derivatives are solved against.
+// Energy of the motion alone, ½ωᵀAω — each bob rides on the ones above it, so
+// its speed is the vector sum of every rod's contribution, not just L_i·ω_i.
 function kinetic(c) {
   const n = c.n;
   const L = c.L;
@@ -455,15 +376,11 @@ function kinetic(c) {
   return 0.5 * ke;
 }
 
-// Gravitational energy at the current g, measured from the rest configuration
-// — every rod hanging straight down — rather than from the pivot. That makes it
-// the energy the piece holds above its lowest state: zero at rest, never
-// negative, and still exactly zero during apesanteur whatever attitude it is
-// in, since g multiplies every term.
-//
-// It is Σm·g·y shifted by the constant -Σ M_i·g·L_i, which is the pivot-datum
-// energy of the hanging state. Note the datum is set by g, L and m, so changing
-// any of those moves the zero point as well as the physics.
+// Gravitational energy at the current g, measured from the rest configuration —
+// every rod hanging straight down — rather than from the pivot: Σm·g·y shifted
+// by the constant −Σ M_i·g·L_i. So it reads zero at rest, is never negative
+// under positive g, and is exactly zero at 0g whatever the attitude. The datum
+// is set by g, L and m, so changing any of those moves the zero point.
 function potential(c) {
   const n = c.n;
   const L = c.L;
@@ -476,9 +393,8 @@ function potential(c) {
   return pe;
 }
 
-// Total mechanical energy of one chain. Constant while its parameters are held
-// still — a useful check on the integration, and one that still applies per
-// chain unchanged however many chains are hanging.
+// Total mechanical energy of one chain. Constant at b = 0 while its parameters
+// are held still, which is the check on the integration.
 function energy(c) {
   return kinetic(c) + potential(c);
 }
@@ -503,22 +419,14 @@ function positions(c) {
 
 // --- Step budget -----------------------------------------------------------
 
-// MAX_STEPS is shared by the whole world, so the frame is bounded however many
-// pendulums are hanging. Dividing it equally would not do: one stiff chain
-// among two ordinary ones needs about 17.5k steps, comfortably inside the
-// budget, but an equal third would cap it at 6.7k and drop it into slow motion
-// for no reason. Water-filling instead — chains wanting less than an equal
-// share hand the surplus back, and it is redistributed among those that want
-// more.
+// MAX_STEPS is shared by the whole world, water-filled rather than split
+// equally: chains wanting less than an equal share hand the surplus back, and it
+// goes to those that want more. So the frame stays bounded whatever the chain
+// count, a chain that cannot keep up drops its own backlog and not the world's,
+// and one stiff chain does not slow the others. At one pendulum it reduces to
+// min(want, MAX_STEPS).
 //
-// Every property the per-chain ceiling had survives: the worst case is bounded
-// whatever the chain count, a chain that cannot keep up drops its own backlog
-// rather than the world's, and a chain that can keep up is never slowed by one
-// that cannot. With a single pendulum it reduces to min(want, MAX_STEPS),
-// which is exactly what shipped.
-//
-// Sized once rather than allocated per frame; at three chains the sort below is
-// an insertion sort over three elements.
+// Sized once; at three chains the sort below is an insertion sort over three.
 const stepH = new Float64Array(MAX_PENDULUMS);
 const stepWant = new Float64Array(MAX_PENDULUMS);
 const stepCap = new Float64Array(MAX_PENDULUMS);
@@ -548,12 +456,9 @@ function allocate(k) {
 }
 
 // Steps every chain by the real time it has banked, inside that one budget.
-// The price of per-chain step sizes is that the chains end the frame at
-// slightly different simulated times — each within one of its own steps of the
-// clock, but not at the same instant as each other. Measured worst case 232 µs
-// between two near-identical triples, 0.7 mm of tip travel on a 1.2 m reach,
-// and exactly zero between chains with identical parameters, which is the case
-// the divergence demo depends on.
+// Per-chain step sizes leave the chains at slightly different simulated times —
+// worst measured 232 µs, 0.7 mm of tip travel on a 1.2 m reach, and exactly
+// zero between chains with identical parameters.
 function advance() {
   const k = world.length;
 
@@ -562,8 +467,7 @@ function advance() {
     const h = stepSize(c);
     stepH[i] = h;
     // Rounded up, so a chain is never told it wanted fewer steps than the loop
-    // below goes on to take, and dropped into slow motion over a rounding
-    // error.
+    // below takes, and dropped into slow motion over a rounding error.
     stepWant[i] = Math.ceil(c.pending / h);
   }
   allocate(k);
@@ -593,10 +497,9 @@ function advance() {
 const G_EARTH = 9.81;
 const CYCLE = 180;
 
-// Most of the cycle is the 93 s of level flight between parabolas, which is
-// dead time to watch. Shortcut trims that trailing baseline to 10 s. Nothing
-// about the integration changes — the same seconds are simulated at the same
-// rate, there are just fewer of them before the next pull-up.
+// Trims the 93 s of level flight after the second hypergravity phase to 10 s.
+// Nothing about the integration changes; there are simply fewer seconds of it
+// before the next pull-up.
 const BASELINE_SHORT = 10;
 const CYCLE_SHORT = 87 + BASELINE_SHORT;
 let shortcut = false;
@@ -620,16 +523,14 @@ const PHASES = [
 
 let flightOn = false;
 let flightTime = 0;
-// Point in the cycle at which the sculpture is let go, shared by every chain
-// for the same reason gravity is: one aircraft, one moment of release. Chains
-// clamp and release together, which is what makes them comparable. Before it,
-// the piece is clamped at its initial condition while the aircraft flies the
-// profile around it; after it, it is free for the rest of the flight. The whole
-// space of distinct experiments fits in one cycle, since releasing at t in a
-// later parabola is identical to releasing at t in the first.
+// Point in the cycle at which the sculpture is let go, shared by every chain, as
+// gravity is: one aircraft, one moment of release. Before it the piece is
+// clamped at its initial condition while the aircraft flies the profile around
+// it; after it, free for the rest of the flight. Confined to one cycle, since
+// releasing at t in a later parabola is identical to releasing at t in the first.
 let release = 0;
-// The run starts this far ahead of the release rather than at t = 0, so a late
-// release costs a second of clamped lead-in instead of minutes of it.
+// The run starts this far ahead of the release, so a late release costs a second
+// of clamped lead-in rather than minutes.
 const LEAD_IN = 1;
 const startTime = () => Math.max(0, release - LEAD_IN);
 
@@ -650,12 +551,10 @@ function flightAt(t) {
 
 // --- Language --------------------------------------------------------------
 
-// French by default: the call this is being prepared for is a French one. The
-// choice is not persisted, so every load opens in French.
+// French by default, and not persisted, so every load opens in French.
 let lang = 'fr';
 
-// Falls back to English rather than showing a raw key, so a string missing from
-// one table degrades to the other language instead of to debug output.
+// Falls back to English rather than showing a raw key.
 const t = (key) => STRINGS[lang][key] ?? STRINGS.en[key] ?? key;
 
 // Fills {name} placeholders from an object of values.
@@ -685,55 +584,37 @@ function sizeCanvas() {
 
 new ResizeObserver(sizeCanvas).observe(wrap);
 
-// The stage's palette comes from the same custom properties as the panel's, so
-// the colours are defined once, in the stylesheet.
-//
-// One colour per pendulum — blue, red, yellow — worn by every bob in its chain,
-// its rod's core and its trails. The chain is the thing being identified: the
-// tabs, the trails and the readouts all key off it, so a pendulum reads as one
-// object of one colour rather than as a gradient to decode. Which bob is which
-// is already said by position down the chain and by radius, which follows mass.
+// The stage's palette, read from the same custom properties as the panel's, so
+// the colours are defined once — in the stylesheet.
 const css = getComputedStyle(document.documentElement);
 const prop = (name) => css.getPropertyValue(name).trim();
 const COLOUR = {
-  // The pivot belongs to the world rather than to any one chain, so it keeps
-  // the neutral.
+  // The pivot belongs to the world rather than any one chain, so it is neutral.
   pivot: prop('--text'),
-  // Rods are the same white for every chain: they are structure rather than
-  // identity, and the identity goes down the middle of them instead.
+  // Rods are white for every chain; the chain's colour runs down their core.
   rod: prop('--rod'),
-  // Panel chrome rather than stage colour, used by the flight profile so it
-  // recolours with the rest of the interface.
+  // Panel chrome, used by the flight profile.
   accent: prop('--accent'),
-  // Indexed by slot, not by position in the world, so removing pendulum 2 of 3
-  // leaves the third exactly as it was.
+  // Indexed by slot, not by position in the world.
   chain: [0, 1, 2].map((p) => prop('--p' + (p + 1)))
 };
 
 // The coloured core stroked down the centre of each white rod, as a fraction of
-// the rod's own width. Enough to name the chain at a glance, not enough to make
-// the rod look like a coloured line with a white outline.
+// the rod's width.
 const CORE_RATIO = 0.34;
 
-// The white ring round each bob, in CSS pixels — the canvas is scaled by the
-// device pixel ratio, so this is the same apparent weight on any display. Flat
-// rather than a fraction of the radius: it is the rod's casing carried round the
-// mass, and the rod does not thicken with the mass either.
+// The white ring round each bob, in CSS pixels, so it is the same apparent
+// weight on any display. Flat rather than a fraction of the radius.
 const BOB_RING = 2;
 
 // Two ways of drawing the same recorded points:
 //
-//   'line' — the recorded points joined, for the shape of the path on its own.
-//            The default: it is the picture the piece actually draws in the
-//            air, and it holds up with three chains overlapping, where three
-//            fields of dots become a haze.
-//   'dots' — one dot per rendered frame, deliberately not joined up. The frames
-//            are evenly spaced in time, so the gap between consecutive dots is
-//            the bob's speed and the trail reads as a velocity plot.
+//   'line' — the points joined, for the shape of the path. The default.
+//   'dots' — one dot per rendered frame, not joined. Frames are evenly spaced
+//            in time, so the gap between dots is the bob's speed.
 //
-// Either way the trail fades from transparent (oldest) to solid (newest), and
-// is batched into a couple of dozen draws rather than one per point, so a 60 s
-// trail costs a handful of calls instead of a few thousand.
+// Either way the trail fades from transparent (oldest) to solid (newest), in a
+// couple of dozen batched draws rather than one per point.
 const TRAIL_CHUNKS = 24;
 const TRAIL_DOT = 1.25;
 let trailStyle = 'line';
@@ -751,8 +632,8 @@ function drawTrail(pts, colour, toX, toY) {
     const to = Math.floor(((c + 1) * pts.length) / TRAIL_CHUNKS);
     if (to <= from) continue;
     // The line starts each chunk one point early, so the segment spanning a
-    // chunk boundary is drawn and the fade has no gaps in it. The dots need no
-    // such overlap, and repeating a dot would only darken it.
+    // chunk boundary is drawn and the fade has no gaps. Dots need no overlap,
+    // and repeating one would only darken it.
     const start = dots ? from : Math.max(0, from - 1);
 
     ctx.globalAlpha = ((c + 1) / TRAIL_CHUNKS) * 0.75;
@@ -781,9 +662,8 @@ function draw() {
   // Clamped, since the full 0.1-5 kg range would otherwise be extreme.
   const massR = (m) => bobR * Math.min(1.7, Math.max(0.6, Math.cbrt(m)));
 
-  // The stage scales to the largest reach in the world rather than to each
-  // chain's own, so a 0.32 m pendulum looks smaller than a 1.20 m one and the
-  // comparison a shared pivot exists for is an honest one.
+  // Scaled to the largest reach in the world rather than to each chain's own,
+  // so a 0.32 m pendulum draws smaller than a 1.20 m one.
   let reach = 0;
   let widest = 0;
   for (const c of world) {
@@ -804,19 +684,16 @@ function draw() {
 
   ctx.clearRect(0, 0, size, size);
 
-  // Every trail before any rod, so one chain's path never buries another's
-  // linkage. Within a chain the oldest bob goes first, so a slower bob's path
-  // does not sit on top of the tip's.
+  // Every trail before any rod, so no path buries a linkage; within a chain the
+  // oldest bob first, so a slower bob's path does not sit on the tip's.
   for (const c of world) {
     for (let i = firstTraced(c); i < c.n; i++) {
       if (traced(c, i)) drawTrail(c.trails[i], COLOUR.chain[c.slot], toX, toY);
     }
   }
 
-  // Rods are opaque white with a thin core in their chain's colour. The white
-  // is what makes them read as rods holding the masses up rather than as three
-  // more coloured traces; the core is what still tells the chains apart where
-  // they cross, which the old fade used to do by letting them show through.
+  // Rods are opaque white with a thin core in their chain's colour, which is
+  // what tells two chains apart where they cross.
   const rodW = Math.max(2, size * 0.006);
   const coreW = Math.max(1, rodW * CORE_RATIO);
   ctx.lineCap = 'round';
@@ -829,8 +706,7 @@ function draw() {
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     for (let i = 0; i < c.n; i++) ctx.lineTo(toX(p[i][0]), toY(p[i][1]));
-    // Stroked twice over the one path: the second call reuses what the first
-    // built, so the highlight costs a stroke and nothing else.
+    // Stroked twice over the one path, so the core costs a stroke and no more.
     ctx.lineWidth = rodW;
     ctx.strokeStyle = COLOUR.rod;
     ctx.stroke();
@@ -838,15 +714,9 @@ function draw() {
     ctx.strokeStyle = colour;
     ctx.stroke();
 
-    // One fillStyle for the whole chain — every bob in it wears the same
-    // colour, and the bobs are drawn after the rods so the rod ends are capped
-    // rather than left poking out.
-    //
-    // Ringed in the rod's own white, which is what turns a chain into one
-    // object: the white runs down the rods and closes round each mass instead
-    // of stopping under it. It is also what keeps two bobs of different chains
-    // legible where they overlap, since the ring separates the two colours
-    // rather than letting them meet.
+    // One colour for every bob in the chain, drawn after the rods so the rod
+    // ends are capped, and ringed in the rod's white so the chain reads as one
+    // object and two overlapping bobs stay separable.
     ctx.fillStyle = colour;
     ctx.strokeStyle = COLOUR.rod;
     ctx.lineWidth = BOB_RING;
@@ -854,14 +724,13 @@ function draw() {
       ctx.beginPath();
       ctx.arc(toX(p[i][0]), toY(p[i][1]), massR(c.m[i]), 0, Math.PI * 2);
       ctx.fill();
-      // Stroked over the fill it just made, so the ring straddles the radius and
-      // the mass reads at the size it is rather than the size plus a ring.
+      // Stroked over the fill, so the ring straddles the radius and the mass
+      // reads at its own size rather than its size plus a ring.
       ctx.stroke();
     }
   }
 
-  // Last and once: the pivot is a fixed point of the world, not a body of any
-  // one pendulum.
+  // Last and once: the pivot belongs to the world, not to any one pendulum.
   ctx.fillStyle = COLOUR.pivot;
   ctx.beginPath();
   ctx.arc(cx, cy, bobR * 0.45, 0, Math.PI * 2);
@@ -873,26 +742,21 @@ const profile = document.getElementById('profile');
 const pctx = profile.getContext('2d');
 
 // A span of the cycle to mark on the profile, as [t0, t1] in cycle seconds, or
-// null for nothing to mark. Written by whatever is built on top of this page —
-// export.js puts the seconds it is going to save here, so the two boxes and the
-// curve say the same thing and neither has to be read to understand the other.
-// A page without export.js simply leaves it null, which is why this is a
-// variable here rather than a call into a module index.js would then need.
+// null for nothing. export.js writes the seconds it is going to save here; a
+// page without export.js leaves it null.
 let markSpan = null;
 
-// The curve is the same picture every frame — only the playhead moves along it.
-// Re-sampling it 241 times and stroking it twice per frame cost around 490
-// canvas calls a frame, in every mode, running whether or not flight mode was
-// even on. It is painted once into an offscreen canvas and blitted instead.
+// The curve is the same picture every frame — only the playhead moves — so it is
+// painted once into an offscreen canvas and blitted, rather than re-sampled 241
+// times and stroked twice per frame.
 const layer = document.createElement('canvas');
 const lctx = layer.getContext('2d');
 let layerKey = '';
 
-// Repaints the static half of the profile — the 1g reference, the filled area
-// and the curve — but only when something it depends on has changed. Everything
-// that moves stays in drawProfile below. The key has to name every input: the
-// canvas geometry, the cycle length the shortcut switches, and flightOn, which
-// the curve is stroked a different colour for.
+// Repaints the static half of the profile — the 1g reference, the fill and the
+// curve — only when an input changes. The key names every one of them: canvas
+// geometry, the cycle length the shortcut switches, and flightOn, which the
+// curve is stroked a different colour for.
 function buildLayer(w, h, dpr) {
   const key = w + '|' + h + '|' + dpr + '|' + cycle() + '|' + flightOn;
   if (key === layerKey) return;
@@ -919,8 +783,8 @@ function buildLayer(w, h, dpr) {
   lctx.stroke();
   lctx.setLineDash([]);
 
-  // The profile itself, sampled through flightAt so the drawing and the
-  // physics can never disagree about the shape.
+  // Sampled through flightAt, so the drawing and the physics cannot disagree
+  // about the shape.
   const pts = [];
   for (let i = 0; i <= 240; i++) {
     const time = (i / 240) * C;
@@ -933,8 +797,6 @@ function buildLayer(w, h, dpr) {
   lctx.lineTo(w, bottom);
   lctx.lineTo(0, bottom);
   lctx.closePath();
-  // The accent read from the stylesheet rather than repeated as a literal here,
-  // so recolouring --accent recolours the profile with the rest of the panel.
   lctx.fillStyle = COLOUR.accent;
   lctx.globalAlpha = 0.12;
   lctx.fill();
@@ -989,11 +851,8 @@ function drawProfile() {
     pctx.setLineDash([]);
   }
 
-  // The span an export will cover, in the accent — the third mark on this strip
-  // and the third colour, after the grey release line and the amber playhead.
-  // Drawn over the clamped shading rather than under it, because a span chosen
-  // before the release is still the span that will be saved and greying it out
-  // would say otherwise.
+  // The span an export will cover, in the accent. Drawn over the clamped
+  // shading, since a span chosen before the release is still the span saved.
   if (markSpan) {
     const a = toXt(clamp(markSpan[0], 0, C));
     const b = toXt(clamp(markSpan[1], 0, C));
@@ -1041,18 +900,12 @@ function wrapDeg(rad) {
 
 const set = (id, text) => { document.getElementById(id).textContent = text; };
 
-// State follows the selected tab — it is a dozen figures per pendulum and three
-// of those do not fit a 320px panel, let alone read as a comparison. Energy is
-// three figures per pendulum, and those are the ones worth putting side by
-// side, so that box shows all three chains at once and its legend names none of
-// them. There is still deliberately no all-chains total: three sculptures'
-// energies added together is a number about nothing.
+// State follows the selected tab; Energy shows all three chains at once, and
+// names none of them in its legend. There is no all-chains energy total.
 //
-// A pendulum that is switched off is not being stepped, so what these show is
-// it sitting at its initial conditions — which is true of it, and is the
-// picture of what switching it on would put on the pivot. The hollow dot in the
-// State legend and on the pendulum's energy row is what says the numbers are
-// not going to move.
+// A pendulum that is switched off is not being stepped, so what these show is it
+// sitting at its initial conditions. The hollow dot in the State legend and on
+// that pendulum's energy row is what says the numbers will not move.
 function updateReadout() {
   const c = chains[sel];
   for (let i = 0; i < c.n; i++) {
@@ -1061,9 +914,8 @@ function updateReadout() {
   }
   set('r-time', simTime.toFixed(2) + ' s');
 
-  // Split out rather than shown as one total, because the interesting thing in
-  // flight is watching gravity drain the potential term to nothing at 0g while
-  // the kinetic term carries on untouched.
+  // Split rather than summed: in flight the potential term drains to nothing at
+  // 0g while the kinetic term carries on untouched.
   for (let p = 0; p < MAX_PENDULUMS; p++) {
     const chain = chains[p];
     const pe = potential(chain);
@@ -1075,23 +927,19 @@ function updateReadout() {
   }
 }
 
-// Nine figures a frame where there used to be three, so a figure that has not
-// changed is not written. The two chains that are switched off are the case
-// this is for: they are not being stepped, so their six cells hold the same
-// text for as long as they stay off, and a textContent write that changes
-// nothing is still a write.
+// Nine figures a frame, so a cell whose text has not changed is not written.
+// The chains that are switched off are the case this is for: they are not being
+// stepped, so their cells hold the same text for as long as they stay off.
 function setCell(node, text) {
   if (node.textContent !== text) node.textContent = text;
 }
 
 // --- Frame cost ------------------------------------------------------------
 
-// Two different questions, so two numbers. The gap between successive
-// requestAnimationFrame timestamps is what the display actually delivered,
-// which is the only honest answer to "are we at 60 fps". The time spent inside
-// frame() is how much of the 16.7 ms budget our own code accounts for; the
-// difference between them is the browser's — style, layout, compositing, and
-// whatever else is on the machine.
+// Two numbers for two questions. The gap between successive
+// requestAnimationFrame timestamps is what the display delivered; the time spent
+// inside frame() is what our own code accounts for. The difference is the
+// browser's — style, layout, compositing and whatever else is on the machine.
 const PERF_WINDOW = 60; // one second at full rate
 const frameGap = new Float64Array(PERF_WINDOW);
 const frameWork = new Float64Array(PERF_WINDOW);
@@ -1100,13 +948,13 @@ let perfCount = 0;
 let perfPrev = 0;
 let perfShown = 0;
 
-// Rewritten four times a second rather than sixty: at 60 Hz the digits change
-// faster than they can be read, and it is a readout, not a trace.
+// Rewritten four times a second: at 60 Hz the digits change faster than they
+// can be read.
 const PERF_INTERVAL = 250;
 
 function recordFrame(now, work) {
-  // The first frame has no predecessor to measure against, and gets skipped
-  // rather than logged as a gap of the whole page load.
+  // The first frame has no predecessor, and is skipped rather than logged as a
+  // gap of the whole page load.
   if (perfPrev) {
     frameGap[perfAt] = now - perfPrev;
     frameWork[perfAt] = work;
@@ -1128,38 +976,31 @@ function recordFrame(now, work) {
   }
   if (!perfCount) return;
   set('r-fps', (1000 / (gap / perfCount)).toFixed(0) + ' fps');
-  // Mean and worst together, because a steady 4 ms and a steady 4 ms with one
-  // 20 ms spike per second feel completely different and read the same as a
-  // mean. The spike is the one that drops a frame.
+  // Mean and worst together: a steady 4 ms and a 4 ms mean with a 20 ms spike
+  // read the same as a mean alone, and the spike is what drops a frame.
   set('r-cost', (sum / perfCount).toFixed(1) + ' / ' + worst.toFixed(1) + ' ms');
 }
 
 // --- The export tape -------------------------------------------------------
 //
-// A second record of the same points, sized by what is worth exporting rather
-// than by what is worth drawing. The two cannot be one buffer: the display
-// trail is redrawn in full every frame, which caps it at about a minute, while
-// the longest section of the flight profile is the 93 s baseline and the most
-// recent completed instance of it begins up to 273 s back.
-//
-// Two cycles covers that worst case with room over, so every section of the
-// profile stays exportable from the moment it has first been flown until the
-// recording is cleared — rather than for the few seconds the drawn trail used
-// to leave between the section finishing and its start being pruned away.
+// A second record of the same points, sized for exporting rather than drawing.
+// It cannot be one buffer with the display trail, which is redrawn in full every
+// frame and so capped at about a minute, while the most recent completed
+// instance of the 93 s baseline can begin 273 s back. Two cycles covers that, so
+// a section stays exportable from the moment it has first been flown until the
+// recording is cleared.
 const TAPE_SECONDS = 2 * CYCLE;
 
-// Sampled on the simulation clock rather than once per frame, so a 120 Hz
-// display records the same points as a 60 Hz one. The ring's capacity is then a
-// duration and not a frame count, and two runs of the same experiment export
-// the same picture whatever they were run on.
+// Sampled on the simulation clock rather than once per frame, so the capacity is
+// a duration and not a frame count and a 120 Hz display records the same points
+// as a 60 Hz one.
 const TAPE_HZ = 60;
 const TAPE_DT = 1 / TAPE_HZ;
 const TAPE_CAP = Math.ceil(TAPE_SECONDS * TAPE_HZ);
 
-// Flat [x, y, t] triples in a ring: 21 600 points cost 518 KB of Float64 and no
-// allocation per point at all, where the boxed arrays the display trail uses
-// would cost several times that and a collection to match. Never pruned — the
-// oldest point falls off the far end as the newest is written.
+// Flat [x, y, t] triples in a ring: 21 600 points, 518 KB, no allocation per
+// point. Never pruned — the oldest falls off the far end as the newest is
+// written.
 const makeTape = () => ({ buf: new Float64Array(TAPE_CAP * 3), head: 0, len: 0, next: 0 });
 
 function tapePush(tp, x, y, t) {
@@ -1177,8 +1018,7 @@ function tapePush(tp, x, y, t) {
 }
 
 // The ring read back oldest first, as [x, y, t] in the window [from, to] of this
-// chain's own time. Boxed here rather than in the ring itself because this runs
-// once per export, not once per frame.
+// chain's own time. Boxed here because this runs once per export, not per frame.
 function tapePoints(tp, from, to) {
   const out = [];
   if (!tp) return out;
@@ -1204,9 +1044,8 @@ function recordTrail() {
   const cutoff = simTime - trailSeconds;
 
   // Recorded whether or not the checkbox is set, so switching a trail back on
-  // shows the path it would have drawn rather than starting a fresh one.
-  // Recording starts at the first bob the chain offers a box for, so a double's
-  // bob 0 costs nothing for a circle nobody can ask to see.
+  // shows the path it would have drawn. Starts at the first bob the chain
+  // offers a box for, so a double's bob 0 costs nothing.
   for (const c of world) {
     const p = positions(c);
     for (let i = firstTraced(c); i < c.n; i++) {
@@ -1226,24 +1065,21 @@ function frame(now) {
   const t0 = performance.now();
 
   if (running) {
-    // Unconsumed time carries into the next frame, so the simulation keeps
-    // pace with the wall clock instead of losing the sub-step remainder. Every
-    // chain banks the same real time; what they do with it is their own.
+    // Unconsumed time carries into the next frame, so the simulation keeps pace
+    // with the wall clock. Every chain banks the same real time.
     const dt = Math.min((now - lastFrame) / 1000, MAX_FRAME);
     lastFrame = now;
     for (const c of world) c.pending += dt;
 
     // The flight clock runs on simulated time, so pausing holds the profile
-    // where it is. Gravity is set once per frame rather than per sub-step: at
-    // the steepest point of a transition it moves 5.3 m/s² per second, so one
-    // frame of lag is under 0.09 m/s², and only during the 5 s ramps.
+    // where it is. Gravity is set once per frame, not per sub-step: at the
+    // steepest transition that is under 0.09 m/s² of lag, and only in the ramps.
     if (flightOn) applyFlight();
 
-    // Clamped phase: the clock runs and the aircraft flies the profile, but the
-    // pieces are held at their initial conditions. Nothing integrates while
-    // held, so every chain's backlog is identical and is retired together. Only
-    // the time up to the release point is consumed this way, so the release
-    // lands exactly on its set time rather than up to a frame late.
+    // Clamped phase: the clock runs and the aircraft flies the profile while the
+    // pieces are held at their initial conditions. Only the time up to the
+    // release is consumed this way, so the release lands on its set time rather
+    // than up to a frame late.
     const held = flightOn && flightTime < release;
     if (held) {
       const hold = Math.min(world[0].pending, release - flightTime);
@@ -1257,9 +1093,7 @@ function frame(now) {
 
     const before = simTime;
     advance();
-    // One clock for the world, taken from the chain that is furthest along.
-    // They can only be a fraction of a step apart, so which of them defines it
-    // matters far less than there being one of it.
+    // One clock for the world, taken from the chain furthest along.
     for (const c of world) if (c.t > simTime) simTime = c.t;
 
     if (flightOn) flightTime += simTime - before;
@@ -1271,8 +1105,7 @@ function frame(now) {
   updateReadout();
   if (flightOn) updateFlightReadout();
 
-  // Last, so it measures the whole frame — including the two readouts above,
-  // which are DOM writes and not free.
+  // Last, so it measures the whole frame, readouts included.
   recordFrame(now, performance.now() - t0);
   requestAnimationFrame(frame);
 }
@@ -1288,10 +1121,8 @@ function num(id, fallback) {
   return Number.isFinite(v) ? v : fallback;
 }
 
-// One tab, one tab dot, one energy row, one trail row and one trail checkbox
-// per link per slot, looked up once. The energy cells especially: they are
-// rewritten every frame, so getElementById nine times a frame for the life of
-// the page is not the way to reach them.
+// One tab, tab dot, energy row, trail row and trail checkbox per slot, looked up
+// once — the energy cells especially, since they are rewritten every frame.
 const TABS = [];
 const DOTS = [];
 const E_ROW = [];
@@ -1312,16 +1143,13 @@ for (let p = 0; p < MAX_PENDULUMS; p++) {
 // Whether bob i of chain c is being recorded and drawn.
 const traced = (c, i) => TRAIL_BOX[c.slot][i].checked;
 
-// The first bob of this chain worth tracing. On a single that is the only bob
-// it has; on a longer chain it is the second, because bob 0 hangs on a fixed
-// rod from a fixed pivot and its path is the circle that rod already sweeps.
-// A single traces the same arc, but there it is the whole of what the pendulum
-// draws — and in Dots the marks crowding at each turning point are the picture.
+// The first bob of this chain worth tracing: the second, except on a single,
+// where it is the only bob there is. Bob 0 of a longer chain hangs on a fixed
+// rod from a fixed pivot, so its path is the circle that rod already sweeps.
 const firstTraced = (c) => (c.n === 1 ? 0 : 1);
 
-// Trace this chain's tip and nothing else. The tip is what a trail is for, and
-// starting there keeps the default worst case at three trails rather than nine
-// however many pendulums are hanging.
+// Trace this chain's tip and nothing else, so the default worst case is three
+// trails rather than nine.
 function tipOnly(c) {
   for (let i = 0; i < MAX_LINKS; i++) TRAIL_BOX[c.slot][i].checked = i === c.n - 1;
 }
@@ -1339,9 +1167,9 @@ function linkPair(id, onChange) {
     const v = clamp(raw, parseFloat(box.min), parseFloat(box.max));
     if (!Number.isFinite(v)) return;
     slider.value = v;
-    // Write back when the slider moved it, or when clamping did, so the box can
-    // never show a number the simulation is not actually using. Mid-typing
-    // values inside the range are left alone.
+    // Write back when the slider moved it or clamping did, so the box never
+    // shows a number the simulation is not using. Mid-typing values inside the
+    // range are left alone.
     if (source !== box || v !== raw) box.value = v;
     onChange(v);
   };
@@ -1351,15 +1179,10 @@ function linkPair(id, onChange) {
   return (v) => { box.value = v; push(box); };
 }
 
-// Rod lengths, masses and friction take effect immediately, mid-flight: the
-// angles and rotational speeds carry over untouched and the motion continues
-// under the new physics. Every link is wired, including the third while it is
-// hidden, so switching to a triple finds its controls already live.
-//
-// They write into chains[sel], which is why selectPendulum has to set sel
-// before it repopulates them — see the note there. The selected pendulum need
-// not be hanging: one that is switched off is set up through the same controls,
-// and finds itself already tuned when it is switched on.
+// Rod lengths, masses and friction take effect immediately, mid-flight: angles
+// and rates carry over and the motion continues under the new physics. Every
+// link is wired, including a hidden third. They write into chains[sel], which is
+// why selectPendulum assigns sel before repopulating them — see the note there.
 const setL = [];
 const setM = [];
 for (let i = 0; i < MAX_LINKS; i++) {
@@ -1367,14 +1190,12 @@ for (let i = 0; i < MAX_LINKS; i++) {
   setM.push(linkPair('m' + (i + 1), (v) => { chains[sel].m[i] = v; }));
 }
 const setB = linkPair('b', (v) => { chains[sel].b = v; });
-// Gravity is the aircraft's, not the sculpture's, so it stays outside the
-// selection and the flight profile can drive it for everyone at once.
+// Gravity is the aircraft's, so it stays outside the selection.
 const setGravity = linkPair('g', (v) => { env.g = v; });
 linkPair('trail-len', (v) => { trailSeconds = v; });
 
-// The initial-condition boxes are per chain too, so they are read as they are
-// typed rather than only at reset — otherwise switching tabs would have to
-// remember to harvest them first.
+// Per chain too, so they are read as they are typed rather than only at reset;
+// otherwise switching tabs would have to harvest them first.
 function bindInit(id, write) {
   el(id).addEventListener('input', () => {
     const v = parseFloat(el(id).value);
@@ -1387,23 +1208,17 @@ for (let i = 0; i < MAX_LINKS; i++) {
   bindInit('w' + (i + 1), (c, v) => { c.om0[i] = v; });
 }
 
-// The number of links is the architecture of one pendulum, not a live
-// parameter: changing it re-runs from the initial conditions rather than
-// growing a limb onto a pendulum mid-swing, which would be an energy
-// discontinuity to explain. Same rule as the release time, and it is why
-// switching a pendulum on or off re-runs the world too.
-//
-// Zero links is off. Whether a pendulum hangs and how many rods it hangs by are
-// one control because they are one question — a pendulum with no rods is a
-// pendulum that is not there — and one control is also one click: the switch
-// that used to need Add and then Double now says Double.
+// Link count is architecture, not a live parameter: changing it re-runs from the
+// initial conditions rather than growing a limb mid-swing. Zero links is off —
+// whether a pendulum hangs and how many rods it hangs by are one control,
+// because a pendulum with no rods is a pendulum that is not there.
 const linkButtons = {
   0: el('links-0'), 1: el('links-1'), 2: el('links-2'), 3: el('links-3')
 };
 
-// What the switch reads for a chain: its link count while it is hanging, 0 once
-// it is not. The chain keeps its n either way, so the panel can go on showing
-// the right rows for a pendulum that is switched off.
+// What the switch reads for a chain: its link count while hanging, 0 when not.
+// The chain keeps its n either way, so the panel shows the right rows for a
+// pendulum that is switched off.
 const linksOf = (c) => (hanging(c) ? c.n : 0);
 
 function setLinks(count) {
@@ -1416,9 +1231,7 @@ function setLinks(count) {
   } else {
     c.n = count;
     c.s = new Float64Array(2 * count);
-    // The chain has a different tip than it had a moment ago, and the trail was
-    // following the old one. Following the new one is the only reading of the
-    // checkbox that survives the change.
+    // The chain has a new tip, and the trail was following the old one.
     tipOnly(c);
     if (!hanging(c)) {
       world.push(c);
@@ -1439,14 +1252,11 @@ for (const [k, button] of Object.entries(linkButtons)) {
 // --- Selection --------------------------------------------------------------
 
 // Sets which pendulum the panel is editing, then repopulates every per-chain
-// control from it. Takes a slot, and every pendulum can be selected — one that
-// is switched off shows its settings exactly as a hanging one does, which is
-// how it can be set up before it is put on the pivot.
+// control from it. Any slot can be selected, hanging or not.
 //
-// sel is assigned first, and it has to be: the setters below call linkPair's
-// push(), which fires onChange, which writes to chains[sel]. Repopulate before
-// switching and tab B's values are written straight into pendulum A on the way
-// past — silently, and destroying the data as it goes.
+// sel is assigned first, and must be: the setters below call linkPair's push(),
+// which fires onChange, which writes to chains[sel]. Repopulating before
+// switching would write tab B's values into pendulum A on the way past.
 function selectPendulum(slot) {
   sel = slot;
   const c = chains[slot];
@@ -1472,15 +1282,12 @@ function paintSelection() {
     button.classList.toggle('on', Number(k) === linksOf(c));
   }
   // Something has to be hanging, so the last pendulum on the pivot cannot be
-  // switched off. Disabled rather than hidden: the segment keeps its place in
-  // the switch, and a control that is there but unavailable says the rule,
-  // where one that vanishes just moves the others.
+  // switched off. Disabled rather than hidden, so the segment keeps its place.
   linkButtons[0].disabled = hanging(c) && world.length < 2;
 
   // A link's controls and readouts appear and disappear together, so the panel
-  // only ever shows the links this pendulum actually has. Keyed off c.n rather
-  // than the switch, so a pendulum that is switched off still shows the shape
-  // it will have when it is switched back on.
+  // shows only the links this pendulum has. Keyed off c.n rather than the
+  // switch, so one that is switched off still shows the shape it will have.
   for (const id of ['row-L2', 'row-m2', 'init-t2', 'init-w2', 'r-row-t2', 'r-row-w2']) {
     el(id).hidden = c.n < 2;
   }
@@ -1492,23 +1299,18 @@ function paintSelection() {
     const chain = chains[p];
     const on = hanging(chain);
     // The tab says which pendulum the panel is on; its dot says whether that
-    // pendulum is on the pivot. Two independent things, so two marks: a tab can
-    // be selected and empty, which is what setting one up before switching it
-    // on looks like.
+    // pendulum is on the pivot. Two marks, since a tab can be selected and empty.
     TABS[p].classList.toggle('on', p === sel);
     TABS[p].title = fmt(on ? 'arch.pendulum' : 'arch.pendulum.off', { n: CHAIN_NAME[p] });
     DOTS[p].classList.toggle('off', !on);
-    // The same mark again on this pendulum's energy row, which is all that
-    // names the row now that the legend does not name a pendulum. Selection is
-    // not marked there: Energy shows all three whichever tab is up.
+    // The same mark on this pendulum's energy row, which is all that names the
+    // row. Selection is not marked there: Energy shows all three either way.
     E_DOT[p].classList.toggle('off', !on);
     E_ROW[p].classList.toggle('off', !on);
     TRAIL_ROW[p].hidden = !on;
     // One toggle per link the chain has, except that bob 1 is offered only on a
-    // single, where it is the only bob there is. They carry a bare numeral, so
-    // like the tabs above they say what they are in the tooltip — and it names
-    // the pendulum as well as the bob, since the group's colour is the only
-    // other thing that does.
+    // single. They carry a bare numeral, so the tooltip names the bob and the
+    // pendulum.
     for (let i = 0; i < MAX_LINKS; i++) {
       const tog = el('trail-' + (p + 1) + '-' + (i + 1) + '-row');
       tog.hidden = !on || (i === 0 ? chain.n !== 1 : chain.n < i + 1);
@@ -1517,31 +1319,22 @@ function paintSelection() {
   }
 
   set('legend-state', fmt('state.legend', { n: chainName(c) }));
-  // Hollow here too when the selected pendulum is not hanging, which is also
-  // the answer to why these numbers are sitting still. The Energy box has no
+  // Hollow when the selected pendulum is not hanging. The Energy box has no
   // legend dot — it is not on one pendulum, and its rows carry their own.
   el('dot-state').className = 'dot p' + (c.slot + 1) + (hanging(c) ? '' : ' off');
 }
 
-// Switching a pendulum on or off resets the world, exactly as changing a link
-// count does. The physics does not require it — the other chains are
-// bit-identical whether this one is hanging or not, so one could be dropped
-// into a running world with no inconsistency at all. The argument for resetting
-// anyway is what a shared pivot is for: chains released at different moments
-// are not comparable, and a chain that starts 40 s after its neighbours is
-// noise on the stage rather than an experiment. One pivot, one t = 0.
-//
-// Selecting a tab is not that, and does not reset anything: it changes which
-// pendulum the panel is pointed at, and the run carries on underneath.
+// Selecting a tab resets nothing: it changes which pendulum the panel is
+// pointed at, and the run carries on underneath. Switching one on or off does
+// reset the world, so that every chain shares one t = 0.
 for (let p = 0; p < MAX_PENDULUMS; p++) {
   TABS[p].addEventListener('click', () => {
     if (p !== sel) selectPendulum(p);
   });
 }
 
-// The two style buttons are one control: whichever was clicked is the mode, and
-// wears the accent. The points already recorded are redrawn in the new style —
-// switching costs nothing and clears nothing.
+// The two style buttons are one control. Points already recorded are redrawn in
+// the new style, so switching clears nothing.
 const trailStyles = { dots: el('trail-dots'), line: el('trail-line') };
 for (const [style, button] of Object.entries(trailStyles)) {
   button.addEventListener('click', () => {
@@ -1560,9 +1353,7 @@ for (const b of document.querySelectorAll('.presets button')) {
 // other parameter stays live, and can be changed mid-parabola.
 const gControls = [el('g'), el('g-range'), ...document.querySelectorAll('.presets button')];
 
-// One number, written once a frame. How many chains read it is not this
-// function's business, which is what leaves the whole flight section untouched
-// by there being more than one pendulum.
+// One number, written once a frame; how many chains read it is not its business.
 function applyFlight() {
   env.g = flightAt(flightTime).level * G_EARTH;
   el('g').value = env.g.toFixed(2);
@@ -1578,14 +1369,13 @@ function updateFlightReadout() {
   set('f-t', fmt('flight.clock', { u: u.toFixed(1), c: cycle() }));
 }
 
-// Spell out where the run starts and which phase the release lands in, so the
-// number means something. Assembled from the template rather than from fixed
-// markup, because the clauses do not sit in the same order in both languages;
-// the values go in as text nodes, never as markup.
+// Where the run starts and which phase the release lands in. Assembled from the
+// template, since the clauses reorder between languages; values go in as text
+// nodes, never as markup.
 //
 // Takes the value rather than reading `release`, because while the slider is
-// being dragged the note is a preview of a release that has not been committed
-// yet — the run is still flying the old one. See setRelease below.
+// dragged the note previews a release that has not been committed — the run is
+// still flying the old one. See setRelease below.
 function updateReleaseNote(v = release) {
   const vals = {
     '{start}': ['r-start', `t = ${Math.max(0, v - LEAD_IN)} s`],
@@ -1607,16 +1397,16 @@ function updateReleaseNote(v = release) {
   }
 }
 
-// Repaints every translated string. Cheap enough to run wholesale on a switch,
-// which keeps it impossible for one label to be left in the old language.
+// Repaints every translated string wholesale, so no label can be left behind in
+// the old language.
 function applyLang() {
   document.documentElement.lang = lang;
   document.title = t('page.title');
 
   for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
   for (const node of document.querySelectorAll('[data-i18n-title]')) node.title = t(node.dataset.i18nTitle);
-  // For a control whose name is not written anywhere on the panel — the links
-  // switch, whose label the tabs above it took over.
+  // For a control whose name is not written on the panel — the links switch,
+  // whose label the tabs above it took over.
   for (const node of document.querySelectorAll('[data-i18n-aria]')) {
     node.setAttribute('aria-label', t(node.dataset.i18nAria));
   }
@@ -1628,9 +1418,9 @@ function applyLang() {
   btn.title = LANG_TIP[other];
   btn.setAttribute('aria-label', LANG_TIP[other]);
 
-  // The rest is written by JS, so it has to be asked to redraw itself. The
-  // State legend and the tab tooltips carry the pendulum's letter, so they come
-  // from the selection rather than from a bare key.
+  // The rest is written by JS, so it has to be asked to redraw. The State legend
+  // and the tab tooltips carry the pendulum's letter, so they come from the
+  // selection rather than from a bare key.
   el('play').textContent = t(running ? 'btn.pause' : 'btn.start');
   paintSelection();
   updateReleaseNote();
@@ -1646,19 +1436,15 @@ function setFlight(on) {
   for (const c of gControls) c.disabled = on;
 
   if (on) {
-    // Start the run cleanly from the initial conditions, so a chosen release
-    // time clamps the pieces where they are meant to be clamped. It leaves the
-    // world paused, as every reset does: the profile is 180 s long and which
-    // second of it you are watching is the whole experiment, so the run starts
-    // when the person watching says so.
+    // Start from the initial conditions, so a chosen release time clamps the
+    // pieces where it should. Leaves the world paused, as every reset does.
     reset();
   } else {
     // Hand gravity back at whatever value the profile had reached.
     setGravity(Math.round(env.g * 100) / 100);
     updateFlightReadout(); // clear the display rather than leave it stale
-    // Switching off does not reset, so this is the only announcement there is —
-    // and it matters, because with no profile there are no cycle times to
-    // export from.
+    // Switching off does not reset, so this is the only announcement there is,
+    // and with no profile there are no cycle times to export from.
     worldChanged();
   }
 }
@@ -1673,28 +1459,22 @@ el('flight-on').addEventListener('change', (e) => {
   confirmReset(() => setFlight(true), () => { e.target.checked = false; });
 });
 
-// Release time defines the experiment rather than adjusting a live one, so
-// changing it re-runs from the start instead of freezing a pendulum mid-swing.
+// Release time defines the experiment, so changing it re-runs from the start,
+// and the re-run waits for the drag to finish — change rather than input, since
+// the slider crosses 180 values on the way to the one that was wanted.
 //
-// The re-run waits for the drag to finish — change rather than input — because
-// the slider crosses 180 values on the way to the one that was wanted, and
-// re-running the world at each of them was already wasteful before it also
-// meant a dialog at each of them.
-//
-// So `release` is not written while the slider moves: it is the release the run
-// is actually flying, and the control holds the pending one until it is
-// committed. That matters for more than tidiness — the clamp test reads
-// `release` every frame, and startTime() is the origin export.js measures its
-// windows from, so a value that changed under a running flight would freeze the
-// piece mid-swing and shift every recorded timestamp with it. The note follows
-// the slider, because a preview is exactly what it is for.
+// `release` is therefore not written while the slider moves: it is the release
+// the run is flying, and the control holds the pending one until committed. The
+// clamp test reads `release` every frame and startTime() is the origin export.js
+// measures its windows from, so a value changing under a running flight would
+// freeze the piece mid-swing and shift every recorded timestamp. The note
+// follows the slider, as a preview.
 const setRelease = linkPair('release', updateReleaseNote);
 
 function commitRelease() {
   const v = num('release', release);
   if (v === release) return;
-  // Off the profile the release is a stored number that nothing is flying, so
-  // it takes effect quietly and waits for the next run.
+  // Off the profile nothing is flying it, so it waits for the next run.
   if (!flightOn) {
     release = v;
     updateReleaseNote();
@@ -1722,14 +1502,13 @@ function applyShortcut(on) {
   }
   updateReleaseNote();
   if (flightOn) reset();
-  // Off the profile there is no reset to carry the news, and the cycle has still
-  // changed length under anything reading it.
+  // Off the profile there is no reset to carry the news, and the cycle has
+  // still changed length under anything reading it.
   worldChanged();
 }
 
 el('shortcut').addEventListener('change', (e) => {
-  // Off the profile the cycle length drives nothing that is running, so there
-  // the switch costs nothing and asks nothing.
+  // Off the profile the cycle length drives nothing running, so it asks nothing.
   if (!flightOn) {
     applyShortcut(e.target.checked);
     return;
@@ -1739,29 +1518,21 @@ el('shortcut').addEventListener('change', (e) => {
 
 // --- Telling the page above ------------------------------------------------
 
-// Anything built on top of the simulation registers here to be told that the
-// world has been re-run, cleared, or had the shape of its cycle changed.
-// index.js never looks inside the list and a page without export.js leaves it
-// empty, so this stays a one-way announcement rather than a dependency.
-//
-// It exists because the answer no longer arrives on the same turn as the click:
-// a listener on the same control used to be able to assume index.js's handler
-// had already run, and now that handler may be waiting on a dialog.
+// Anything built on top of the simulation registers here to be told the world
+// has been re-run, cleared, or had the shape of its cycle changed. A one-way
+// announcement: index.js never looks inside the list, and a page without
+// export.js leaves it empty. Needed because a change may be waiting on the
+// dialog below rather than landing on the same turn as the click.
 const worldHooks = [];
 const worldChanged = () => { for (const fn of worldHooks) fn(); };
 
 // --- Asking ----------------------------------------------------------------
 
-// The one question this page asks, in a <dialog>. showModal() centres it, dims
-// the page behind it, keeps the focus inside it and closes it on Escape, so
-// none of that is written here; what is written here is that it looks like the
-// rest of the panel, which window.confirm — dropping out of the top of the
-// window in the browser's chrome — never could.
+// The one question this page asks, in a <dialog>. showModal() handles centring,
+// the backdrop, the focus trap and Escape, so none of that is written here.
 //
-// The cost of leaving window.confirm is that the answer no longer arrives as a
-// return value: confirm() blocked the thread, this does not. So the callers
-// hand over what to do rather than branching on a result, which is the only
-// shape of this that cannot accidentally act before the question is answered.
+// The answer arrives asynchronously, so callers hand over what to do rather than
+// branching on a return value.
 const askBox = el('ask');
 let askYes = null;
 let askNo = null;
@@ -1772,10 +1543,9 @@ function ask(title, body, onYes, onNo) {
   set('ask-text', body);
   askYes = onYes;
   askNo = onNo;
-  // Frozen while the question is on screen, and put back if the answer is no.
-  // window.confirm used to do this by blocking the frame loop outright, and the
-  // freeze is worth keeping: the run being asked about should not be seconds
-  // further on by the time the answer is given.
+  // Frozen while the question is on screen, and put back if the answer is no:
+  // the run being asked about should not be seconds further on by the time the
+  // answer comes.
   askWasRunning = running;
   if (running) setRunning(false);
   askBox.returnValue = '';
@@ -1791,9 +1561,9 @@ askBox.addEventListener('close', () => {
   const fn = yes ? askYes : askNo;
   askYes = null;
   askNo = null;
-  // The yes branch re-runs the world, and reset() pauses; only the no branch has
-  // a run to hand back. Restored before the callback, so a callback that starts
-  // something cannot be undone by this.
+  // The yes branch re-runs the world and reset() pauses, so only no has a run to
+  // hand back. Restored before the callback, so a callback that starts something
+  // cannot be undone by this.
   if (!yes && askWasRunning) setRunning(true);
   if (fn) fn();
 });
@@ -1801,18 +1571,13 @@ askBox.addEventListener('close', () => {
 el('ask-yes').addEventListener('click', () => askBox.close('yes'));
 el('ask-no').addEventListener('click', () => askBox.close('no'));
 
-// A handful of controls cannot be applied to a run in progress — the number of
-// links, the number of pendulums, the release time, the length of the cycle —
-// so changing one of them re-runs the world from the initial conditions and
-// takes the trails with it. On a run that is minutes old that is a real loss,
-// and it used to happen on a single click of a button that looks like every
-// other button on the panel, so now it asks.
+// Link count, whether a pendulum hangs, the release time and the cycle length
+// cannot be applied to a run in progress: changing one re-runs the world and
+// takes the trails with it, so it asks first.
 //
-// Nothing to lose is not worth a dialog: before the clock has moved the panel is
-// still being set up, and a confirmation on every architecture button would be
-// noise in front of the first thing anyone does. That case runs onYes straight
-// away rather than on a later turn, so a caller can still rely on the change
-// having happened by the time its own handler returns.
+// With nothing to lose it does not ask, and runs onYes on this turn rather than
+// a later one, so a caller can rely on the change having happened by the time
+// its own handler returns.
 function confirmReset(onYes, onNo) {
   if (simTime === 0) {
     onYes();
@@ -1821,12 +1586,9 @@ function confirmReset(onYes, onNo) {
   ask(t('reset.title'), t('reset.confirm'), onYes, onNo);
 }
 
-// Every chain, from its own initial conditions, and the clock once. One pivot,
-// one t = 0.
-//
-// Every chain including the ones not hanging, which cost three assignments each
-// and are then the pendulum a tab shows rather than whatever they were left
-// holding when they were switched off.
+// Every chain from its own initial conditions, and the clock once: one pivot,
+// one t = 0. Chains that are not hanging are reset too, so a tab shows the
+// pendulum it will put on the pivot rather than whatever it was left holding.
 function reset() {
   if (flightOn) {
     flightTime = startTime();
@@ -1843,10 +1605,8 @@ function reset() {
   }
   simTime = 0;
   clearTrails();
-  // Paused, always. A reset is a new experiment, and the moment it starts is
-  // part of it: the profile runs to 180 s and the interesting second of it goes
-  // past while you are still reading the panel. Whoever asked for the reset
-  // starts it when they are ready, and the Start button is where they say so.
+  // Paused, always: the profile runs to 180 s, so which second you are watching
+  // is the experiment, and the run starts on Start.
   setRunning(false);
   worldChanged();
 }
@@ -1854,8 +1614,8 @@ function reset() {
 function clearTrails() {
   for (const c of chains) {
     c.trails = [[], [], []];
-    // Rewound rather than dropped: half a megabyte a bob, and this runs on
-    // every parameter change, not only on Clear.
+    // Rewound rather than dropped: half a megabyte a bob, and this runs on every
+    // parameter change, not only on Clear.
     for (const tp of c.tape) if (tp) { tp.head = 0; tp.len = 0; tp.next = 0; }
   }
 }
@@ -1874,14 +1634,11 @@ el('lang').addEventListener('click', () => {
   applyLang();
 });
 
-// No confirmation here: the button says Reset, and asking whether a person who
-// pressed Reset meant to reset is a dialog that teaches people to dismiss
-// dialogs. It pauses because reset() does.
+// No confirmation: the button says Reset. It pauses, because reset() does.
 el('reset').addEventListener('click', reset);
 
-// Not inside clearTrails, which reset() already calls on its own way to
-// announcing itself; here the recording is thrown away with nothing else
-// changing, and that is exactly the thing an exporter has to hear about.
+// The announcement is here rather than inside clearTrails, which reset() already
+// calls on its own way to announcing itself.
 el('clear').addEventListener('click', () => { clearTrails(); worldChanged(); });
 
 // Snapshot the selected chain's live state into its initial-condition boxes, so
@@ -1896,9 +1653,8 @@ el('use-current').addEventListener('click', () => {
   }
 });
 
-// Space toggles run/pause, as long as a text box does not have focus — and as
-// long as the confirmation is not up, where Space belongs to the button under
-// the focus and would otherwise both answer the question and start the world.
+// Space toggles run/pause, unless a text box has focus, or the confirmation is
+// up — there Space belongs to the focused button.
 document.addEventListener('keydown', (e) => {
   if (askBox.open) return;
   if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
@@ -1907,9 +1663,8 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// The first pendulum is the one the panel opens on, so it takes its parameters
-// from the boxes rather than from DEFAULTS directly: the two say the same thing,
-// and reading the markup is what keeps them saying it.
+// Pendulum A takes its parameters from the boxes rather than from DEFAULTS, so
+// the markup and the load cannot disagree.
 for (let i = 0; i < MAX_LINKS; i++) {
   chains[0].L[i] = num('L' + (i + 1), DEFAULTS[0].L[i]);
   chains[0].m[i] = num('m' + (i + 1), DEFAULTS[0].m[i]);
@@ -1918,15 +1673,9 @@ for (let i = 0; i < MAX_LINKS; i++) {
 }
 chains[0].b = num('b', 0.001);
 
-// B and C are already built — they come out of DEFAULTS with their own
-// architecture and their own rods, from the moment the page loads rather than
-// at the moment they are switched on. Deriving them at switch-on would rewrite,
-// under the pointer, settings the panel had been showing all along; tune B
-// before switching it on or after, and either way what you tuned is what hangs.
-//
-// Their trails are the one thing left, because a checkbox cannot be derived
-// from a link count in the markup: each starts on its own tip, which is bob 2
-// for the double and bob 3 for the triple.
+// B and C come fully built out of DEFAULTS at load, not at switch-on, so tuning
+// one before it hangs is not overwritten when it does. Only their trails are
+// left, since a checkbox cannot be derived from a link count in the markup.
 for (let p = 1; p < MAX_PENDULUMS; p++) tipOnly(chains[p]);
 env.g = num('g', 9.81);
 release = num('release', 0);
@@ -1934,9 +1683,8 @@ trailSeconds = num('trail-len', 25);
 applyLang(); // also paints the selection, the release note and the flight readout
 sizeCanvas();
 reset();
-// Flight mode starts on, and starts through the same path a click takes, so the
-// default is one attribute in the markup rather than a second copy of the
-// wiring. It resets again on the way, which at t = 0 costs nothing.
+// Through the same path a click takes, so the default is one attribute in the
+// markup rather than a second copy of the wiring.
 setFlight(el('flight-on').checked);
 requestAnimationFrame((now) => {
   lastFrame = now;

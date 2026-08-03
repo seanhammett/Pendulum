@@ -1,19 +1,14 @@
 'use strict';
 
-// Every user-visible string in the interface, in both languages. Nothing in the
-// UI should be a literal in index.js — if a string reaches the user, it belongs
-// here. Keys are `section.thing`.
+// Every user-visible string, in both languages. If a string reaches the user it
+// belongs here, not as a literal in index.js. Keys are `section.thing`.
 //
-// Braces mark placeholders filled in at runtime, e.g. {n} in flight.parabola.
-// The two languages must agree on which placeholders a string uses; they may
-// reorder them freely.
+// Braces mark placeholders filled at runtime, e.g. {n} in flight.parabola. The
+// two languages must use the same placeholders, in any order.
 //
-// Not translated, deliberately: symbols and units (L, m, g, b, θ, ω, kg, s, J,
-// °, N·m·s, m/s²) read the same in both languages, and numbers keep a decimal
-// point throughout rather than switching to the French comma, because the
-// number inputs beside them are parsed by the browser as HTML number fields and
-// would not accept a comma. A mix of the two conventions on one panel would be
-// worse than one consistent convention.
+// Not translated: symbols and units (L, m, g, b, θ, ω, kg, s, J, °, N·m·s,
+// m/s²), and numbers keep a decimal point throughout, since the number inputs
+// beside them are HTML number fields and would not accept a comma.
 const STRINGS = {
   en: {
     'page.title': 'Pendulum Simulator',
@@ -23,10 +18,8 @@ const STRINGS = {
     'btn.reset': 'Reset',
     'btn.cancel': 'Cancel',
     'btn.continue': 'Continue',
-    // Shown before anything is lost, by the controls that cannot be applied to a
-    // run in progress. It names what goes rather than asking "are you sure",
-    // which is a question nobody can answer without being told that. The
-    // question is the title; the body is what answering it costs.
+    // Shown by the controls that cannot be applied to a run in progress. The
+    // title is the question; the body names what answering it costs.
     'reset.title': 'Restart the run?',
     'reset.confirm': 'This restarts every pendulum from its initial conditions and clears the trails.\n\nThe run is paused while you decide, and the restart arrives paused too.',
 
@@ -52,9 +45,8 @@ const STRINGS = {
     'shortcut.label': 'Shortcut 1g baseline',
     'shortcut.tip': 'Trims the 93 s of level flight after the second hypergravity phase down to 10 s. The simulation still runs in real time — there is simply less of it between parabolas.',
 
-    // No placeholder: the box holds all three pendulums, and each row says
-    // which one it is with its dot. The unit is said once here rather than
-    // after each of the nine figures.
+    // No placeholder: the box holds all three pendulums, each row named by its
+    // dot. The unit is said once here rather than after each of nine figures.
     'energy.legend': 'Energy',
     'energy.unit': '— J',
     'energy.potential': 'Potential',
@@ -219,6 +211,6 @@ const STRINGS = {
   }
 };
 
-// The switch offers the language you are not in, so its tooltip is written in
-// the language you would get by clicking it.
+// The switch offers the language you are not in, so each tooltip is written in
+// the language clicking it would give you.
 const LANG_TIP = { en: 'Switch to English', fr: 'Passer en français' };

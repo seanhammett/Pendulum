@@ -52,7 +52,11 @@ const STRINGS = {
     'shortcut.label': 'Shortcut 1g baseline',
     'shortcut.tip': 'Trims the 93 s of level flight after the second hypergravity phase down to 10 s. The simulation still runs in real time — there is simply less of it between parabolas.',
 
-    'energy.legend': 'Energy — pendulum {n}',
+    // No placeholder: the box holds all three pendulums, and each row says
+    // which one it is with its dot. The unit is said once here rather than
+    // after each of the nine figures.
+    'energy.legend': 'Energy',
+    'energy.unit': '— J',
     'energy.potential': 'Potential',
     'energy.kinetic': 'Kinetic',
     'energy.total': 'Total',
@@ -151,7 +155,8 @@ const STRINGS = {
     'shortcut.label': 'Raccourcir le palier 1 g',
     'shortcut.tip': "Réduit à 10 s les 93 s de vol stabilisé qui suivent la seconde phase d'hypergravité. La simulation tourne toujours en temps réel — il y en a simplement moins entre les paraboles.",
 
-    'energy.legend': 'Énergie — pendule {n}',
+    'energy.legend': 'Énergie',
+    'energy.unit': '— J',
     'energy.potential': 'Potentielle',
     'energy.kinetic': 'Cinétique',
     'energy.total': 'Total',

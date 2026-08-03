@@ -58,11 +58,38 @@
       <label class="check foot" data-i18n-title="shortcut.tip"><input id="shortcut" type="checkbox"><span data-i18n="shortcut.label">Shortcut 1g baseline</span></label>
     </fieldset>
 
+    <!-- All three pendulums at once, one row each, rather than following the
+         selected tab like State does. Energy is the one readout worth comparing
+         across chains — the same architecture at a different release point, or
+         two architectures holding the same total — and comparing means seeing
+         them side by side rather than clicking between them. There is still no
+         all-chains sum: three sculptures' energies added together is a number
+         about nothing.
+
+         So the legend carries no dot and names no pendulum. Each row carries
+         its own instead: filled for a pendulum on the pivot, a bare ring in its
+         colour for one that is not, exactly as the tabs read. A pendulum that
+         is switched off is not being stepped, so its row is it sitting at its
+         initial conditions — true of it, and the picture of what switching it
+         on would put on the pivot. The hollow dot and the dimmed figures are
+         what say those three numbers are not going to move.
+
+         The unit sits in the legend rather than after all nine figures: it is
+         the same J every time, and repeating it costs a third of every column
+         to say nothing. -->
     <fieldset class="energy">
-      <legend><i class="dot p1" id="dot-energy"></i><span id="legend-energy">Energy</span></legend>
-      <div class="e-row"><span data-i18n="energy.potential">Potential</span><b id="e-pe">0.00 J</b></div>
-      <div class="e-row"><span data-i18n="energy.kinetic">Kinetic</span><b id="e-ke">0.00 J</b></div>
-      <div class="e-row total"><span data-i18n="energy.total">Total</span><b id="e-total">0.00 J</b></div>
+      <legend><span data-i18n="energy.legend">Energy</span> <small data-i18n="energy.unit">&mdash; J</small></legend>
+      <div class="e-grid">
+        <div class="e-head">
+          <span></span>
+          <span data-i18n="energy.potential">Potential</span>
+          <span data-i18n="energy.kinetic">Kinetic</span>
+          <span data-i18n="energy.total">Total</span>
+        </div>
+        <div class="e-row" id="e-row-1"><i class="dot p1"></i><b id="e-pe-1">0.00</b><b id="e-ke-1">0.00</b><b class="e-tot" id="e-total-1">0.00</b></div>
+        <div class="e-row" id="e-row-2"><i class="dot p2"></i><b id="e-pe-2">0.00</b><b id="e-ke-2">0.00</b><b class="e-tot" id="e-total-2">0.00</b></div>
+        <div class="e-row" id="e-row-3"><i class="dot p3"></i><b id="e-pe-3">0.00</b><b id="e-ke-3">0.00</b><b class="e-tot" id="e-total-3">0.00</b></div>
+      </div>
     </fieldset>
 
     <fieldset>

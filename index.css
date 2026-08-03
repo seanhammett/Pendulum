@@ -354,33 +354,54 @@ input[type="range"]::-webkit-slider-thumb {
 
 .energy legend { color: var(--accent); }
 
-.e-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+/* Dot, then one column per term. The three number columns are equal fractions
+   of what is left rather than sized to their contents, so the figures sit in
+   the same three places on every frame and in every row: a digit appearing, a
+   sign flipping or one chain running an order of magnitude hotter than another
+   moves nothing, and a column can be read down as a column. Nine live figures
+   in a 320px panel is the whole reason this is a grid and not three flex rows.
+
+   The header and the data rows are display: contents, so all four are items of
+   the one grid and share its columns; they exist as elements only to group a
+   row for the JS and for the dimming rule below. */
+.e-grid {
+  display: grid;
+  grid-template-columns: 8px repeat(3, 1fr);
+  align-items: center;
+  gap: 3px 8px;
   margin-top: 3px;
+}
+
+.e-head, .e-row { display: contents; }
+
+.e-head span {
   color: var(--muted);
+  font-size: 10px;
+  text-align: right;
 }
 
 .e-row b {
-  color: var(--text);
+  color: var(--accent);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
-.e-row.total {
-  margin-top: 5px;
-  padding-top: 5px;
-  border-top: 1px solid var(--line);
-}
+/* The total keeps the accent it had when it was its own row, which is what
+   picks the summed column out of the three without a rule or a heavier weight
+   to separate it. */
+.e-row .e-tot { color: var(--text); }
 
-.e-row.total span { color: var(--text); }
+/* A pendulum that is not on the pivot. Its hollow dot already says so; the
+   figures drop to muted as well because three rows of identical-looking numbers
+   where only some of them move is exactly the case where the eye needs telling
+   twice. Dimmed rather than hidden — those numbers are the initial conditions
+   switching it on would start from. */
+.e-row.off b { color: var(--muted); }
 
-.e-row.total b {
-  color: var(--accent);
-  font-size: 15px;
-}
+/* Faded rather than --accent-dim, which is a background colour dark enough to
+   be unreadable as 13px text. */
+.e-row.off .e-tot { color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
 input:disabled, button:disabled {
   opacity: 0.4;

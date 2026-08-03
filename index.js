@@ -1041,15 +1041,18 @@ function wrapDeg(rad) {
 
 const set = (id, text) => { document.getElementById(id).textContent = text; };
 
-// State and Energy follow the selected tab. There is deliberately no all-chains
-// energy total: the useful thing to watch in flight is one sculpture's
-// potential term draining to nothing at 0g, and three sculptures' energies
-// added together is a number about nothing.
+// State follows the selected tab — it is a dozen figures per pendulum and three
+// of those do not fit a 320px panel, let alone read as a comparison. Energy is
+// three figures per pendulum, and those are the ones worth putting side by
+// side, so that box shows all three chains at once and its legend names none of
+// them. There is still deliberately no all-chains total: three sculptures'
+// energies added together is a number about nothing.
 //
 // A pendulum that is switched off is not being stepped, so what these show is
 // it sitting at its initial conditions — which is true of it, and is the
-// picture of what switching it on would put on the pivot. The hollow dot in
-// both legends is what says the numbers are not going to move.
+// picture of what switching it on would put on the pivot. The hollow dot in the
+// State legend and on the pendulum's energy row is what says the numbers are
+// not going to move.
 function updateReadout() {
   const c = chains[sel];
   for (let i = 0; i < c.n; i++) {
@@ -1061,11 +1064,24 @@ function updateReadout() {
   // Split out rather than shown as one total, because the interesting thing in
   // flight is watching gravity drain the potential term to nothing at 0g while
   // the kinetic term carries on untouched.
-  const pe = potential(c);
-  const ke = kinetic(c);
-  set('e-pe', pe.toFixed(2) + ' J');
-  set('e-ke', ke.toFixed(2) + ' J');
-  set('e-total', (pe + ke).toFixed(2) + ' J');
+  for (let p = 0; p < MAX_PENDULUMS; p++) {
+    const chain = chains[p];
+    const pe = potential(chain);
+    const ke = kinetic(chain);
+    const cell = E_CELL[p];
+    setCell(cell[0], pe.toFixed(2));
+    setCell(cell[1], ke.toFixed(2));
+    setCell(cell[2], (pe + ke).toFixed(2));
+  }
+}
+
+// Nine figures a frame where there used to be three, so a figure that has not
+// changed is not written. The two chains that are switched off are the case
+// this is for: they are not being stepped, so their six cells hold the same
+// text for as long as they stay off, and a textContent write that changes
+// nothing is still a write.
+function setCell(node, text) {
+  if (node.textContent !== text) node.textContent = text;
 }
 
 // --- Frame cost ------------------------------------------------------------
@@ -1272,15 +1288,23 @@ function num(id, fallback) {
   return Number.isFinite(v) ? v : fallback;
 }
 
-// One tab, one tab dot, one trail row and one trail checkbox per link per slot,
-// looked up once.
+// One tab, one tab dot, one energy row, one trail row and one trail checkbox
+// per link per slot, looked up once. The energy cells especially: they are
+// rewritten every frame, so getElementById nine times a frame for the life of
+// the page is not the way to reach them.
 const TABS = [];
 const DOTS = [];
+const E_ROW = [];
+const E_DOT = [];
+const E_CELL = [];
 const TRAIL_ROW = [];
 const TRAIL_BOX = [];
 for (let p = 0; p < MAX_PENDULUMS; p++) {
   TABS.push(el('tab-' + (p + 1)));
   DOTS.push(TABS[p].querySelector('.dot'));
+  E_ROW.push(el('e-row-' + (p + 1)));
+  E_DOT.push(E_ROW[p].querySelector('.dot'));
+  E_CELL.push(['e-pe-', 'e-ke-', 'e-total-'].map((id) => el(id + (p + 1))));
   TRAIL_ROW.push(el('trail-row-' + (p + 1)));
   TRAIL_BOX.push([0, 1, 2].map((i) => el('trail-' + (p + 1) + '-' + (i + 1))));
 }
@@ -1474,6 +1498,11 @@ function paintSelection() {
     TABS[p].classList.toggle('on', p === sel);
     TABS[p].title = fmt(on ? 'arch.pendulum' : 'arch.pendulum.off', { n: CHAIN_NAME[p] });
     DOTS[p].classList.toggle('off', !on);
+    // The same mark again on this pendulum's energy row, which is all that
+    // names the row now that the legend does not name a pendulum. Selection is
+    // not marked there: Energy shows all three whichever tab is up.
+    E_DOT[p].classList.toggle('off', !on);
+    E_ROW[p].classList.toggle('off', !on);
     TRAIL_ROW[p].hidden = !on;
     // One toggle per link the chain has, except that bob 1 is offered only on a
     // single, where it is the only bob there is. They carry a bare numeral, so
@@ -1488,12 +1517,10 @@ function paintSelection() {
   }
 
   set('legend-state', fmt('state.legend', { n: chainName(c) }));
-  set('legend-energy', fmt('energy.legend', { n: chainName(c) }));
   // Hollow here too when the selected pendulum is not hanging, which is also
-  // the answer to why these numbers are sitting still.
-  const dot = 'dot p' + (c.slot + 1) + (hanging(c) ? '' : ' off');
-  el('dot-state').className = dot;
-  el('dot-energy').className = dot;
+  // the answer to why these numbers are sitting still. The Energy box has no
+  // legend dot — it is not on one pendulum, and its rows carry their own.
+  el('dot-state').className = 'dot p' + (c.slot + 1) + (hanging(c) ? '' : ' off');
 }
 
 // Switching a pendulum on or off resets the world, exactly as changing a link
@@ -1601,9 +1628,9 @@ function applyLang() {
   btn.title = LANG_TIP[other];
   btn.setAttribute('aria-label', LANG_TIP[other]);
 
-  // The rest is written by JS, so it has to be asked to redraw itself. The two
-  // legends and the tab tooltips carry the pendulum's number, so they come from
-  // the selection rather than from a bare key.
+  // The rest is written by JS, so it has to be asked to redraw itself. The
+  // State legend and the tab tooltips carry the pendulum's letter, so they come
+  // from the selection rather than from a bare key.
   el('play').textContent = t(running ? 'btn.pause' : 'btn.start');
   paintSelection();
   updateReleaseNote();

@@ -84,7 +84,10 @@ const chains = Array.from({ length: MAX_PENDULUMS }, (_, slot) => makeChain(slot
 //
 // Never empty — the last chain hanging cannot be switched off; see
 // paintSelection.
-const world = [chains[0]];
+//
+// All three hang at load, so the page opens on the comparison it exists to
+// make: one length of rod split one, two and three ways, released together.
+const world = [chains[0], chains[1], chains[2]];
 let sel = 0; // slot of the pendulum the panel is editing, hanging or not
 
 // Whether this chain is on the pivot. Membership of world is the whole answer.
@@ -1673,9 +1676,10 @@ for (let i = 0; i < MAX_LINKS; i++) {
 }
 chains[0].b = num('b', 0.001);
 
-// B and C come fully built out of DEFAULTS at load, not at switch-on, so tuning
-// one before it hangs is not overwritten when it does. Only their trails are
-// left, since a checkbox cannot be derived from a link count in the markup.
+// B and C come fully built out of DEFAULTS at load, not at switch-on, so one
+// that is switched off and then tuned is not overwritten when it comes back.
+// Only their trails are left, since a checkbox cannot be derived from a link
+// count in the markup.
 for (let p = 1; p < MAX_PENDULUMS; p++) tipOnly(chains[p]);
 env.g = num('g', 9.81);
 release = num('release', 0);

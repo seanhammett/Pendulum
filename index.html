@@ -44,7 +44,34 @@
         <span id="f-t">t = 0.0 s of 180</span>
       </div>
 
-      <div class="row" data-i18n-title="release.tip">
+      <!-- Gravity sits with the flight simulator because the profile is what
+           normally writes it: the readout above says what the aircraft is
+           pulling, this says what the world is under, and the note below says
+           which of the two is holding the pen. It is the one value here that
+           belongs to no single pendulum, so it is also the one that has no
+           business in Architecture, which follows the tab.
+
+           Locked, not hidden, while the profile flies — you can still read the
+           number the profile is writing. -->
+      <div class="row gap">
+        <label for="g">g <small>m/s&sup2;</small></label>
+        <input id="g-range" type="range" min="-20" max="30" step="0.01" value="9.81">
+        <input id="g" type="number" min="-20" max="30" step="0.01" value="9.81">
+      </div>
+
+      <p id="g-driven" class="driven" data-i18n="flight.driven" hidden>g is driven by the flight profile</p>
+
+      <!-- Hidden, not deleted: the presets still wire up, so they can be shown
+           again by dropping the attribute. -->
+      <div class="presets" hidden>
+        <button data-g="1.62" data-i18n="preset.moon">Moon</button>
+        <button data-g="3.72" data-i18n="preset.mars">Mars</button>
+        <button data-g="9.81" data-i18n="preset.earth">Earth</button>
+        <button data-g="24.79" data-i18n="preset.jupiter">Jupiter</button>
+        <button data-g="0" data-i18n="preset.zero">Zero</button>
+      </div>
+
+      <div class="row gap" data-i18n-title="release.tip">
         <label for="release"><span data-i18n="release.label">Release</span> <small>s</small></label>
         <input id="release-range" type="range" min="0" max="180" step="0.5" value="0">
         <input id="release" type="number" min="0" max="180" step="0.5" value="0">
@@ -153,27 +180,10 @@
         <input id="m3-range" type="range" min="0.1" max="5" step="0.01" value="1">
         <input id="m3" type="number" min="0.1" max="5" step="0.01" value="1">
       </div>
-      <div class="row gap">
-        <label for="g">g <small>m/s&sup2;</small></label>
-        <input id="g-range" type="range" min="-20" max="30" step="0.01" value="9.81">
-        <input id="g" type="number" min="-20" max="30" step="0.01" value="9.81">
-      </div>
-      <div class="row" data-i18n-title="arch.friction.tip">
+      <div class="row gap" data-i18n-title="arch.friction.tip">
         <label for="b">b <small>N&middot;m&middot;s</small></label>
         <input id="b-range" type="range" min="0" max="2" step="0.001" value="0.001">
         <input id="b" type="number" min="0" max="2" step="0.001" value="0.001">
-      </div>
-
-      <p id="g-driven" class="driven" data-i18n="flight.driven" hidden>g is driven by the flight profile</p>
-
-      <!-- Hidden, not deleted: the presets still wire up, so they can be shown
-           again by dropping the attribute. -->
-      <div class="presets" hidden>
-        <button data-g="1.62" data-i18n="preset.moon">Moon</button>
-        <button data-g="3.72" data-i18n="preset.mars">Mars</button>
-        <button data-g="9.81" data-i18n="preset.earth">Earth</button>
-        <button data-g="24.79" data-i18n="preset.jupiter">Jupiter</button>
-        <button data-g="0" data-i18n="preset.zero">Zero</button>
       </div>
     </fieldset>
 

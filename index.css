@@ -628,6 +628,28 @@ button:disabled:hover { border-color: var(--line); }
   height: 26px;
 }
 
+/* The drag target over each joint of a figure. Its whole appearance is here:
+   index.js gives it a place and a size and nothing else, because there is no
+   colour in it to pick out of a theme — the bob it sits on is what it looks
+   like. touch-action so a drag on a phone moves the bob rather than scrolling
+   the panel out from under it. */
+.arch-grip {
+  fill: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+/* Hover puts a faint disc under the pointer: the bob is what moves, but the
+   target is wider than the bob, so this is where the drag can be started from. */
+.arch-grip:hover {
+  fill: var(--text);
+  fill-opacity: 0.1;
+}
+
+/* Held for the length of a drag, so the cursor stays the drag's own once a
+   joint is against its stop and the pointer has run on past the grip. */
+.arch-fig.sliding { cursor: ew-resize; }
+
 /* The total at the left, where it is in line down the three rows, and the links
    centred in what is left of the width — so a single, a double and a triple are
    each balanced under their own figure rather than pinned to one edge.

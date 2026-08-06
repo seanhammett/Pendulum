@@ -836,6 +836,30 @@ function drawFigure(svg, c, on, scale) {
   svg.appendChild(svgEl('circle', {
     cx: FIG_PAD, cy, r: FIG_BOB * 0.45, fill: on ? COLOUR.pivot : COLOUR.inert
   }));
+
+  // What a drag takes hold of: one invisible target over each joint, wider than
+  // the bob under it, because a 6px circle is not something to ask a pointer to
+  // hit. Over the bobs rather than under them so the grip wins the pointer, and
+  // invisible because the bob is what it looks like.
+  //
+  // Not on the tip — see setJoint — and none at all on a row that is off the
+  // pivot, where a click anywhere is the switch that hangs the pendulum.
+  if (!on) return;
+  let g = 0;
+  for (let i = 0; i < c.n - 1; i++) {
+    g += c.L[i];
+    const grip = svgEl('circle', {
+      class: 'arch-grip', 'data-grip': i,
+      cx: FIG_PAD + g * scale, cy, r: Math.max(figR(c.m[i]) + 3, 8)
+    });
+    // The svg is aria-hidden: the two length boxes are this edit's keyboard and
+    // screen-reader half, and they say so in their own tooltips. This one names
+    // the pair the drag moves for a pointer that has found the bob first.
+    const name = svgEl('title', {});
+    name.textContent = fmt('arch.slide', { i: i + 1, j: i + 2 });
+    grip.appendChild(name);
+    svg.appendChild(grip);
+  }
 }
 
 // The g(t) curve for one cycle, with a playhead at the current position.
@@ -1286,6 +1310,11 @@ for (let p = 0; p < MAX_PENDULUMS; p++) {
   });
 }
 
+// The pixels per metre each row's figure was last drawn at, which is what turns
+// a pointer position over one back into a length. Written by paintArch, since
+// choosing the scale is its job.
+const FIG_SCALE = ARCH.map(() => 0);
+
 // Whether bob i of chain c is being recorded and drawn.
 const traced = (c, i) => TRAIL_BOX[c.slot][i].checked;
 
@@ -1409,6 +1438,34 @@ function setLink(c, i, v) {
   return want;
 }
 
+// Pivot to bob i, in metres — where drawFigure puts that bob, and what a drag
+// on it is moving.
+function jointOf(c, i) {
+  let d = 0;
+  for (let j = 0; j <= i; j++) d += c.L[j];
+  return d;
+}
+
+// One bob slid along the chain to d, measured from the pivot: the two links
+// either side of it give and take the whole difference, so their sum is held
+// and everything outside the pair — the reach, every other bob, the links below
+// them — does not move at all. That is the edit a drag on the figure makes, and
+// it is a narrower one than setLink's: a length typed into a box is taken from
+// every other link in proportion, because a box has no neighbour to prefer.
+//
+// Only for the joints between links. The tip has no link below it to hand the
+// difference to, so sliding it could only be a change of reach, which is the
+// total's job.
+function setJoint(c, i, d) {
+  let above = 0;
+  for (let j = 0; j < i; j++) above += c.L[j];
+  const span = c.L[i] + c.L[i + 1];
+  // The pair can be split anywhere that leaves both halves a link: span is two
+  // links, so it is never under 2·LMIN and this is never an empty range.
+  c.L[i] = clamp(d - above, LMIN, span - LMIN);
+  c.L[i + 1] = span - c.L[i];
+}
+
 // Adding and removing a link both hold the chain's reach, which is what makes
 // the three rows a comparison: a triple is one length of rod divided three ways
 // rather than a single with two more rods on the end. It is also the rule the
@@ -1503,6 +1560,56 @@ function bindArchBox(input, apply) {
   input.addEventListener('change', () => paintArch());
 }
 
+// A bob dragged along its own figure, which is the same edit as typing into the
+// two length boxes either side of it and is applied the same way: straight into
+// the chain, live, with no reset. A rod changing length mid-swing is a change of
+// physics, not of architecture — see setLinkCount for the ones that are.
+//
+// The pointer is captured by the svg and not by the grip: the figure is redrawn
+// on every move, so the circle the drag started on is gone by the second one.
+// The svg itself survives — drawFigure empties it rather than replacing it.
+function bindFigureDrag(fig, c, slot) {
+  let held = -1; // which joint has the pointer, or none
+  let grab = 0;  // metres between the pointer and the bob when it was taken, so
+                 // a bob grabbed off-centre stays off-centre instead of jumping
+
+  // Where the pointer is along this figure, in metres from the pivot.
+  const along = (e) => (e.clientX - fig.getBoundingClientRect().left - FIG_PAD) / FIG_SCALE[slot];
+
+  fig.addEventListener('pointerdown', (e) => {
+    const i = Number(e.target.dataset.grip);
+    if (e.button !== 0 || !Number.isInteger(i)) return;
+    held = i;
+    grab = along(e) - jointOf(c, i);
+    fig.setPointerCapture(e.pointerId);
+    // No text selection dragged across the panel behind the bob. This also
+    // takes the click the row would have used to select the pendulum — a
+    // pointerdown that is prevented raises no mouse event and so no click — so
+    // the drag does that itself, below. A grip is only ever on a hanging row,
+    // so selecting is the whole of what that click would have done.
+    e.preventDefault();
+    if (slot !== sel) selectPendulum(slot);
+    // The cursor is the row's for as long as the drag lasts, not the grip's:
+    // once a joint is against its stop the pointer runs on past the target.
+    fig.classList.add('sliding');
+  });
+
+  fig.addEventListener('pointermove', (e) => {
+    if (held < 0) return;
+    setJoint(c, held, along(e) - grab);
+    // Every box, not the two that moved: the figure is drawn from the same
+    // numbers, and paintArch is what redraws it.
+    paintArch();
+  });
+
+  const drop = () => {
+    held = -1;
+    fig.classList.remove('sliding');
+  };
+  fig.addEventListener('pointerup', drop);
+  fig.addEventListener('pointercancel', drop);
+}
+
 for (let p = 0; p < MAX_PENDULUMS; p++) {
   const c = chains[p];
   const a = ARCH[p];
@@ -1511,6 +1618,7 @@ for (let p = 0; p < MAX_PENDULUMS; p++) {
     bindArchBox(a.m[i], (v) => { c.m[i] = clamp(v, MMIN, MMAX); return c.m[i]; });
   }
   bindArchBox(a.total, (v) => setTotal(c, v));
+  bindFigureDrag(a.fig, c, p);
 
   a.add.addEventListener('click', () => confirmReset(() => setLinkCount(p, c.n + 1)));
   a.del.addEventListener('click', () => confirmReset(() => setLinkCount(p, c.n - 1)));
@@ -1560,7 +1668,8 @@ function paintArch(typing) {
     // The width the svg is given, less the head column, for the first paint of
     // a panel that has not been laid out yet.
     const width = a.fig.clientWidth || 207;
-    drawFigure(a.fig, c, on, (width - FIG_PAD - widest - 1) / longest);
+    FIG_SCALE[p] = (width - FIG_PAD - widest - 1) / longest;
+    drawFigure(a.fig, c, on, FIG_SCALE[p]);
 
     for (let i = 0; i < MAX_LINKS; i++) {
       a.cellL[i].hidden = i >= c.n;

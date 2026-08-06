@@ -44,33 +44,6 @@
         <span id="f-t">t = 0.0 s of 180</span>
       </div>
 
-      <!-- Gravity sits with the flight simulator because the profile is what
-           normally writes it: the readout above says what the aircraft is
-           pulling, this says what the world is under, and the note below says
-           which of the two is holding the pen. It is the one value here that
-           belongs to no single pendulum, so it is also the one that has no
-           business in Architecture, which follows the tab.
-
-           Locked, not hidden, while the profile flies — you can still read the
-           number the profile is writing. -->
-      <div class="row gap">
-        <label for="g">g <small>m/s&sup2;</small></label>
-        <input id="g-range" type="range" min="-20" max="30" step="0.01" value="9.81">
-        <input id="g" type="number" min="-20" max="30" step="0.01" value="9.81">
-      </div>
-
-      <p id="g-driven" class="driven" data-i18n="flight.driven" hidden>g is driven by the flight profile</p>
-
-      <!-- Hidden, not deleted: the presets still wire up, so they can be shown
-           again by dropping the attribute. -->
-      <div class="presets" hidden>
-        <button data-g="1.62" data-i18n="preset.moon">Moon</button>
-        <button data-g="3.72" data-i18n="preset.mars">Mars</button>
-        <button data-g="9.81" data-i18n="preset.earth">Earth</button>
-        <button data-g="24.79" data-i18n="preset.jupiter">Jupiter</button>
-        <button data-g="0" data-i18n="preset.zero">Zero</button>
-      </div>
-
       <div class="row gap" data-i18n-title="release.tip">
         <label for="release"><span data-i18n="release.label">Release</span> <small>s</small></label>
         <input id="release-range" type="range" min="0" max="180" step="0.5" value="0">
@@ -83,137 +56,220 @@
       <label class="check foot" data-i18n-title="shortcut.tip"><input id="shortcut" type="checkbox"><span data-i18n="shortcut.label">Shortcut 1g baseline</span></label>
     </fieldset>
 
-    <!-- All three pendulums at once, one row each, rather than following the
-         selected tab as State does. There is no all-chains sum.
-
-         So the legend names no pendulum and carries no dot; each row carries its
-         own, filled for a pendulum on the pivot and a bare ring for one that is
-         not, as the tabs read. An off pendulum is not being stepped, so its row
-         shows it at its initial conditions — the hollow dot and the dimmed
-         figures are what say those numbers will not move.
-
-         The unit is in the legend rather than after all nine figures. -->
-    <fieldset class="energy">
-      <legend><span data-i18n="energy.legend">Energy</span> <small data-i18n="energy.unit">&mdash; J</small></legend>
-      <div class="e-grid">
-        <div class="e-head">
-          <span></span>
-          <span data-i18n="energy.potential">Potential</span>
-          <span data-i18n="energy.kinetic">Kinetic</span>
-          <span data-i18n="energy.total">Total</span>
-        </div>
-        <div class="e-row" id="e-row-1"><i class="dot p1"></i><b id="e-pe-1">0.00</b><b id="e-ke-1">0.00</b><b class="e-tot" id="e-total-1">0.00</b></div>
-        <div class="e-row" id="e-row-2"><i class="dot p2"></i><b id="e-pe-2">0.00</b><b id="e-ke-2">0.00</b><b class="e-tot" id="e-total-2">0.00</b></div>
-        <div class="e-row" id="e-row-3"><i class="dot p3"></i><b id="e-pe-3">0.00</b><b id="e-ke-3">0.00</b><b class="e-tot" id="e-total-3">0.00</b></div>
-      </div>
-    </fieldset>
-
     <fieldset>
       <legend><span data-i18n="arch.legend">Architecture</span> <small data-i18n="arch.sub">&mdash; live</small></legend>
 
-      <!-- One tab per pendulum, each carrying its chain's colour as a dot, and
-           lettered where bobs are numbered so B2 needs no explaining.
+      <!-- The two forces, above the three chains they act on.
 
-           All three are always here, and a tab is a selection and nothing else:
-           clicking one brings that pendulum's settings into the rest of the box
-           whether it is hanging or not. Whether it hangs is said by the dot and
-           changed by the switch below.
+           g is the aircraft's rather than any one sculpture's, and the flight
+           profile is what normally writes it — but it acts on everything drawn
+           below, which is why it heads this box rather than sitting in the
+           flight simulator with the readout. Locked, not hidden, while the
+           profile flies: you can still read the number the profile is writing,
+           and the row's tooltip says who is holding the pen.
 
-           The dot is a child element rather than part of the label, since
-           data-i18n would overwrite the text; the letters are not translated, so
-           the tabs carry their name in the tooltip. -->
-      <div class="tabs">
-        <button class="tab on" id="tab-1" title=""><i class="dot p1"></i>A</button>
-        <button class="tab" id="tab-2" title=""><i class="dot p2"></i>B</button>
-        <button class="tab" id="tab-3" title=""><i class="dot p3"></i>C</button>
-      </div>
-
-      <!-- Off and the three link counts are one control: "no rods" and "not on
-           the pivot" are the same pendulum. It spans the box, with the tabs
-           above as its label, since four segments do not fit beside one. -->
-      <div class="seg arch" role="group" data-i18n-aria="arch.links" data-i18n-title="arch.links.tip">
-        <button id="links-0" data-i18n="arch.off">Off</button>
-        <button id="links-1" class="on" data-i18n="arch.single">Single</button>
-        <button id="links-2" data-i18n="arch.double">Double</button>
-        <button id="links-3" data-i18n="arch.triple">Triple</button>
+           A plain .row, not a .row.gap: it heads the box, so there is nothing
+           above it to be pushed away from and the legend plus the box's own
+           padding are already the gap. -->
+      <div class="row" id="row-g" title="">
+        <label for="g">g <small>m/s&sup2;</small></label>
+        <input id="g-range" type="range" min="-20" max="30" step="0.01" value="9.81">
+        <input id="g" type="number" min="-20" max="30" step="0.01" value="9.81">
       </div>
 
-      <!-- The boxes open on pendulum A, and index.js reads its defaults back out
-           of them, so the markup states what the page loads with.
+      <!-- Hidden, not deleted: the presets still wire up, so they can be shown
+           again by dropping the attribute. -->
+      <div class="presets" hidden>
+        <button data-g="1.62" data-i18n="preset.moon">Moon</button>
+        <button data-g="3.72" data-i18n="preset.mars">Mars</button>
+        <button data-g="9.81" data-i18n="preset.earth">Earth</button>
+        <button data-g="24.79" data-i18n="preset.jupiter">Jupiter</button>
+        <button data-g="0" data-i18n="preset.zero">Zero</button>
+      </div>
 
-           Lengths step in millimetres where everything else steps in hundredths,
-           so the 0.994 m default survives a nudge of the slider. That length is
-           the seconds pendulum, L = g/π², a half-period of exactly 1 s at
-           9.81 m/s². It is also the reach every pendulum starts with: A spends
-           it on one rod, B on two, C on three. -->
-      <div class="row gap">
-        <label for="L1">L<sub>1</sub> <small>m</small></label>
-        <input id="L1-range" type="range" min="0.1" max="3" step="0.001" value="0.994">
-        <input id="L1" type="number" min="0.1" max="3" step="0.001" value="0.994">
-      </div>
-      <div class="row">
-        <label for="m1">m<sub>1</sub> <small>kg</small></label>
-        <input id="m1-range" type="range" min="0.1" max="5" step="0.01" value="2">
-        <input id="m1" type="number" min="0.1" max="5" step="0.01" value="2">
-      </div>
-      <!-- The second and third links are always wired; only their rows come and
-           go. A is a single, so these hold C's links — what A becomes if it is
-           switched to a longer chain; see DEFAULTS in index.js. They are finer
-           than the slider's millimetre, so nudging it rounds them. -->
-      <div class="row gap" id="row-L2">
-        <label for="L2">L<sub>2</sub> <small>m</small></label>
-        <input id="L2-range" type="range" min="0.1" max="3" step="0.001" value="0.33133">
-        <input id="L2" type="number" min="0.1" max="3" step="0.001" value="0.33133">
-      </div>
-      <div class="row" id="row-m2">
-        <label for="m2">m<sub>2</sub> <small>kg</small></label>
-        <input id="m2-range" type="range" min="0.1" max="5" step="0.01" value="1.8">
-        <input id="m2" type="number" min="0.1" max="5" step="0.01" value="1.8">
-      </div>
-      <div class="row gap" id="row-L3" hidden>
-        <label for="L3">L<sub>3</sub> <small>m</small></label>
-        <input id="L3-range" type="range" min="0.1" max="3" step="0.001" value="0.21767">
-        <input id="L3" type="number" min="0.1" max="3" step="0.001" value="0.21767">
-      </div>
-      <div class="row" id="row-m3" hidden>
-        <label for="m3">m<sub>3</sub> <small>kg</small></label>
-        <input id="m3-range" type="range" min="0.1" max="5" step="0.01" value="1">
-        <input id="m3" type="number" min="0.1" max="5" step="0.01" value="1">
-      </div>
-      <div class="row gap" data-i18n-title="arch.friction.tip">
+      <!-- b is per pendulum where g is global, and follows the selection. -->
+      <div class="row" data-i18n-title="arch.friction.tip">
         <label for="b">b <small>N&middot;m&middot;s</small></label>
         <input id="b-range" type="range" min="0" max="2" step="0.001" value="0.001">
         <input id="b" type="number" min="0" max="2" step="0.001" value="0.001">
       </div>
+
+      <!-- Said once, for all nine boxes below: at 46px they leave no room for a
+           unit beside each one, and eighteen tooltips would say it worse. -->
+      <p id="arch-units" class="release-note"></p>
+
+      <!-- One row per pendulum, drawn and edited in place rather than one set of
+           sliders following a tab. Every box states what the page loads with,
+           and index.js reads all three pendulums back out of them.
+
+           Each row leads with its own switch: the chain's colour as a dot, its
+           letter where bobs are numbered so B2 needs no explaining, and the two
+           buttons that grow and shorten it, in line with the figure they are the
+           head of. The lit surround is the row's: it says the pendulum is on the
+           pivot, and the dot says the same thing a second way. Which of them the
+           box is *editing* is the one whose surround is at full accent.
+
+           The three energies close the row, so a pendulum's architecture and
+           what that architecture is worth in joules are read in one place. An
+           off pendulum is not being stepped, so it shows neither.
+
+           The dot is a child element rather than part of the label, since
+           data-i18n would overwrite the text; the letters are not translated, so
+           the switch carries its name in the tooltip, as the two round buttons
+           carry theirs.
+
+           Lengths carry three decimals where masses carry two, and step in
+           millimetres, so the 0.994 m default survives a nudge. That length is
+           the seconds pendulum, L = g/π², a half-period of exactly 1 s at
+           9.81 m/s². It is the reach all three start with: A spends it on one
+           rod, B on two, C on three.
+
+           The links a pendulum does not have are still here holding C's, so a
+           chain that grows finds a rod of the same family waiting — but the step
+           buttons divide the reach the chain already has, so those values are
+           what it falls back to rather than what it grows into; see setLinkCount
+           in index.js. The figures are drawn by index.js into the empty svg. -->
+      <div class="arch-row" id="arch-row-1">
+        <div class="arch-head">
+          <div class="arch-lead p1">
+            <button class="arch-name" id="tab-1" title=""><i class="dot p1"></i>A</button>
+            <button class="arch-step" id="arch-add-1" title="">+</button>
+            <button class="arch-step" id="arch-del-1" title="">&minus;</button>
+          </div>
+          <svg class="arch-fig" id="arch-fig-1" aria-hidden="true"></svg>
+        </div>
+        <div class="arch-grid">
+          <label class="arch-cell total" id="cell-LT-1" title="" data-i18n-title="arch.total.tip"><span>L<sub>T</sub></span><input id="LT-1" type="number" min="0.1" max="3" step="0.001" value="0.994"></label>
+          <div class="arch-links">
+            <label class="arch-cell total" id="cell-L-1-1" title="" data-i18n-title="arch.total.tip"><span>L<sub>1</sub></span><input id="L-1-1" type="number" min="0.1" max="3" step="0.001" value="0.994"></label>
+            <label class="arch-cell" id="cell-m-1-1" title="" data-i18n-title="arch.mass.tip"><span>m<sub>1</sub></span><input id="m-1-1" type="number" min="0.1" max="5" step="0.01" value="2"></label>
+            <label class="arch-cell" id="cell-L-1-2" title="" data-i18n-title="arch.length.tip" hidden><span>L<sub>2</sub></span><input id="L-1-2" type="number" min="0.1" max="3" step="0.001" value="0.33133"></label>
+            <label class="arch-cell" id="cell-m-1-2" title="" data-i18n-title="arch.mass.tip" hidden><span>m<sub>2</sub></span><input id="m-1-2" type="number" min="0.1" max="5" step="0.01" value="1.8"></label>
+            <label class="arch-cell" id="cell-L-1-3" title="" data-i18n-title="arch.length.tip" hidden><span>L<sub>3</sub></span><input id="L-1-3" type="number" min="0.1" max="3" step="0.001" value="0.21767"></label>
+            <label class="arch-cell" id="cell-m-1-3" title="" data-i18n-title="arch.mass.tip" hidden><span>m<sub>3</sub></span><input id="m-1-3" type="number" min="0.1" max="5" step="0.01" value="1"></label>
+          </div>
+        </div>
+        <div class="arch-e">
+          <div><b id="e-pe-1">0.0 J</b><span data-i18n="energy.potential">Potential</span></div>
+          <div><b id="e-ke-1">0.0 J</b><span data-i18n="energy.kinetic">Kinetic</span></div>
+          <div><b class="e-tot" id="e-total-1">0.0 J</b><span data-i18n="energy.total">Total</span></div>
+        </div>
+      </div>
+
+      <div class="arch-row" id="arch-row-2">
+        <div class="arch-head">
+          <div class="arch-lead p2">
+            <button class="arch-name" id="tab-2" title=""><i class="dot p2"></i>B</button>
+            <button class="arch-step" id="arch-add-2" title="">+</button>
+            <button class="arch-step" id="arch-del-2" title="">&minus;</button>
+          </div>
+          <svg class="arch-fig" id="arch-fig-2" aria-hidden="true"></svg>
+        </div>
+        <div class="arch-grid">
+          <label class="arch-cell total" id="cell-LT-2" title="" data-i18n-title="arch.total.tip"><span>L<sub>T</sub></span><input id="LT-2" type="number" min="0.1" max="3" step="0.001" value="0.994"></label>
+          <div class="arch-links">
+            <label class="arch-cell" id="cell-L-2-1" title="" data-i18n-title="arch.length.tip"><span>L<sub>1</sub></span><input id="L-2-1" type="number" min="0.1" max="3" step="0.001" value="0.5"></label>
+            <label class="arch-cell" id="cell-m-2-1" title="" data-i18n-title="arch.mass.tip"><span>m<sub>1</sub></span><input id="m-2-1" type="number" min="0.1" max="5" step="0.01" value="4"></label>
+            <label class="arch-cell" id="cell-L-2-2" title="" data-i18n-title="arch.length.tip"><span>L<sub>2</sub></span><input id="L-2-2" type="number" min="0.1" max="3" step="0.001" value="0.494"></label>
+            <label class="arch-cell" id="cell-m-2-2" title="" data-i18n-title="arch.mass.tip"><span>m<sub>2</sub></span><input id="m-2-2" type="number" min="0.1" max="5" step="0.01" value="2"></label>
+            <label class="arch-cell" id="cell-L-2-3" title="" data-i18n-title="arch.length.tip" hidden><span>L<sub>3</sub></span><input id="L-2-3" type="number" min="0.1" max="3" step="0.001" value="0.21767"></label>
+            <label class="arch-cell" id="cell-m-2-3" title="" data-i18n-title="arch.mass.tip" hidden><span>m<sub>3</sub></span><input id="m-2-3" type="number" min="0.1" max="5" step="0.01" value="1"></label>
+          </div>
+        </div>
+        <div class="arch-e">
+          <div><b id="e-pe-2">0.0 J</b><span data-i18n="energy.potential">Potential</span></div>
+          <div><b id="e-ke-2">0.0 J</b><span data-i18n="energy.kinetic">Kinetic</span></div>
+          <div><b class="e-tot" id="e-total-2">0.0 J</b><span data-i18n="energy.total">Total</span></div>
+        </div>
+      </div>
+
+      <div class="arch-row" id="arch-row-3">
+        <div class="arch-head">
+          <div class="arch-lead p3">
+            <button class="arch-name" id="tab-3" title=""><i class="dot p3"></i>C</button>
+            <button class="arch-step" id="arch-add-3" title="">+</button>
+            <button class="arch-step" id="arch-del-3" title="">&minus;</button>
+          </div>
+          <svg class="arch-fig" id="arch-fig-3" aria-hidden="true"></svg>
+        </div>
+        <div class="arch-grid">
+          <label class="arch-cell total" id="cell-LT-3" title="" data-i18n-title="arch.total.tip"><span>L<sub>T</sub></span><input id="LT-3" type="number" min="0.1" max="3" step="0.001" value="0.994"></label>
+          <div class="arch-links">
+            <label class="arch-cell" id="cell-L-3-1" title="" data-i18n-title="arch.length.tip"><span>L<sub>1</sub></span><input id="L-3-1" type="number" min="0.1" max="3" step="0.001" value="0.445"></label>
+            <label class="arch-cell" id="cell-m-3-1" title="" data-i18n-title="arch.mass.tip"><span>m<sub>1</sub></span><input id="m-3-1" type="number" min="0.1" max="5" step="0.01" value="4"></label>
+            <label class="arch-cell" id="cell-L-3-2" title="" data-i18n-title="arch.length.tip"><span>L<sub>2</sub></span><input id="L-3-2" type="number" min="0.1" max="3" step="0.001" value="0.33133"></label>
+            <label class="arch-cell" id="cell-m-3-2" title="" data-i18n-title="arch.mass.tip"><span>m<sub>2</sub></span><input id="m-3-2" type="number" min="0.1" max="5" step="0.01" value="1.8"></label>
+            <label class="arch-cell" id="cell-L-3-3" title="" data-i18n-title="arch.length.tip"><span>L<sub>3</sub></span><input id="L-3-3" type="number" min="0.1" max="3" step="0.001" value="0.21767"></label>
+            <label class="arch-cell" id="cell-m-3-3" title="" data-i18n-title="arch.mass.tip"><span>m<sub>3</sub></span><input id="m-3-3" type="number" min="0.1" max="5" step="0.01" value="1"></label>
+          </div>
+        </div>
+        <div class="arch-e">
+          <div><b id="e-pe-3">0.0 J</b><span data-i18n="energy.potential">Potential</span></div>
+          <div><b id="e-ke-3">0.0 J</b><span data-i18n="energy.kinetic">Kinetic</span></div>
+          <div><b class="e-tot" id="e-total-3">0.0 J</b><span data-i18n="energy.total">Total</span></div>
+        </div>
+      </div>
     </fieldset>
 
+    <!-- Every link on the pivot, not the selected pendulum's alone: what the
+         three pendulums are released from is the experiment, and comparing them
+         should not mean switching between them.
+
+         One line per link, angle then speed, so a third link appends a line
+         rather than reflowing the pairs already there. Each pendulum's first
+         line carries its letter, in its own colour; the lines under it are
+         indented by the same empty column, which is what groups them.
+
+         A pendulum that is off the pivot shows nothing here, as its Architecture
+         row shows nothing: it is not being released from anything. -->
     <fieldset>
       <legend><span data-i18n="init.legend">Initial conditions</span> <small data-i18n="init.sub">&mdash; on Reset</small></legend>
-      <!-- One row per link, angle then speed, so a third link appends a row
-           rather than reflowing the pairs already there. -->
-      <div class="grid">
-        <label><span>&theta;<sub>1</sub> <small>&deg;</small></span><input id="t1" type="number" value="90" step="1"></label>
-        <label><span>&omega;<sub>1</sub> <small>&deg;/s</small></span><input id="w1" type="number" value="0" step="1"></label>
-        <label id="init-t2"><span>&theta;<sub>2</sub> <small>&deg;</small></span><input id="t2" type="number" value="0" step="1"></label>
-        <label id="init-w2"><span>&omega;<sub>2</sub> <small>&deg;/s</small></span><input id="w2" type="number" value="0" step="1"></label>
-        <label id="init-t3" hidden><span>&theta;<sub>3</sub> <small>&deg;</small></span><input id="t3" type="number" value="0" step="1"></label>
-        <label id="init-w3" hidden><span>&omega;<sub>3</sub> <small>&deg;/s</small></span><input id="w3" type="number" value="0" step="1"></label>
+      <div class="chain-grid">
+        <div class="chain-line" id="init-line-1-1"><b class="name p1">A</b>
+          <label><span>&theta;<sub>1</sub> <small>&deg;</small></span><input id="t-1-1" type="number" value="90" step="1"></label>
+          <label><span>&omega;<sub>1</sub> <small>&deg;/s</small></span><input id="w-1-1" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-1-2" hidden><b class="name"></b>
+          <label><span>&theta;<sub>2</sub> <small>&deg;</small></span><input id="t-1-2" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>2</sub> <small>&deg;/s</small></span><input id="w-1-2" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-1-3" hidden><b class="name"></b>
+          <label><span>&theta;<sub>3</sub> <small>&deg;</small></span><input id="t-1-3" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>3</sub> <small>&deg;/s</small></span><input id="w-1-3" type="number" value="0" step="1"></label></div>
+
+        <div class="chain-line gap" id="init-line-2-1"><b class="name p2">B</b>
+          <label><span>&theta;<sub>1</sub> <small>&deg;</small></span><input id="t-2-1" type="number" value="90" step="1"></label>
+          <label><span>&omega;<sub>1</sub> <small>&deg;/s</small></span><input id="w-2-1" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-2-2"><b class="name"></b>
+          <label><span>&theta;<sub>2</sub> <small>&deg;</small></span><input id="t-2-2" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>2</sub> <small>&deg;/s</small></span><input id="w-2-2" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-2-3" hidden><b class="name"></b>
+          <label><span>&theta;<sub>3</sub> <small>&deg;</small></span><input id="t-2-3" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>3</sub> <small>&deg;/s</small></span><input id="w-2-3" type="number" value="0" step="1"></label></div>
+
+        <div class="chain-line gap" id="init-line-3-1"><b class="name p3">C</b>
+          <label><span>&theta;<sub>1</sub> <small>&deg;</small></span><input id="t-3-1" type="number" value="90" step="1"></label>
+          <label><span>&omega;<sub>1</sub> <small>&deg;/s</small></span><input id="w-3-1" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-3-2"><b class="name"></b>
+          <label><span>&theta;<sub>2</sub> <small>&deg;</small></span><input id="t-3-2" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>2</sub> <small>&deg;/s</small></span><input id="w-3-2" type="number" value="0" step="1"></label></div>
+        <div class="chain-line" id="init-line-3-3"><b class="name"></b>
+          <label><span>&theta;<sub>3</sub> <small>&deg;</small></span><input id="t-3-3" type="number" value="0" step="1"></label>
+          <label><span>&omega;<sub>3</sub> <small>&deg;/s</small></span><input id="w-3-3" type="number" value="0" step="1"></label></div>
       </div>
       <button id="use-current" class="wide" data-i18n="init.use">Use current state as initial</button>
     </fieldset>
 
     <fieldset>
       <legend data-i18n="trails.legend">Trails</legend>
-      <!-- Every traceable bob on one line, not following the Architecture tab,
-           so two chains can be compared without switching tabs. Nine at most,
+      <!-- Every traceable bob on one line, not following the Architecture
+           selection, so two chains can be compared without switching. Nine at most,
            as numerals grouped behind their chain's letter in its own colour.
 
-           Lit rather than ticked, like the architecture tabs. The checkbox is
+           Lit rather than ticked, like the architecture pills. The checkbox is
            still underneath — it holds the state and takes the keyboard focus —
            it is simply not drawn.
 
            Bob 1 appears only on a single pendulum. Each group starts on its
-           chain's tip alone, which is the rule setLinks keeps to. -->
+           chain's tip alone, which is the rule setLinkCount keeps to. -->
       <div class="trail-bar">
         <span class="trail-set" id="trail-row-1"><b class="name p1">A</b>
           <label class="tog" id="trail-1-1-row" title=""><input id="trail-1-1" type="checkbox" checked>1</label>
@@ -231,19 +287,23 @@
           <label class="tog" id="trail-3-3-row" title=""><input id="trail-3-3" type="checkbox" checked>3</label>
         </span>
       </div>
-      <div class="row gap" data-i18n-title="trails.style.tip">
-        <label data-i18n="trails.style">Style</label>
-        <div class="seg">
-          <button id="trail-dots" data-i18n="trails.dots">Dots</button>
-          <button id="trail-line" class="on" data-i18n="trails.line">Line</button>
-        </div>
+      <!-- Unlabelled, so the two names take the full width: Dots and Lines say
+           between them what the control is, and the legend two rows up has
+           already said these are trails. The name is in the tooltip and in the
+           group's aria-label. -->
+      <div class="seg style-row" role="group" data-i18n-aria="trails.style" data-i18n-title="trails.style.tip">
+        <button id="trail-dots" data-i18n="trails.dots">Dots</button>
+        <button id="trail-line" class="on" data-i18n="trails.line">Lines</button>
       </div>
-      <div class="row">
-        <label for="trail-len"><span data-i18n="trails.length">Length</span> <small>s</small></label>
+      <!-- Four cells rather than .row's three: Clear takes the label's place at
+           the head of the row, so it stops being a full-width button of its own,
+           and Length moves across to sit against the value it names. -->
+      <div class="row len-row">
+        <button id="clear" data-i18n="trails.clear">Clear</button>
         <input id="trail-len-range" type="range" min="1" max="60" step="1" value="25">
+        <label for="trail-len"><span data-i18n="trails.length">Length</span> <small>s</small></label>
         <input id="trail-len" type="number" min="1" max="60" step="1" value="25">
       </div>
-      <button id="clear" class="wide" data-i18n="trails.clear">Clear trails</button>
     </fieldset>
 
     <!-- Driven by export.js, which index.js knows nothing about: delete this
@@ -278,17 +338,54 @@
       <p id="export-auto" class="export-status"></p>
     </fieldset>
 
+    <!-- Every link on the pivot, in the same shape and the same order as the
+         Initial conditions above: the same three columns, the same letters
+         heading the same groups, so a state and the conditions it was released
+         from can be read against each other line for line.
+
+         The clock and the two instrumentation figures close the box behind a
+         rule. They belong to the page rather than to any one pendulum, so they
+         take the θ and ω columns with the letter column left empty. -->
     <fieldset class="readout">
-      <legend><i class="dot p1" id="dot-state"></i><span id="legend-state">State</span></legend>
-      <div><span>&theta;<sub>1</sub></span><b id="r-t1">0&deg;</b></div>
-      <div><span>&omega;<sub>1</sub></span><b id="r-w1">0&deg;/s</b></div>
-      <div id="r-row-t2"><span>&theta;<sub>2</sub></span><b id="r-t2">0&deg;</b></div>
-      <div id="r-row-w2"><span>&omega;<sub>2</sub></span><b id="r-w2">0&deg;/s</b></div>
-      <div id="r-row-t3" hidden><span>&theta;<sub>3</sub></span><b id="r-t3">0&deg;</b></div>
-      <div id="r-row-w3" hidden><span>&omega;<sub>3</sub></span><b id="r-w3">0&deg;/s</b></div>
-      <div><span data-i18n="state.time">Time</span><b id="r-time">0.00 s</b></div>
-      <div class="perf lead" title="" data-i18n-title="state.rate.tip"><span data-i18n="state.rate">Rate</span><b id="r-fps">— fps</b></div>
-      <div class="perf" title="" data-i18n-title="state.cost.tip"><span data-i18n="state.cost">JS</span><b id="r-cost">—</b></div>
+      <legend data-i18n="state.legend">State</legend>
+      <div class="chain-grid">
+        <div class="chain-line" id="r-line-1-1"><b class="name p1">A</b>
+          <div><span>&theta;<sub>1</sub></span><b id="r-t-1-1">0&deg;</b></div>
+          <div><span>&omega;<sub>1</sub></span><b id="r-w-1-1">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-1-2" hidden><b class="name"></b>
+          <div><span>&theta;<sub>2</sub></span><b id="r-t-1-2">0&deg;</b></div>
+          <div><span>&omega;<sub>2</sub></span><b id="r-w-1-2">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-1-3" hidden><b class="name"></b>
+          <div><span>&theta;<sub>3</sub></span><b id="r-t-1-3">0&deg;</b></div>
+          <div><span>&omega;<sub>3</sub></span><b id="r-w-1-3">0&deg;/s</b></div></div>
+
+        <div class="chain-line gap" id="r-line-2-1"><b class="name p2">B</b>
+          <div><span>&theta;<sub>1</sub></span><b id="r-t-2-1">0&deg;</b></div>
+          <div><span>&omega;<sub>1</sub></span><b id="r-w-2-1">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-2-2"><b class="name"></b>
+          <div><span>&theta;<sub>2</sub></span><b id="r-t-2-2">0&deg;</b></div>
+          <div><span>&omega;<sub>2</sub></span><b id="r-w-2-2">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-2-3" hidden><b class="name"></b>
+          <div><span>&theta;<sub>3</sub></span><b id="r-t-2-3">0&deg;</b></div>
+          <div><span>&omega;<sub>3</sub></span><b id="r-w-2-3">0&deg;/s</b></div></div>
+
+        <div class="chain-line gap" id="r-line-3-1"><b class="name p3">C</b>
+          <div><span>&theta;<sub>1</sub></span><b id="r-t-3-1">0&deg;</b></div>
+          <div><span>&omega;<sub>1</sub></span><b id="r-w-3-1">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-3-2"><b class="name"></b>
+          <div><span>&theta;<sub>2</sub></span><b id="r-t-3-2">0&deg;</b></div>
+          <div><span>&omega;<sub>2</sub></span><b id="r-w-3-2">0&deg;/s</b></div></div>
+        <div class="chain-line" id="r-line-3-3"><b class="name"></b>
+          <div><span>&theta;<sub>3</sub></span><b id="r-t-3-3">0&deg;</b></div>
+          <div><span>&omega;<sub>3</sub></span><b id="r-w-3-3">0&deg;/s</b></div></div>
+
+        <div class="chain-line gap"><b class="name"></b>
+          <div><span data-i18n="state.time">Time</span><b id="r-time">0.00 s</b></div>
+          <div></div></div>
+        <div class="chain-line perf"><b class="name"></b>
+          <div title="" data-i18n-title="state.rate.tip"><span data-i18n="state.rate">Rate</span><b id="r-fps">— fps</b></div>
+          <div title="" data-i18n-title="state.cost.tip"><span data-i18n="state.cost">JS</span><b id="r-cost">—</b></div></div>
+      </div>
     </fieldset>
   </aside>
 

@@ -1,259 +1,2114 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- The reworked Architecture box in place, drawn at the panel's real
      scale: 320 px column, index.css colours, and draw()'s own bob and
      rod ratios. Every other box sits where headless Chrome measures it
      on the live page, shifted by what the rework costs above it.
      A is selected, C is switched off. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 704 1420.35" width="704" height="1420.35">
-  <style>
-    .t { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+
+<svg
+   viewBox="0 0 704 1420.35"
+   width="704"
+   height="1420.35"
+   version="1.1"
+   id="svg153"
+   sodipodi:docname="arch-box.svg"
+   inkscape:version="1.4.2 (ebf0e940, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs153" />
+  <sodipodi:namedview
+     id="namedview153"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.47593904"
+     inkscape:cx="352.98638"
+     inkscape:cy="710.17499"
+     inkscape:window-width="1472"
+     inkscape:window-height="895"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg153" />
+  <style
+     id="style1">
+    .t { font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, system-ui, sans-serif; }
   </style>
-  <rect width="704" height="1420.35" fill="#12151d"/>
-  <rect x="8" y="14" width="130" height="34.8" rx="5" fill="#96b3e9" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="73" y="36.015" fill="#0e1117" font-size="13" text-anchor="middle" font-weight="600">Start</text>
-  <rect x="144" y="14" width="130" height="34.8" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="209" y="36.015" fill="#8d94a8" font-size="13" text-anchor="middle">Reset</text>
-  <rect x="280" y="14" width="44" height="34.8" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="302" y="35.305" fill="#8d94a8" font-size="11" text-anchor="middle" font-weight="600" letter-spacing="0.66">EN</text>
-  <path d="M 164.8 68.75 H 318 A 6 6 0 0 1 324 74.75 V 288.5 A 6 6 0 0 1 318 294.5 H 14 A 6 6 0 0 1 8 288.5 V 74.75 A 6 6 0 0 1 14 68.75 H 19" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <rect x="23" y="61.8" width="14" height="14" rx="4" fill="#96b3e9" stroke="#96b3e9" stroke-width="1"/>
-  <path d="M 26.03 69.15 L 28.72 71.83 L 33.97 66.12" fill="none" stroke="#0e1117" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <text class="t" x="44" y="72.655" fill="#96b3e9" font-size="11" letter-spacing="0.55">FLIGHT SIMULATOR</text>
-  <clipPath id="pclip"><rect x="19" y="95.8" width="294" height="52" rx="8"/></clipPath>
-  <rect x="19" y="95.8" width="294" height="52" rx="8" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <g clip-path="url(#pclip)">
-  <line x1="19" y1="119.356" x2="313" y2="119.356" stroke="#2c3242" stroke-width="1" stroke-dasharray="3 3"/>
-  <polygon points="19,119.4 20.23,119.4 21.45,119.4 22.68,119.4 23.9,119.4 25.12,119.4 26.35,119.4 27.57,119.2 28.8,117.3 30.02,113.8 31.25,109.6 32.48,105.3 33.7,101.8 34.92,99.94 36.15,99.8 37.38,99.8 38.6,99.8 39.83,99.8 41.05,99.8 42.27,99.8 43.5,99.8 44.72,99.8 45.95,99.8 47.17,99.8 48.4,99.8 49.62,99.8 50.85,99.8 52.08,99.8 53.3,99.8 54.52,99.8 55.75,99.8 56.98,99.8 58.2,99.8 59.43,99.8 60.65,99.8 61.88,99.8 63.1,99.8 64.33,99.8 65.55,99.8 66.78,99.8 68,99.8 69.22,102.5 70.45,109.3 71.67,118.5 72.9,128.3 74.12,136.9 75.35,142.6 76.58,143.8 77.8,143.8 79.03,143.8 80.25,143.8 81.47,143.8 82.7,143.8 83.92,143.8 85.15,143.8 86.38,143.8 87.6,143.8 88.83,143.8 90.05,143.8 91.27,143.8 92.5,143.8 93.72,143.8 94.95,143.8 96.17,143.8 97.4,143.8 98.62,143.8 99.85,143.8 101.1,143.8 102.3,143.8 103.5,143.8 104.8,143.8 106,143.8 107.2,143.8 108.4,143.8 109.7,143.8 110.9,143.8 112.1,143.8 113.3,141.1 114.5,134.3 115.8,125.1 117,115.3 118.2,106.7 119.5,101 120.7,99.8 121.9,99.8 123.1,99.8 124.3,99.8 125.6,99.8 126.8,99.8 128,99.8 129.2,99.8 130.5,99.8 131.7,99.8 132.9,99.8 134.2,99.8 135.4,99.8 136.6,99.8 137.8,99.8 139.1,99.8 140.3,99.8 141.5,99.8 142.7,99.8 143.9,99.8 145.2,99.8 146.4,99.8 147.6,99.8 148.8,99.8 150.1,99.8 151.3,99.8 152.5,99.8 153.8,100.3 155,102.9 156.2,106.7 157.4,111 158.7,115.1 159.9,118.2 161.1,119.4 162.3,119.4 163.5,119.4 164.8,119.4 166,119.4 167.2,119.4 168.4,119.4 169.7,119.4 170.9,119.4 172.1,119.4 173.3,119.4 174.6,119.4 175.8,119.4 177,119.4 178.2,119.4 179.5,119.4 180.7,119.4 181.9,119.4 183.2,119.4 184.4,119.4 185.6,119.4 186.8,119.4 188,119.4 189.3,119.4 190.5,119.4 191.7,119.4 192.9,119.4 194.2,119.4 195.4,119.4 196.6,119.4 197.8,119.4 199.1,119.4 200.3,119.4 201.5,119.4 202.8,119.4 204,119.4 205.2,119.4 206.4,119.4 207.7,119.4 208.9,119.4 210.1,119.4 211.3,119.4 212.6,119.4 213.8,119.4 215,119.4 216.2,119.4 217.5,119.4 218.7,119.4 219.9,119.4 221.1,119.4 222.3,119.4 223.6,119.4 224.8,119.4 226,119.4 227.2,119.4 228.5,119.4 229.7,119.4 230.9,119.4 232.2,119.4 233.4,119.4 234.6,119.4 235.8,119.4 237.1,119.4 238.3,119.4 239.5,119.4 240.7,119.4 241.9,119.4 243.2,119.4 244.4,119.4 245.6,119.4 246.8,119.4 248.1,119.4 249.3,119.4 250.5,119.4 251.8,119.4 253,119.4 254.2,119.4 255.4,119.4 256.6,119.4 257.9,119.4 259.1,119.4 260.3,119.4 261.5,119.4 262.8,119.4 264,119.4 265.2,119.4 266.4,119.4 267.7,119.4 268.9,119.4 270.1,119.4 271.4,119.4 272.6,119.4 273.8,119.4 275,119.4 276.2,119.4 277.5,119.4 278.7,119.4 279.9,119.4 281.2,119.4 282.4,119.4 283.6,119.4 284.8,119.4 286.1,119.4 287.3,119.4 288.5,119.4 289.7,119.4 290.9,119.4 292.2,119.4 293.4,119.4 294.6,119.4 295.9,119.4 297.1,119.4 298.3,119.4 299.5,119.4 300.8,119.4 302,119.4 303.2,119.4 304.4,119.4 305.6,119.4 306.9,119.4 308.1,119.4 309.3,119.4 310.6,119.4 311.8,119.4 313,119.4 313,143.8 19,143.8" fill="#96b3e9" fill-opacity="0.12"/>
-  <polyline points="19,119.4 20.23,119.4 21.45,119.4 22.68,119.4 23.9,119.4 25.12,119.4 26.35,119.4 27.57,119.2 28.8,117.3 30.02,113.8 31.25,109.6 32.48,105.3 33.7,101.8 34.92,99.94 36.15,99.8 37.38,99.8 38.6,99.8 39.83,99.8 41.05,99.8 42.27,99.8 43.5,99.8 44.72,99.8 45.95,99.8 47.17,99.8 48.4,99.8 49.62,99.8 50.85,99.8 52.08,99.8 53.3,99.8 54.52,99.8 55.75,99.8 56.98,99.8 58.2,99.8 59.43,99.8 60.65,99.8 61.88,99.8 63.1,99.8 64.33,99.8 65.55,99.8 66.78,99.8 68,99.8 69.22,102.5 70.45,109.3 71.67,118.5 72.9,128.3 74.12,136.9 75.35,142.6 76.58,143.8 77.8,143.8 79.03,143.8 80.25,143.8 81.47,143.8 82.7,143.8 83.92,143.8 85.15,143.8 86.38,143.8 87.6,143.8 88.83,143.8 90.05,143.8 91.27,143.8 92.5,143.8 93.72,143.8 94.95,143.8 96.17,143.8 97.4,143.8 98.62,143.8 99.85,143.8 101.1,143.8 102.3,143.8 103.5,143.8 104.8,143.8 106,143.8 107.2,143.8 108.4,143.8 109.7,143.8 110.9,143.8 112.1,143.8 113.3,141.1 114.5,134.3 115.8,125.1 117,115.3 118.2,106.7 119.5,101 120.7,99.8 121.9,99.8 123.1,99.8 124.3,99.8 125.6,99.8 126.8,99.8 128,99.8 129.2,99.8 130.5,99.8 131.7,99.8 132.9,99.8 134.2,99.8 135.4,99.8 136.6,99.8 137.8,99.8 139.1,99.8 140.3,99.8 141.5,99.8 142.7,99.8 143.9,99.8 145.2,99.8 146.4,99.8 147.6,99.8 148.8,99.8 150.1,99.8 151.3,99.8 152.5,99.8 153.8,100.3 155,102.9 156.2,106.7 157.4,111 158.7,115.1 159.9,118.2 161.1,119.4 162.3,119.4 163.5,119.4 164.8,119.4 166,119.4 167.2,119.4 168.4,119.4 169.7,119.4 170.9,119.4 172.1,119.4 173.3,119.4 174.6,119.4 175.8,119.4 177,119.4 178.2,119.4 179.5,119.4 180.7,119.4 181.9,119.4 183.2,119.4 184.4,119.4 185.6,119.4 186.8,119.4 188,119.4 189.3,119.4 190.5,119.4 191.7,119.4 192.9,119.4 194.2,119.4 195.4,119.4 196.6,119.4 197.8,119.4 199.1,119.4 200.3,119.4 201.5,119.4 202.8,119.4 204,119.4 205.2,119.4 206.4,119.4 207.7,119.4 208.9,119.4 210.1,119.4 211.3,119.4 212.6,119.4 213.8,119.4 215,119.4 216.2,119.4 217.5,119.4 218.7,119.4 219.9,119.4 221.1,119.4 222.3,119.4 223.6,119.4 224.8,119.4 226,119.4 227.2,119.4 228.5,119.4 229.7,119.4 230.9,119.4 232.2,119.4 233.4,119.4 234.6,119.4 235.8,119.4 237.1,119.4 238.3,119.4 239.5,119.4 240.7,119.4 241.9,119.4 243.2,119.4 244.4,119.4 245.6,119.4 246.8,119.4 248.1,119.4 249.3,119.4 250.5,119.4 251.8,119.4 253,119.4 254.2,119.4 255.4,119.4 256.6,119.4 257.9,119.4 259.1,119.4 260.3,119.4 261.5,119.4 262.8,119.4 264,119.4 265.2,119.4 266.4,119.4 267.7,119.4 268.9,119.4 270.1,119.4 271.4,119.4 272.6,119.4 273.8,119.4 275,119.4 276.2,119.4 277.5,119.4 278.7,119.4 279.9,119.4 281.2,119.4 282.4,119.4 283.6,119.4 284.8,119.4 286.1,119.4 287.3,119.4 288.5,119.4 289.7,119.4 290.9,119.4 292.2,119.4 293.4,119.4 294.6,119.4 295.9,119.4 297.1,119.4 298.3,119.4 299.5,119.4 300.8,119.4 302,119.4 303.2,119.4 304.4,119.4 305.6,119.4 306.9,119.4 308.1,119.4 309.3,119.4 310.6,119.4 311.8,119.4 313,119.4" fill="none" stroke="#96b3e9" stroke-width="1.5"/>
-  <rect x="76.1667" y="97.8" width="35.9333" height="48" fill="#96b3e9" fill-opacity="0.18"/>
-  <line x1="76.6667" y1="97.8" x2="76.6667" y2="145.8" stroke="#96b3e9" stroke-width="1"/>
-  <line x1="111.6" y1="97.8" x2="111.6" y2="145.8" stroke="#96b3e9" stroke-width="1"/>
-  <line x1="19" y1="97.8" x2="19" y2="145.8" stroke="#ffb347" stroke-width="1"/>
-  <circle cx="19" cy="119.356" r="3" fill="#ffb347"/>
+  <rect
+     width="704"
+     height="1420.35"
+     fill="#12151d"
+     id="rect1"
+     sodipodi:insensitive="true"
+     x="0"
+     y="0" />
+  <rect
+     x="18.740583"
+     y="656.95148"
+     width="296.88596"
+     height="30.113308"
+     rx="4.9972558"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1.90287"
+     id="rect35-7"
+     style="fill:#12151d;fill-opacity:1" />
+  <rect
+     x="15.057467"
+     y="414.00751"
+     width="301.88553"
+     height="114.40657"
+     rx="7.9972854"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1.11493"
+     id="rect43" />
+  <rect
+     x="14.766805"
+     y="534.0672"
+     width="301.88553"
+     height="114.40657"
+     rx="7.9972854"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1.11493"
+     id="rect43-2" />
+  <rect
+     x="8"
+     y="14"
+     width="130"
+     height="34.8"
+     rx="5"
+     fill="#96b3e9"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect2" />
+  <text
+     class="t"
+     x="73"
+     y="36.015"
+     fill="#0e1117"
+     font-size="13"
+     text-anchor="middle"
+     font-weight="600"
+     id="text2">Start</text>
+  <rect
+     x="144"
+     y="14"
+     width="130"
+     height="34.8"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect3" />
+  <text
+     class="t"
+     x="209"
+     y="36.015"
+     fill="#8d94a8"
+     font-size="13"
+     text-anchor="middle"
+     id="text3">Reset</text>
+  <rect
+     x="280"
+     y="14"
+     width="44"
+     height="34.8"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect4" />
+  <text
+     class="t"
+     x="302"
+     y="35.305"
+     fill="#8d94a8"
+     font-size="11"
+     text-anchor="middle"
+     font-weight="600"
+     letter-spacing="0.66"
+     id="text4">EN</text>
+  <path
+     d="M 164.8 68.75 H 318 A 6 6 0 0 1 324 74.75 V 288.5 A 6 6 0 0 1 318 294.5 H 14 A 6 6 0 0 1 8 288.5 V 74.75 A 6 6 0 0 1 14 68.75 H 19"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="path4"
+     style="fill:#12151d;fill-opacity:1" />
+  <rect
+     x="23"
+     y="61.8"
+     width="14"
+     height="14"
+     rx="4"
+     fill="#96b3e9"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect5" />
+  <path
+     d="M 26.03 69.15 L 28.72 71.83 L 33.97 66.12"
+     fill="none"
+     stroke="#0e1117"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     id="path5" />
+  <text
+     class="t"
+     x="44"
+     y="72.655"
+     fill="#96b3e9"
+     font-size="11"
+     letter-spacing="0.55"
+     id="text5">FLIGHT SIMULATOR</text>
+  <clipPath
+     id="pclip">
+    <rect
+       x="19"
+       y="95.8"
+       width="294"
+       height="52"
+       rx="8"
+       id="rect6" />
+  </clipPath>
+  <rect
+     x="19"
+     y="95.8"
+     width="294"
+     height="52"
+     rx="8"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect7" />
+  <g
+     clip-path="url(#pclip)"
+     id="g10">
+    <line
+       x1="19"
+       y1="119.356"
+       x2="313"
+       y2="119.356"
+       stroke="#2c3242"
+       stroke-width="1"
+       stroke-dasharray="3 3"
+       id="line7" />
+    <polygon
+       points="19,119.4 20.23,119.4 21.45,119.4 22.68,119.4 23.9,119.4 25.12,119.4 26.35,119.4 27.57,119.2 28.8,117.3 30.02,113.8 31.25,109.6 32.48,105.3 33.7,101.8 34.92,99.94 36.15,99.8 37.38,99.8 38.6,99.8 39.83,99.8 41.05,99.8 42.27,99.8 43.5,99.8 44.72,99.8 45.95,99.8 47.17,99.8 48.4,99.8 49.62,99.8 50.85,99.8 52.08,99.8 53.3,99.8 54.52,99.8 55.75,99.8 56.98,99.8 58.2,99.8 59.43,99.8 60.65,99.8 61.88,99.8 63.1,99.8 64.33,99.8 65.55,99.8 66.78,99.8 68,99.8 69.22,102.5 70.45,109.3 71.67,118.5 72.9,128.3 74.12,136.9 75.35,142.6 76.58,143.8 77.8,143.8 79.03,143.8 80.25,143.8 81.47,143.8 82.7,143.8 83.92,143.8 85.15,143.8 86.38,143.8 87.6,143.8 88.83,143.8 90.05,143.8 91.27,143.8 92.5,143.8 93.72,143.8 94.95,143.8 96.17,143.8 97.4,143.8 98.62,143.8 99.85,143.8 101.1,143.8 102.3,143.8 103.5,143.8 104.8,143.8 106,143.8 107.2,143.8 108.4,143.8 109.7,143.8 110.9,143.8 112.1,143.8 113.3,141.1 114.5,134.3 115.8,125.1 117,115.3 118.2,106.7 119.5,101 120.7,99.8 121.9,99.8 123.1,99.8 124.3,99.8 125.6,99.8 126.8,99.8 128,99.8 129.2,99.8 130.5,99.8 131.7,99.8 132.9,99.8 134.2,99.8 135.4,99.8 136.6,99.8 137.8,99.8 139.1,99.8 140.3,99.8 141.5,99.8 142.7,99.8 143.9,99.8 145.2,99.8 146.4,99.8 147.6,99.8 148.8,99.8 150.1,99.8 151.3,99.8 152.5,99.8 153.8,100.3 155,102.9 156.2,106.7 157.4,111 158.7,115.1 159.9,118.2 161.1,119.4 162.3,119.4 163.5,119.4 164.8,119.4 166,119.4 167.2,119.4 168.4,119.4 169.7,119.4 170.9,119.4 172.1,119.4 173.3,119.4 174.6,119.4 175.8,119.4 177,119.4 178.2,119.4 179.5,119.4 180.7,119.4 181.9,119.4 183.2,119.4 184.4,119.4 185.6,119.4 186.8,119.4 188,119.4 189.3,119.4 190.5,119.4 191.7,119.4 192.9,119.4 194.2,119.4 195.4,119.4 196.6,119.4 197.8,119.4 199.1,119.4 200.3,119.4 201.5,119.4 202.8,119.4 204,119.4 205.2,119.4 206.4,119.4 207.7,119.4 208.9,119.4 210.1,119.4 211.3,119.4 212.6,119.4 213.8,119.4 215,119.4 216.2,119.4 217.5,119.4 218.7,119.4 219.9,119.4 221.1,119.4 222.3,119.4 223.6,119.4 224.8,119.4 226,119.4 227.2,119.4 228.5,119.4 229.7,119.4 230.9,119.4 232.2,119.4 233.4,119.4 234.6,119.4 235.8,119.4 237.1,119.4 238.3,119.4 239.5,119.4 240.7,119.4 241.9,119.4 243.2,119.4 244.4,119.4 245.6,119.4 246.8,119.4 248.1,119.4 249.3,119.4 250.5,119.4 251.8,119.4 253,119.4 254.2,119.4 255.4,119.4 256.6,119.4 257.9,119.4 259.1,119.4 260.3,119.4 261.5,119.4 262.8,119.4 264,119.4 265.2,119.4 266.4,119.4 267.7,119.4 268.9,119.4 270.1,119.4 271.4,119.4 272.6,119.4 273.8,119.4 275,119.4 276.2,119.4 277.5,119.4 278.7,119.4 279.9,119.4 281.2,119.4 282.4,119.4 283.6,119.4 284.8,119.4 286.1,119.4 287.3,119.4 288.5,119.4 289.7,119.4 290.9,119.4 292.2,119.4 293.4,119.4 294.6,119.4 295.9,119.4 297.1,119.4 298.3,119.4 299.5,119.4 300.8,119.4 302,119.4 303.2,119.4 304.4,119.4 305.6,119.4 306.9,119.4 308.1,119.4 309.3,119.4 310.6,119.4 311.8,119.4 313,119.4 313,143.8 19,143.8"
+       fill="#96b3e9"
+       fill-opacity="0.12"
+       id="polygon7" />
+    <polyline
+       points="19,119.4 20.23,119.4 21.45,119.4 22.68,119.4 23.9,119.4 25.12,119.4 26.35,119.4 27.57,119.2 28.8,117.3 30.02,113.8 31.25,109.6 32.48,105.3 33.7,101.8 34.92,99.94 36.15,99.8 37.38,99.8 38.6,99.8 39.83,99.8 41.05,99.8 42.27,99.8 43.5,99.8 44.72,99.8 45.95,99.8 47.17,99.8 48.4,99.8 49.62,99.8 50.85,99.8 52.08,99.8 53.3,99.8 54.52,99.8 55.75,99.8 56.98,99.8 58.2,99.8 59.43,99.8 60.65,99.8 61.88,99.8 63.1,99.8 64.33,99.8 65.55,99.8 66.78,99.8 68,99.8 69.22,102.5 70.45,109.3 71.67,118.5 72.9,128.3 74.12,136.9 75.35,142.6 76.58,143.8 77.8,143.8 79.03,143.8 80.25,143.8 81.47,143.8 82.7,143.8 83.92,143.8 85.15,143.8 86.38,143.8 87.6,143.8 88.83,143.8 90.05,143.8 91.27,143.8 92.5,143.8 93.72,143.8 94.95,143.8 96.17,143.8 97.4,143.8 98.62,143.8 99.85,143.8 101.1,143.8 102.3,143.8 103.5,143.8 104.8,143.8 106,143.8 107.2,143.8 108.4,143.8 109.7,143.8 110.9,143.8 112.1,143.8 113.3,141.1 114.5,134.3 115.8,125.1 117,115.3 118.2,106.7 119.5,101 120.7,99.8 121.9,99.8 123.1,99.8 124.3,99.8 125.6,99.8 126.8,99.8 128,99.8 129.2,99.8 130.5,99.8 131.7,99.8 132.9,99.8 134.2,99.8 135.4,99.8 136.6,99.8 137.8,99.8 139.1,99.8 140.3,99.8 141.5,99.8 142.7,99.8 143.9,99.8 145.2,99.8 146.4,99.8 147.6,99.8 148.8,99.8 150.1,99.8 151.3,99.8 152.5,99.8 153.8,100.3 155,102.9 156.2,106.7 157.4,111 158.7,115.1 159.9,118.2 161.1,119.4 162.3,119.4 163.5,119.4 164.8,119.4 166,119.4 167.2,119.4 168.4,119.4 169.7,119.4 170.9,119.4 172.1,119.4 173.3,119.4 174.6,119.4 175.8,119.4 177,119.4 178.2,119.4 179.5,119.4 180.7,119.4 181.9,119.4 183.2,119.4 184.4,119.4 185.6,119.4 186.8,119.4 188,119.4 189.3,119.4 190.5,119.4 191.7,119.4 192.9,119.4 194.2,119.4 195.4,119.4 196.6,119.4 197.8,119.4 199.1,119.4 200.3,119.4 201.5,119.4 202.8,119.4 204,119.4 205.2,119.4 206.4,119.4 207.7,119.4 208.9,119.4 210.1,119.4 211.3,119.4 212.6,119.4 213.8,119.4 215,119.4 216.2,119.4 217.5,119.4 218.7,119.4 219.9,119.4 221.1,119.4 222.3,119.4 223.6,119.4 224.8,119.4 226,119.4 227.2,119.4 228.5,119.4 229.7,119.4 230.9,119.4 232.2,119.4 233.4,119.4 234.6,119.4 235.8,119.4 237.1,119.4 238.3,119.4 239.5,119.4 240.7,119.4 241.9,119.4 243.2,119.4 244.4,119.4 245.6,119.4 246.8,119.4 248.1,119.4 249.3,119.4 250.5,119.4 251.8,119.4 253,119.4 254.2,119.4 255.4,119.4 256.6,119.4 257.9,119.4 259.1,119.4 260.3,119.4 261.5,119.4 262.8,119.4 264,119.4 265.2,119.4 266.4,119.4 267.7,119.4 268.9,119.4 270.1,119.4 271.4,119.4 272.6,119.4 273.8,119.4 275,119.4 276.2,119.4 277.5,119.4 278.7,119.4 279.9,119.4 281.2,119.4 282.4,119.4 283.6,119.4 284.8,119.4 286.1,119.4 287.3,119.4 288.5,119.4 289.7,119.4 290.9,119.4 292.2,119.4 293.4,119.4 294.6,119.4 295.9,119.4 297.1,119.4 298.3,119.4 299.5,119.4 300.8,119.4 302,119.4 303.2,119.4 304.4,119.4 305.6,119.4 306.9,119.4 308.1,119.4 309.3,119.4 310.6,119.4 311.8,119.4 313,119.4"
+       fill="none"
+       stroke="#96b3e9"
+       stroke-width="1.5"
+       id="polyline7" />
+    <rect
+       x="75.916702"
+       y="97.800003"
+       width="35.9333"
+       height="48"
+       fill="#96b3e9"
+       fill-opacity="0.18"
+       id="rect8"
+       style="opacity:0.5" />
+    <line
+       x1="76.167"
+       y1="97.800003"
+       x2="76.167"
+       y2="145.8"
+       stroke="#96b3e9"
+       stroke-width="1"
+       id="line8"
+       style="stroke:#ffb347;stroke-width:1;stroke-dasharray:1,2.99999987;stroke-dashoffset:4.9999996;stroke-opacity:1" />
+    <line
+       x1="111.6"
+       y1="97.8"
+       x2="111.6"
+       y2="145.8"
+       stroke="#96b3e9"
+       stroke-width="1"
+       id="line9"
+       style="stroke:#ffb347;stroke-opacity:1;stroke-width:1;stroke-dasharray:1,2.99999987;stroke-dashoffset:4.9999996" />
+    <line
+       x1="19"
+       y1="97.8"
+       x2="19"
+       y2="145.8"
+       stroke="#ffb347"
+       stroke-width="1"
+       id="line10" />
+    <circle
+       cx="19"
+       cy="119.356"
+       r="3"
+       fill="#ffb347"
+       id="circle10" />
   </g>
-  <text class="t" x="19" y="169.815" fill="#e8eaf0" font-size="13">Baseline</text>
-  <text class="t" x="313" y="170.025" fill="#96b3e9" font-size="15" text-anchor="end" font-weight="600">1.00 g</text>
-  <text class="t" x="19" y="189.355" fill="#8d94a8" font-size="11">Parabola 1</text>
-  <text class="t" x="313" y="189.355" fill="#8d94a8" font-size="11" text-anchor="end">t = 0.0 s of 180</text>
-  <text class="t" x="19" y="224.415" fill="#e8eaf0" font-size="13">Release</text>
-  <text class="t" x="71.8" y="224.415" fill="#8d94a8" font-size="10.83">s</text>
-  <rect x="85" y="217.8" width="158" height="4" rx="2" fill="#2c3242"/>
-  <circle cx="92" cy="219.8" r="7" fill="#96b3e9"/>
-  <rect x="251" y="205.4" width="62" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="257" y="224.415" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">0</text>
-  <text class="t" x="19" y="252.155" fill="#8d94a8" font-size="11">Runs from <tspan fill="#e8eaf0">t = 0 s</tspan>, released at <tspan fill="#e8eaf0">t = 0 s</tspan> in <tspan fill="#e8eaf0">baseline</tspan></text>
-  <rect x="19" y="267.9" width="14" height="14" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="40" y="279.16" fill="#8d94a8" font-size="12">Shortcut 1g baseline</text>
-  <path d="M 85.8 314.55 H 318 A 6 6 0 0 1 324 320.55 V 416.6 A 6 6 0 0 1 318 422.6 H 14 A 6 6 0 0 1 8 416.6 V 320.55 A 6 6 0 0 1 14 314.55 H 19" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="23" y="318.455" fill="#96b3e9" font-size="11" letter-spacing="0.55">ENERGY<tspan font-size="9.17" fill="#8d94a8" letter-spacing="0"> &#8212; J</tspan></text>
-  <text class="t" x="122.33" y="342.3" fill="#8d94a8" font-size="10" text-anchor="end">Potential</text>
-  <text class="t" x="217.67" y="342.3" fill="#8d94a8" font-size="10" text-anchor="end">Kinetic</text>
-  <text class="t" x="313" y="342.3" fill="#8d94a8" font-size="10" text-anchor="end">Total</text>
-  <circle cx="23" cy="358.4" r="4" fill="#3a7bf0"/>
-  <text class="t" x="122.33" y="363.015" fill="#96b3e9" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">19.50</text>
-  <text class="t" x="217.67" y="363.015" fill="#96b3e9" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">0.00</text>
-  <text class="t" x="313" y="363.015" fill="#e8eaf0" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">19.50</text>
-  <circle cx="23" cy="380.25" r="4" fill="#e33d3d"/>
-  <text class="t" x="122.33" y="384.865" fill="#96b3e9" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">29.43</text>
-  <text class="t" x="217.67" y="384.865" fill="#96b3e9" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">0.00</text>
-  <text class="t" x="313" y="384.865" fill="#e8eaf0" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">29.43</text>
-  <circle cx="23" cy="402.1" r="3.25" fill="none" stroke="#ecbe1f" stroke-width="1.5"/>
-  <text class="t" x="122.33" y="406.715" fill="#8d94a8" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">29.69</text>
-  <text class="t" x="217.67" y="406.715" fill="#8d94a8" font-size="13" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">0.00</text>
-  <text class="t" x="313" y="406.715" fill="#96b3e9" font-size="13" text-anchor="end" font-weight="600" opacity="0.55" style="font-variant-numeric:tabular-nums">29.69</text>
-  <text class="t" x="23" y="446.455" fill="#8d94a8" font-size="11" letter-spacing="0.55">ARCHITECTURE<tspan font-size="9.17" fill="#8d94a8" letter-spacing="0"> &#8212; live</tspan></text>
-  <rect x="19" y="460.5" width="95.33" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <circle cx="60.365" cy="473.45" r="4" fill="#3a7bf0"/>
-  <text class="t" x="72.965" y="477.355" fill="#e8eaf0" font-size="11" text-anchor="middle">A</text>
-  <rect x="118.33" y="460.5" width="95.33" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <circle cx="159.695" cy="473.45" r="4" fill="#e33d3d"/>
-  <text class="t" x="172.295" y="477.355" fill="#e8eaf0" font-size="11" text-anchor="middle">B</text>
-  <rect x="217.66" y="460.5" width="95.33" height="25.9" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="259.025" cy="473.45" r="3.25" fill="none" stroke="#ecbe1f" stroke-width="1.5"/>
-  <text class="t" x="271.625" y="477.355" fill="#8d94a8" font-size="11" text-anchor="middle">C</text>
-  <text class="t" x="19" y="517.415" fill="#e8eaf0" font-size="13">g</text>
-  <text class="t" x="30.4" y="517.415" fill="#8d94a8" font-size="10.83">m/s&#178;</text>
-  <rect x="85" y="510.8" width="158" height="4" rx="2" fill="#2c3242" opacity="0.4"/>
-  <circle cx="177.853" cy="512.8" r="7" fill="#96b3e9" opacity="0.4"/>
-  <rect x="251" y="498.4" width="62" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1" opacity="0.4"/>
-  <text class="t" x="257" y="517.415" fill="#e8eaf0" font-size="13" opacity="0.4" style="font-variant-numeric:tabular-nums">9.81</text>
-  <text class="t" x="19" y="552.215" fill="#e8eaf0" font-size="13">b</text>
-  <text class="t" x="30.5" y="552.215" fill="#8d94a8" font-size="10.83">N&#183;m&#183;s</text>
-  <rect x="85" y="545.6" width="158" height="4" rx="2" fill="#2c3242"/>
-  <circle cx="92.072" cy="547.6" r="7" fill="#96b3e9"/>
-  <rect x="251" y="533.2" width="62" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="257" y="552.215" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">0.001</text>
-  <text class="t" x="19" y="579.955" fill="#8d94a8" font-size="11">Lengths in <tspan fill="#e8eaf0">m</tspan>, masses in <tspan fill="#e8eaf0">kg</tspan></text>
-  <path d="M 144.6 442.55 H 318 A 6 6 0 0 1 324 448.55 V 812.95 A 6 6 0 0 1 318 818.95 H 14 A 6 6 0 0 1 8 812.95 V 448.55 A 6 6 0 0 1 14 442.55 H 19" fill="none" stroke="#2c3242" stroke-width="1"/>
-  <rect x="15" y="589.95" width="302" height="92" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <line x1="22" y1="607.95" x2="304.5" y2="607.95" stroke="#f2f5fa" stroke-width="3" stroke-linecap="round"/>
-  <line x1="22" y1="607.95" x2="304.5" y2="607.95" stroke="#3a7bf0" stroke-width="1.02" stroke-linecap="round"/>
-  <circle cx="304.5" cy="607.95" r="7.55953" fill="#3a7bf0" stroke="#f2f5fa" stroke-width="1.5"/>
-  <circle cx="22" cy="607.95" r="2.7" fill="#e8eaf0"/>
-  <rect x="19" y="624.95" width="69" height="24" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="53.5" y="640.855" fill="#8d94a8" font-size="11" text-anchor="middle">add L2</text>
-  <text class="t" x="256.5" y="640.855" fill="#e8eaf0" font-size="11" text-anchor="end">L<tspan font-size="9.163" dy="2">1</tspan></text>
-  <rect x="260.5" y="624.95" width="48" height="24" rx="4" fill="#12151d" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="265.5" y="640.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">0.994</text>
-  <text class="t" x="256.5" y="668.855" fill="#e8eaf0" font-size="11" text-anchor="end">m<tspan font-size="9.163" dy="2">1</tspan></text>
-  <rect x="260.5" y="652.95" width="48" height="24" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="265.5" y="668.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">2.00</text>
-  <line x1="22" y1="701.95" x2="304.5" y2="701.95" stroke="#f2f5fa" stroke-width="3" stroke-linecap="round"/>
-  <line x1="22" y1="701.95" x2="304.5" y2="701.95" stroke="#e33d3d" stroke-width="1.02" stroke-linecap="round"/>
-  <circle cx="164.103" cy="701.95" r="9.52441" fill="#e33d3d" stroke="#f2f5fa" stroke-width="1.5"/>
-  <circle cx="304.5" cy="701.95" r="7.55953" fill="#e33d3d" stroke="#f2f5fa" stroke-width="1.5"/>
-  <circle cx="22" cy="701.95" r="2.7" fill="#e8eaf0"/>
-  <rect x="19" y="718.95" width="69" height="24" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="53.5" y="734.855" fill="#8d94a8" font-size="11" text-anchor="middle">add L3</text>
-  <text class="t" x="109.5" y="734.855" fill="#e8eaf0" font-size="11" text-anchor="end">L<tspan font-size="9.163" dy="2">1</tspan></text>
-  <rect x="113.5" y="718.95" width="48" height="24" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="118.5" y="734.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">0.500</text>
-  <text class="t" x="109.5" y="762.855" fill="#e8eaf0" font-size="11" text-anchor="end">m<tspan font-size="9.163" dy="2">1</tspan></text>
-  <rect x="113.5" y="746.95" width="48" height="24" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="118.5" y="762.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">4.00</text>
-  <text class="t" x="183" y="734.855" fill="#e8eaf0" font-size="11" text-anchor="end">L<tspan font-size="9.163" dy="2">2</tspan></text>
-  <rect x="187" y="718.95" width="48" height="24" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="192" y="734.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">0.494</text>
-  <text class="t" x="183" y="762.855" fill="#e8eaf0" font-size="11" text-anchor="end">m<tspan font-size="9.163" dy="2">2</tspan></text>
-  <rect x="187" y="746.95" width="48" height="24" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="192" y="762.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">2.00</text>
-  <text class="t" x="256.5" y="734.855" fill="#e8eaf0" font-size="11" text-anchor="end">L<tspan font-size="9.163" dy="2">T</tspan></text>
-  <rect x="260.5" y="718.95" width="48" height="24" rx="4" fill="#12151d" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="265.5" y="734.855" fill="#e8eaf0" font-size="11" style="font-variant-numeric:tabular-nums">0.994</text>
-  <rect x="239.5" y="746.95" width="69" height="24" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="274" y="762.855" fill="#8d94a8" font-size="11" text-anchor="middle">remove L2</text>
-  <line x1="22" y1="795.95" x2="304.5" y2="795.95" stroke="#565e73" stroke-width="3" stroke-linecap="round"/>
-  <line x1="22" y1="795.95" x2="304.5" y2="795.95" stroke="#2c3242" stroke-width="1.02" stroke-linecap="round"/>
-  <circle cx="148.471" cy="795.95" r="8.77441" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="242.637" cy="795.95" r="6.54864" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="304.5" cy="795.95" r="5.25" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="22" cy="795.95" r="2.7" fill="#565e73"/>
-  <path d="M 208.4 838.9 H 318 A 6 6 0 0 1 324 844.9 V 922.65 A 6 6 0 0 1 318 928.65 H 14 A 6 6 0 0 1 8 922.65 V 844.9 A 6 6 0 0 1 14 838.9 H 19" fill="none" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="23" y="842.805" fill="#8d94a8" font-size="11" letter-spacing="0.55">INITIAL CONDITIONS<tspan font-size="9.17" fill="#8d94a8" letter-spacing="0"> &#8212; on Reset</tspan></text>
-  <text class="t" x="19" y="875.865" fill="#e8eaf0" font-size="13">&#952;<tspan font-size="10.83" dy="2">1</tspan></text>
-  <text class="t" x="35.3" y="875.865" fill="#8d94a8" font-size="10.83">&#176;</text>
-  <rect x="93" y="856.85" width="68" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="99" y="875.865" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">90</text>
-  <text class="t" x="171" y="875.865" fill="#e8eaf0" font-size="13">&#969;<tspan font-size="10.83" dy="2">1</tspan></text>
-  <text class="t" x="189.5" y="875.865" fill="#8d94a8" font-size="10.83">&#176;/s</text>
-  <rect x="245" y="856.85" width="68" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="251" y="875.865" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">0</text>
-  <rect x="19" y="893.75" width="294" height="23.9" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="166" y="909.605" fill="#8d94a8" font-size="11" text-anchor="middle">Use current state as initial</text>
-  <path d="M 70.8 948.6 H 318 A 6 6 0 0 1 324 954.6 V 1071.25 A 6 6 0 0 1 318 1077.25 H 14 A 6 6 0 0 1 8 1071.25 V 954.6 A 6 6 0 0 1 14 948.6 H 19" fill="none" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="23" y="952.505" fill="#8d94a8" font-size="11" letter-spacing="0.55">TRAILS</text>
-  <text class="t" x="19" y="985.505" fill="#3a7bf0" font-size="11" font-weight="700">A</text>
-  <rect x="32" y="968.65" width="24" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="44" y="985.505" fill="#e8eaf0" font-size="11" text-anchor="middle">1</text>
-  <text class="t" x="70" y="985.505" fill="#e33d3d" font-size="11" font-weight="700">B</text>
-  <rect x="83" y="968.65" width="24" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="95" y="985.505" fill="#e8eaf0" font-size="11" text-anchor="middle">2</text>
-  <text class="t" x="125" y="985.505" fill="#ecbe1f" font-size="11" font-weight="700">C</text>
-  <rect x="138" y="968.65" width="24" height="25.9" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="150" y="985.505" fill="#8d94a8" font-size="11" text-anchor="middle">2</text>
-  <rect x="166" y="968.65" width="24" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="178" y="985.505" fill="#e8eaf0" font-size="11" text-anchor="middle">3</text>
-  <rect x="19" y="1006.55" width="144" height="25.9" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="91" y="1023.4" fill="#8d94a8" font-size="11" text-anchor="middle">Dots</text>
-  <rect x="169" y="1006.55" width="144" height="25.9" rx="5" fill="#96b3e9" fill-opacity="0.07" stroke="#96b3e9" stroke-width="1"/>
-  <text class="t" x="241" y="1023.4" fill="#e8eaf0" font-size="11" text-anchor="middle">Lines</text>
-  <rect x="19" y="1038.45" width="60" height="28.8" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="49" y="1056.75" fill="#8d94a8" font-size="11" text-anchor="middle">Clear</text>
-  <text class="t" x="19" y="1057.46" fill="#e8eaf0" font-size="13"></text>
-  <rect x="87" y="1050.85" width="98" height="4" rx="2" fill="#2c3242"/>
-  <circle cx="128.169" cy="1052.85" r="7" fill="#96b3e9"/>
-  <rect x="251" y="1038.45" width="62" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="257" y="1057.46" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">25</text>
-  <text class="t" x="193" y="1057.46" fill="#e8eaf0" font-size="13">Length</text>
-  <text class="t" x="239" y="1057.46" fill="#8d94a8" font-size="10.83">s</text>
-  <path d="M 70.8 1097.2 H 318 A 6 6 0 0 1 324 1103.2 V 1277.65 A 6 6 0 0 1 318 1283.65 H 14 A 6 6 0 0 1 8 1277.65 V 1103.2 A 6 6 0 0 1 14 1097.2 H 19" fill="none" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="23" y="1101.1" fill="#8d94a8" font-size="11" letter-spacing="0.55">EXPORT</text>
-  <text class="t" x="19" y="1136.26" fill="#e8eaf0" font-size="13">Span</text>
-  <text class="t" x="56.3" y="1136.26" fill="#8d94a8" font-size="10.83">s</text>
-  <rect x="85" y="1117.25" width="110" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="91" y="1136.26" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">35</text>
-  <rect x="203" y="1117.25" width="110" height="28.8" rx="4" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="209" y="1136.26" fill="#e8eaf0" font-size="13" style="font-variant-numeric:tabular-nums">57</text>
-  <text class="t" x="19" y="1163.9" fill="#8d94a8" font-size="11">35&#8211;57 s &#183; Apesanteur</text>
-  <rect x="19" y="1177.95" width="144" height="34.8" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1" opacity="0.4"/>
-  <text class="t" x="91" y="1199.96" fill="#e8eaf0" font-size="13" text-anchor="middle" opacity="0.4">PNG</text>
-  <rect x="169" y="1177.95" width="144" height="34.8" rx="5" fill="#1b1f2a" stroke="#2c3242" stroke-width="1" opacity="0.4"/>
-  <text class="t" x="241" y="1199.96" fill="#e8eaf0" font-size="13" text-anchor="middle" opacity="0.4">SVG</text>
-  <text class="t" x="19" y="1240.41" fill="#e8eaf0" font-size="13">Auto</text>
-  <rect x="85" y="1222.85" width="112" height="25.9" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="141" y="1239.7" fill="#8d94a8" font-size="11" text-anchor="middle">PNG</text>
-  <rect x="201" y="1222.85" width="112" height="25.9" rx="5" fill="#12151d" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="257" y="1239.7" fill="#8d94a8" font-size="11" text-anchor="middle">SVG</text>
-  <text class="t" x="19" y="1268.6" fill="#8d94a8" font-size="11">not flown yet</text>
-  <path d="M 171.4 1303.7 H 318 A 6 6 0 0 1 324 1309.7 V 1392.35 A 6 6 0 0 1 318 1398.35 H 14 A 6 6 0 0 1 8 1392.35 V 1309.7 A 6 6 0 0 1 14 1303.7 H 19" fill="none" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="27" cy="1304.85" r="4" fill="#3a7bf0"/>
-  <text class="t" x="36" y="1307.6" fill="#8d94a8" font-size="11" letter-spacing="0.55">STATE — PENDULUM A</text>
-  <text class="t" x="19" y="1331.86" fill="#8d94a8" font-size="12">&#952;<tspan font-size="9.996" dy="2">1</tspan></text>
-  <text class="t" x="160" y="1331.86" fill="#e8eaf0" font-size="12" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">90.0&#176;</text>
-  <text class="t" x="172" y="1331.86" fill="#8d94a8" font-size="12">&#969;<tspan font-size="9.996" dy="2">1</tspan></text>
-  <text class="t" x="313" y="1331.86" fill="#e8eaf0" font-size="12" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">0&#176;/s</text>
-  <text class="t" x="19" y="1352.51" fill="#8d94a8" font-size="12">Time</text>
-  <text class="t" x="160" y="1352.51" fill="#e8eaf0" font-size="12" text-anchor="end" font-weight="600" style="font-variant-numeric:tabular-nums">0.00 s</text>
-  <line x1="19" y1="1363.95" x2="160" y2="1363.95" stroke="#2c3242" stroke-width="1"/>
-  <line x1="172" y1="1363.95" x2="313" y2="1363.95" stroke="#2c3242" stroke-width="1"/>
-  <text class="t" x="19" y="1382.91" fill="#8d94a8" font-size="12">Rate</text>
-  <text class="t" x="160" y="1382.91" fill="#8d94a8" font-size="12" text-anchor="end" style="font-variant-numeric:tabular-nums">47 fps</text>
-  <text class="t" x="172" y="1382.91" fill="#8d94a8" font-size="12">JS</text>
-  <text class="t" x="313" y="1382.91" fill="#8d94a8" font-size="12" text-anchor="end" style="font-variant-numeric:tabular-nums">0.0 / 0.0 ms</text>
-  <line x1="328" y1="473.45" x2="342" y2="465.45" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="328" cy="473.45" r="1.6" fill="#2c3242"/>
-  <text class="t" x="352" y="469.45" fill="#e8eaf0" font-size="11" font-weight="600">A / B / C — unchanged in shape</text>
-  <text class="t" x="352" y="485.45" fill="#8d94a8" font-size="11">Lit now means on the pivot rather than selected. Clicking</text>
-  <text class="t" x="352" y="499.45" fill="#8d94a8" font-size="11">one switches that pendulum in or out, down the same path the</text>
-  <text class="t" x="352" y="513.45" fill="#8d94a8" font-size="11">links switch takes today, confirm and all. The dot keeps its</text>
-  <text class="t" x="352" y="527.45" fill="#8d94a8" font-size="11">filled / hollow reading.</text>
-  <line x1="328" y1="512.8" x2="342" y2="549.45" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="328" cy="512.8" r="1.6" fill="#2c3242"/>
-  <text class="t" x="352" y="553.45" fill="#e8eaf0" font-size="11" font-weight="600">g and b — the two forces, above the chains</text>
-  <text class="t" x="352" y="569.45" fill="#8d94a8" font-size="11">g comes out of the flight simulator, b up from the foot of</text>
-  <text class="t" x="352" y="583.45" fill="#8d94a8" font-size="11">this box. They act on every chain, so they read better above</text>
-  <text class="t" x="352" y="597.45" fill="#8d94a8" font-size="11">the three than under them. b still follows the selection. g</text>
-  <text class="t" x="352" y="611.45" fill="#8d94a8" font-size="11">greys out while a profile drives it, and the line that used</text>
-  <text class="t" x="352" y="625.45" fill="#8d94a8" font-size="11">to say so is a tooltip on the row now. The units line under</text>
-  <text class="t" x="352" y="639.45" fill="#8d94a8" font-size="11">them carries the m and kg the grid has no room for.</text>
-  <line x1="328" y1="607.95" x2="342" y2="661.45" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="328" cy="607.95" r="1.6" fill="#2c3242"/>
-  <text class="t" x="352" y="665.45" fill="#e8eaf0" font-size="11" font-weight="600">Selected — a lit surround, whole row</text>
-  <text class="t" x="352" y="681.45" fill="#8d94a8" font-size="11">1 px --accent, 7 % accent fill, 5 px radius: exactly a lit</text>
-  <text class="t" x="352" y="695.45" fill="#8d94a8" font-size="11">tab, drawn around the row instead of around a letter.</text>
-  <text class="t" x="352" y="709.45" fill="#8d94a8" font-size="11">Initial conditions, State and b follow it. Clicking a row</text>
-  <text class="t" x="352" y="723.45" fill="#8d94a8" font-size="11">selects it and resets nothing.</text>
-  <line x1="328" y1="701.95" x2="342" y2="745.45" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="328" cy="701.95" r="1.6" fill="#2c3242"/>
-  <text class="t" x="352" y="749.45" fill="#e8eaf0" font-size="11" font-weight="600">Active, not selected</text>
-  <text class="t" x="352" y="765.45" fill="#8d94a8" font-size="11">Figure and boxes at full strength, no surround. L_T carries</text>
-  <text class="t" x="352" y="779.45" fill="#8d94a8" font-size="11">the accent border because it is the derived one: editing it</text>
-  <text class="t" x="352" y="793.45" fill="#8d94a8" font-size="11">scales the links together, editing a link rescales its</text>
-  <text class="t" x="352" y="807.45" fill="#8d94a8" font-size="11">siblings and leaves L_T alone. Each step button fills its</text>
-  <text class="t" x="352" y="821.45" fill="#8d94a8" font-size="11">whole cell and names the link it moves.</text>
-  <line x1="328" y1="795.95" x2="342" y2="843.45" stroke="#2c3242" stroke-width="1"/>
-  <circle cx="328" cy="795.95" r="1.6" fill="#2c3242"/>
-  <text class="t" x="352" y="847.45" fill="#e8eaf0" font-size="11" font-weight="600">Off — greyed, and the boxes go with it</text>
-  <text class="t" x="352" y="863.45" fill="#8d94a8" font-size="11">The figure drops to #565e73 — the grey index.js already uses</text>
-  <text class="t" x="352" y="877.45" fill="#8d94a8" font-size="11">for the flight curve when nothing is flying it — and its</text>
-  <text class="t" x="352" y="891.45" fill="#8d94a8" font-size="11">seven boxes go. The row is now the switch: click the grey</text>
-  <text class="t" x="352" y="905.45" fill="#8d94a8" font-size="11">figure to put the pendulum back on the pivot.</text>
-  <rect x="352" y="939.45" width="302" height="40" rx="5" fill="none" stroke="#96b3e9" stroke-width="1"/>
-  <line x1="359" y1="959.45" x2="641.5" y2="959.45" stroke="#565e73" stroke-width="3" stroke-linecap="round"/>
-  <line x1="359" y1="959.45" x2="641.5" y2="959.45" stroke="#2c3242" stroke-width="1.02" stroke-linecap="round"/>
-  <circle cx="485.471" cy="959.45" r="8.77441" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="579.637" cy="959.45" r="6.54864" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="641.5" cy="959.45" r="5.25" fill="#2c3242" stroke="#565e73" stroke-width="1.5"/>
-  <circle cx="359" cy="959.45" r="2.7" fill="#565e73"/>
-  <path transform="translate(520,955.4499999999999)" d="M 0 0 L 0 14.5 L 3.6 11.2 L 5.9 16.3 L 8.2 15.3 L 5.8 10.3 L 10.5 10.2 Z" fill="#e8eaf0" stroke="#12151d" stroke-width="1" stroke-linejoin="round"/>
-  <text class="t" x="352" y="997.45" fill="#8d94a8" font-size="11">Under the pointer: the accent border every other clickable</text>
-  <text class="t" x="352" y="1011.45" fill="#8d94a8" font-size="11">thing on this panel answers with, and no fill — which is</text>
-  <text class="t" x="352" y="1025.45" fill="#8d94a8" font-size="11">what keeps it apart from the lit fill of the selected row.</text>
-  <text class="t" x="352" y="1055.45" fill="#e8eaf0" font-size="11" font-weight="600">What it costs</text>
-  <text class="t" x="352" y="1071.45" fill="#8d94a8" font-size="11">About 77 px of column. Three pendulums are on the panel at</text>
-  <text class="t" x="352" y="1085.45" fill="#8d94a8" font-size="11">once where one used to be, and g and b sit above them.</text>
-  <text class="t" x="352" y="1099.45" fill="#8d94a8" font-size="11">Against that: six slider rows and the links switch come off,</text>
-  <text class="t" x="352" y="1113.45" fill="#8d94a8" font-size="11">g leaves the flight box, and Clear trails stops being a row</text>
-  <text class="t" x="352" y="1127.45" fill="#8d94a8" font-size="11">of its own. An off pendulum costs only its 26 px figure, so</text>
-  <text class="t" x="352" y="1141.45" fill="#8d94a8" font-size="11">switching two off leaves the box shorter than it is today.</text>
+  <text
+     class="t"
+     x="19"
+     y="169.815"
+     fill="#e8eaf0"
+     font-size="13"
+     id="text10">Baseline</text>
+  <text
+     class="t"
+     x="313"
+     y="170.025"
+     fill="#96b3e9"
+     font-size="15"
+     text-anchor="end"
+     font-weight="600"
+     id="text11">1.00 g</text>
+  <text
+     class="t"
+     x="19"
+     y="189.355"
+     fill="#8d94a8"
+     font-size="11"
+     id="text12">Parabola 1</text>
+  <text
+     class="t"
+     x="313"
+     y="189.355"
+     fill="#8d94a8"
+     font-size="11"
+     text-anchor="end"
+     id="text13">t = 0.0 s of 180</text>
+  <text
+     class="t"
+     x="19"
+     y="224.415"
+     fill="#e8eaf0"
+     font-size="13"
+     id="text14">Release</text>
+  <text
+     class="t"
+     x="71.8"
+     y="224.415"
+     fill="#8d94a8"
+     font-size="10.83"
+     id="text15">s</text>
+  <rect
+     x="85"
+     y="217.8"
+     width="158"
+     height="4"
+     rx="2"
+     fill="#2c3242"
+     id="rect15" />
+  <circle
+     cx="92"
+     cy="219.8"
+     r="7"
+     fill="#96b3e9"
+     id="circle15" />
+  <rect
+     x="251"
+     y="205.4"
+     width="62"
+     height="28.8"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect16" />
+  <text
+     class="t"
+     x="257"
+     y="224.415"
+     fill="#e8eaf0"
+     font-size="13"
+     style="font-variant-numeric:tabular-nums"
+     id="text16">0</text>
+  <text
+     class="t"
+     x="19"
+     y="252.155"
+     fill="#8d94a8"
+     font-size="11"
+     id="text18">Runs from <tspan
+   fill="#e8eaf0"
+   id="tspan16">t = 0 s</tspan>, released at <tspan
+   fill="#e8eaf0"
+   id="tspan17">t = 0 s</tspan> in <tspan
+   fill="#e8eaf0"
+   id="tspan18">baseline</tspan></text>
+  <rect
+     x="19"
+     y="267.9"
+     width="14"
+     height="14"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect18" />
+  <text
+     class="t"
+     x="40"
+     y="279.16"
+     fill="#8d94a8"
+     font-size="12"
+     id="text19">Shortcut 1g baseline</text>
+  <text
+     class="t"
+     x="126.65907"
+     y="522.59766"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text21-6"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Potential</text>
+  <text
+     class="t"
+     x="213.99904"
+     y="522.59766"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text22-4"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Kinetic</text>
+  <text
+     class="t"
+     x="303.32904"
+     y="522.59766"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text23-7"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Total</text>
+  <text
+     class="t"
+     x="79.330002"
+     y="522.8421"
+     fill="#96b3e9"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text24-4">19.5 J</text>
+  <text
+     class="t"
+     x="176.67"
+     y="522.8421"
+     fill="#96b3e9"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text25-8">0.0 J</text>
+  <text
+     class="t"
+     x="274"
+     y="522.8421"
+     fill="#e8eaf0"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text26-3">19.5 J</text>
+  <text
+     class="t"
+     x="23"
+     y="310.45499"
+     fill="#8d94a8"
+     font-size="11px"
+     letter-spacing="0.55"
+     id="text33"
+     style="fill:#96b3e9;fill-opacity:1">ARCHITECTURE<tspan
+   font-size="9.17px"
+   fill="#8d94a8"
+   letter-spacing="0"
+   id="tspan32"
+   style="fill:#96b3e9;fill-opacity:1">— live</tspan></text>
+  <text
+     class="t"
+     x="19"
+     y="337.41498"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text37">g</text>
+  <text
+     class="t"
+     x="30.4"
+     y="337.41498"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text38">m/s²</text>
+  <rect
+     x="85"
+     y="330.79999"
+     width="158"
+     height="4"
+     rx="2"
+     fill="#2c3242"
+     opacity="0.4"
+     id="rect38" />
+  <circle
+     cx="177.853"
+     cy="332.79999"
+     r="7"
+     fill="#96b3e9"
+     opacity="0.4"
+     id="circle38" />
+  <rect
+     x="251"
+     y="318.39999"
+     width="62"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     opacity="0.4"
+     id="rect39" />
+  <text
+     class="t"
+     x="257"
+     y="337.41498"
+     fill="#e8eaf0"
+     font-size="13px"
+     opacity="0.4"
+     style="font-variant-numeric:tabular-nums"
+     id="text39">9.81</text>
+  <text
+     class="t"
+     x="19"
+     y="372.21503"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text40">b</text>
+  <text
+     class="t"
+     x="30.5"
+     y="372.21503"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text41">N·m·s</text>
+  <rect
+     x="85"
+     y="365.59998"
+     width="158"
+     height="4"
+     rx="2"
+     fill="#2c3242"
+     id="rect41" />
+  <circle
+     cx="92.071999"
+     cy="367.59998"
+     r="7"
+     fill="#96b3e9"
+     id="circle41" />
+  <rect
+     x="251"
+     y="353.20001"
+     width="62"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect42" />
+  <text
+     class="t"
+     x="257"
+     y="372.21503"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text42">0.001</text>
+  <text
+     class="t"
+     x="163"
+     y="403.95502"
+     fill="#8d94a8"
+     font-size="11px"
+     id="text43">Lengths in <tspan
+   fill="#e8eaf0"
+   id="tspan42">m</tspan>, masses in <tspan
+   fill="#e8eaf0"
+   id="tspan43">kg</tspan></text>
+  <path
+     d="m 154.10209,306.55816 h 163.89006 c 3.31354,0 5.99969,2.77485 5.99969,6.1978 v 376.41309 c 0,3.42295 -2.68615,6.1978 -5.99969,6.1978 H 14.007852 c -3.313537,0 -5.9996903,-2.77485 -5.9996903,-6.1978 V 312.75596 c 0,-3.42295 2.6861533,-6.1978 5.9996903,-6.1978 h 4.999742"
+     fill="none"
+     stroke="#2c3242"
+     stroke-width="1.01632"
+     id="path43"
+     style="stroke:#94b0e5;stroke-opacity:1"
+     sodipodi:nodetypes="cssssssssc" />
+  <line
+     x1="108.94578"
+     y1="431.95001"
+     x2="304.97879"
+     y2="431.95001"
+     stroke="#f2f5fa"
+     stroke-width="2.49906"
+     stroke-linecap="round"
+     id="line43" />
+  <line
+     x1="108.36554"
+     y1="431.95001"
+     x2="304.66232"
+     y2="431.95001"
+     stroke="#3a7bf0"
+     stroke-width="0.850252"
+     stroke-linecap="round"
+     id="line44" />
+  <circle
+     cx="304.5"
+     cy="431.95001"
+     r="7.5595298"
+     fill="#3a7bf0"
+     stroke="#f2f5fa"
+     stroke-width="1.5"
+     id="circle44" />
+  <circle
+     cx="108"
+     cy="431.95001"
+     r="2.7"
+     fill="#e8eaf0"
+     id="circle45" />
+  <rect
+     x="54.17717"
+     y="422.25311"
+     width="17.199009"
+     height="17.199009"
+     rx="9"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="0.527651"
+     id="rect45-2"
+     style="fill:#3a7bf0;fill-opacity:1;stroke:#f2f5fa;stroke-width:0.80099;stroke-dasharray:none;stroke-opacity:1" />
+  <rect
+     x="77.197838"
+     y="422.25311"
+     width="17.199009"
+     height="17.199009"
+     rx="9"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="0.527651"
+     id="rect45-2-6"
+     style="fill:#1b202b;fill-opacity:1;stroke:#8c93a7;stroke-width:0.80099;stroke-dasharray:none;stroke-opacity:1" />
+  <text
+     class="t"
+     x="63.061478"
+     y="434.35455"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text45-0"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;fill:#e8eaf0;fill-opacity:1">+</text>
+  <text
+     class="t"
+     x="85.79734"
+     y="434.35187"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text45-0-7"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;fill:#8d94a8;fill-opacity:1">-</text>
+  <text
+     class="t"
+     x="176.5"
+     y="464.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text46">L<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan45">1</tspan></text>
+  <rect
+     x="180.5"
+     y="448.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect46" />
+  <text
+     class="t"
+     x="185.5"
+     y="464.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text47">0.994</text>
+  <text
+     class="t"
+     x="176.5"
+     y="492.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text48">m<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan47">1</tspan></text>
+  <rect
+     x="180.5"
+     y="476.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect48" />
+  <text
+     class="t"
+     x="185.5"
+     y="492.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text49">2.00</text>
+  <line
+     x1="108.42664"
+     y1="549.95001"
+     x2="304.9744"
+     y2="549.95001"
+     stroke="#f2f5fa"
+     stroke-width="2.50234"
+     stroke-linecap="round"
+     id="line49" />
+  <line
+     x1="108.51373"
+     y1="549.95001"
+     x2="304.66196"
+     y2="549.95001"
+     stroke="#e33d3d"
+     stroke-width="0.84993"
+     stroke-linecap="round"
+     id="line50" />
+  <circle
+     cx="200.103"
+     cy="549.95001"
+     r="9.5244102"
+     fill="#e33d3d"
+     stroke="#f2f5fa"
+     stroke-width="1.5"
+     id="circle50" />
+  <circle
+     cx="304.5"
+     cy="549.95001"
+     r="7.5595298"
+     fill="#e33d3d"
+     stroke="#f2f5fa"
+     stroke-width="1.5"
+     id="circle51" />
+  <circle
+     cx="108"
+     cy="549.95001"
+     r="2.7"
+     fill="#e8eaf0"
+     id="circle52" />
+  <text
+     class="t"
+     x="147.5"
+     y="582.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text53">L<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan52">1</tspan></text>
+  <rect
+     x="151.5"
+     y="566.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect53" />
+  <text
+     class="t"
+     x="156.5"
+     y="582.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text54">0.500</text>
+  <text
+     class="t"
+     x="147.5"
+     y="610.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text55">m<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan54">1</tspan></text>
+  <rect
+     x="151.5"
+     y="594.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect55" />
+  <text
+     class="t"
+     x="156.5"
+     y="610.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text56">4.00</text>
+  <text
+     class="t"
+     x="221"
+     y="582.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text57">L<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan56">2</tspan></text>
+  <rect
+     x="225"
+     y="566.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect57" />
+  <text
+     class="t"
+     x="230"
+     y="582.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text58">0.494</text>
+  <text
+     class="t"
+     x="221"
+     y="610.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text59">m<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan58">2</tspan></text>
+  <rect
+     x="225"
+     y="594.95001"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect59" />
+  <text
+     class="t"
+     x="230"
+     y="610.85498"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text60">2.00</text>
+  <text
+     class="t"
+     x="31.940212"
+     y="585.10803"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text61">L<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan60">T</tspan></text>
+  <rect
+     x="35.940212"
+     y="569.20306"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect61"
+     style="stroke:#2c3242;stroke-opacity:1" />
+  <text
+     class="t"
+     x="40.940212"
+     y="585.10803"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-variant-numeric:tabular-nums"
+     id="text62">0.994</text>
+  <text
+     class="t"
+     x="36.350395"
+     y="466.58954"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="end"
+     id="text61-8"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">L<tspan
+   font-size="9.163px"
+   dy="2"
+   id="tspan60-3">T</tspan></text>
+  <rect
+     x="40.350395"
+     y="450.68457"
+     width="48"
+     height="24"
+     rx="4"
+     fill="#12151d"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect61-5" />
+  <text
+     class="t"
+     x="45.350395"
+     y="466.58954"
+     fill="#e8eaf0"
+     font-size="11px"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text62-1">0.994</text>
+  <line
+     x1="108.82687"
+     y1="671.95001"
+     x2="304.9758"
+     y2="671.95001"
+     stroke="#565e73"
+     stroke-width="2.4998"
+     stroke-linecap="round"
+     id="line63" />
+  <line
+     x1="107.1114"
+     y1="671.95001"
+     x2="304.65933"
+     y2="671.95001"
+     stroke="#2c3242"
+     stroke-width="0.852957"
+     stroke-linecap="round"
+     id="line64" />
+  <circle
+     cx="168.47099"
+     cy="671.95001"
+     r="8.7744102"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle64" />
+  <circle
+     cx="242.63699"
+     cy="671.95001"
+     r="6.5486398"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle65" />
+  <circle
+     cx="304.5"
+     cy="671.95001"
+     r="5.25"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle66" />
+  <circle
+     cx="106"
+     cy="671.95001"
+     r="2.7"
+     fill="#565e73"
+     id="circle67" />
+  <path
+     d="M 208.4,710.9 H 318 a 6,6 0 0 1 6,6 v 77.75 a 6,6 0 0 1 -6,6 H 14 a 6,6 0 0 1 -6,-6 V 716.9 a 6,6 0 0 1 6,-6 h 5"
+     fill="none"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="path67" />
+  <text
+     class="t"
+     x="23"
+     y="714.80499"
+     fill="#8d94a8"
+     font-size="11px"
+     letter-spacing="0.55"
+     id="text67">INITIAL CONDITIONS<tspan
+   font-size="9.17px"
+   fill="#8d94a8"
+   letter-spacing="0"
+   id="tspan67">— on Reset</tspan></text>
+  <text
+     class="t"
+     x="19"
+     y="747.86499"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text68">θ<tspan
+   font-size="10.83px"
+   dy="2"
+   id="tspan68">1</tspan></text>
+  <text
+     class="t"
+     x="35.299999"
+     y="747.86499"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text69">°</text>
+  <rect
+     x="93"
+     y="728.84998"
+     width="68"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect69" />
+  <text
+     class="t"
+     x="99"
+     y="747.86499"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text70">90</text>
+  <text
+     class="t"
+     x="171"
+     y="747.86499"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text71">ω<tspan
+   font-size="10.83px"
+   dy="2"
+   id="tspan70">1</tspan></text>
+  <text
+     class="t"
+     x="189.5"
+     y="747.86499"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text72">°/s</text>
+  <rect
+     x="245"
+     y="728.84998"
+     width="68"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect72" />
+  <text
+     class="t"
+     x="251"
+     y="747.86499"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text73">0</text>
+  <rect
+     x="19"
+     y="765.75"
+     width="294"
+     height="23.9"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect73" />
+  <text
+     class="t"
+     x="166"
+     y="781.60498"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text74">Use current state as initial</text>
+  <path
+     d="M 70.8,820.6 H 318 a 6,6 0 0 1 6,6 v 116.65 a 6,6 0 0 1 -6,6 H 14 a 6,6 0 0 1 -6,-6 V 826.6 a 6,6 0 0 1 6,-6 h 5"
+     fill="none"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="path74" />
+  <text
+     class="t"
+     x="23"
+     y="824.505"
+     fill="#8d94a8"
+     font-size="11px"
+     letter-spacing="0.55"
+     id="text75">TRAILS</text>
+  <text
+     class="t"
+     x="19"
+     y="857.505"
+     fill="#3a7bf0"
+     font-size="11px"
+     font-weight="700"
+     id="text76">A</text>
+  <rect
+     x="32"
+     y="840.65002"
+     width="24"
+     height="25.9"
+     rx="5"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect76" />
+  <text
+     class="t"
+     x="44"
+     y="857.505"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text77">1</text>
+  <text
+     class="t"
+     x="70"
+     y="857.505"
+     fill="#e33d3d"
+     font-size="11px"
+     font-weight="700"
+     id="text78">B</text>
+  <rect
+     x="83"
+     y="840.65002"
+     width="24"
+     height="25.9"
+     rx="5"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect78" />
+  <text
+     class="t"
+     x="95"
+     y="857.505"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text79">2</text>
+  <text
+     class="t"
+     x="125"
+     y="857.505"
+     fill="#ecbe1f"
+     font-size="11px"
+     font-weight="700"
+     id="text80">C</text>
+  <rect
+     x="138"
+     y="840.65002"
+     width="24"
+     height="25.9"
+     rx="5"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect80" />
+  <text
+     class="t"
+     x="150"
+     y="857.505"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text81">2</text>
+  <rect
+     x="166"
+     y="840.65002"
+     width="24"
+     height="25.9"
+     rx="5"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect81" />
+  <text
+     class="t"
+     x="178"
+     y="857.505"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text82">3</text>
+  <rect
+     x="19"
+     y="878.54999"
+     width="144"
+     height="25.9"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect82" />
+  <text
+     class="t"
+     x="91"
+     y="895.40002"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text83">Dots</text>
+  <rect
+     x="169"
+     y="878.54999"
+     width="144"
+     height="25.9"
+     rx="5"
+     fill="#96b3e9"
+     fill-opacity="0.07"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect83" />
+  <text
+     class="t"
+     x="241"
+     y="895.40002"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text84">Lines</text>
+  <rect
+     x="19"
+     y="910.45001"
+     width="60"
+     height="28.799999"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect84" />
+  <text
+     class="t"
+     x="49"
+     y="928.75"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text85">Clear</text>
+  <text
+     class="t"
+     x="19"
+     y="1057.46"
+     fill="#e8eaf0"
+     font-size="13"
+     id="text86" />
+  <rect
+     x="87"
+     y="922.84998"
+     width="98"
+     height="4"
+     rx="2"
+     fill="#2c3242"
+     id="rect86" />
+  <circle
+     cx="128.16901"
+     cy="924.84998"
+     r="7"
+     fill="#96b3e9"
+     id="circle86" />
+  <rect
+     x="251"
+     y="910.45001"
+     width="62"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect87" />
+  <text
+     class="t"
+     x="257"
+     y="929.46002"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text87">25</text>
+  <text
+     class="t"
+     x="193"
+     y="929.46002"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text88">Length</text>
+  <text
+     class="t"
+     x="239"
+     y="929.46002"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text89">s</text>
+  <path
+     d="M 70.8,969.2 H 318 a 6,6 0 0 1 6,6 v 174.45 a 6,6 0 0 1 -6,6 H 14 a 6,6 0 0 1 -6,-6 V 975.2 a 6,6 0 0 1 6,-6 h 5"
+     fill="none"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="path89" />
+  <text
+     class="t"
+     x="23"
+     y="973.09998"
+     fill="#8d94a8"
+     font-size="11px"
+     letter-spacing="0.55"
+     id="text90">EXPORT</text>
+  <text
+     class="t"
+     x="19"
+     y="1008.26"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text91">Span</text>
+  <text
+     class="t"
+     x="56.299999"
+     y="1008.26"
+     fill="#8d94a8"
+     font-size="10.83px"
+     id="text92">s</text>
+  <rect
+     x="85"
+     y="989.25"
+     width="110"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect92" />
+  <text
+     class="t"
+     x="91"
+     y="1008.26"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text93">35</text>
+  <rect
+     x="203"
+     y="989.25"
+     width="110"
+     height="28.799999"
+     rx="4"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect93" />
+  <text
+     class="t"
+     x="209"
+     y="1008.26"
+     fill="#e8eaf0"
+     font-size="13px"
+     style="font-variant-numeric:tabular-nums"
+     id="text94">57</text>
+  <text
+     class="t"
+     x="19"
+     y="1035.9"
+     fill="#8d94a8"
+     font-size="11px"
+     id="text95">35–57 s · Apesanteur</text>
+  <rect
+     x="19"
+     y="1049.95"
+     width="144"
+     height="34.799999"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     opacity="0.4"
+     id="rect95" />
+  <text
+     class="t"
+     x="91"
+     y="1071.96"
+     fill="#e8eaf0"
+     font-size="13px"
+     text-anchor="middle"
+     opacity="0.4"
+     id="text96">PNG</text>
+  <rect
+     x="169"
+     y="1049.95"
+     width="144"
+     height="34.799999"
+     rx="5"
+     fill="#1b1f2a"
+     stroke="#2c3242"
+     stroke-width="1"
+     opacity="0.4"
+     id="rect96" />
+  <text
+     class="t"
+     x="241"
+     y="1071.96"
+     fill="#e8eaf0"
+     font-size="13px"
+     text-anchor="middle"
+     opacity="0.4"
+     id="text97">SVG</text>
+  <text
+     class="t"
+     x="19"
+     y="1112.41"
+     fill="#e8eaf0"
+     font-size="13px"
+     id="text98">Auto</text>
+  <rect
+     x="85"
+     y="1094.85"
+     width="112"
+     height="25.9"
+     rx="5"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect98" />
+  <text
+     class="t"
+     x="141"
+     y="1111.7"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text99">PNG</text>
+  <rect
+     x="201"
+     y="1094.85"
+     width="112"
+     height="25.9"
+     rx="5"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="rect99" />
+  <text
+     class="t"
+     x="257"
+     y="1111.7"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text100">SVG</text>
+  <text
+     class="t"
+     x="19"
+     y="1140.6"
+     fill="#8d94a8"
+     font-size="11px"
+     id="text101">not flown yet</text>
+  <path
+     d="M 171.4,1175.7 H 318 a 6,6 0 0 1 6,6 v 82.65 a 6,6 0 0 1 -6,6 H 14 a 6,6 0 0 1 -6,-6 v -82.65 a 6,6 0 0 1 6,-6 h 5"
+     fill="none"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="path101" />
+  <circle
+     cx="27"
+     cy="1176.85"
+     r="4"
+     fill="#3a7bf0"
+     id="circle101" />
+  <text
+     class="t"
+     x="36"
+     y="1179.6"
+     fill="#8d94a8"
+     font-size="11px"
+     letter-spacing="0.55"
+     id="text102">STATE — PENDULUM A</text>
+  <text
+     class="t"
+     x="19"
+     y="1203.86"
+     fill="#8d94a8"
+     font-size="12px"
+     id="text103">θ<tspan
+   font-size="9.996px"
+   dy="2"
+   id="tspan102">1</tspan></text>
+  <text
+     class="t"
+     x="160"
+     y="1203.86"
+     fill="#e8eaf0"
+     font-size="12px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-variant-numeric:tabular-nums"
+     id="text104">90.0°</text>
+  <text
+     class="t"
+     x="172"
+     y="1203.86"
+     fill="#8d94a8"
+     font-size="12px"
+     id="text105">ω<tspan
+   font-size="9.996px"
+   dy="2"
+   id="tspan104">1</tspan></text>
+  <text
+     class="t"
+     x="313"
+     y="1203.86"
+     fill="#e8eaf0"
+     font-size="12px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-variant-numeric:tabular-nums"
+     id="text106">0°/s</text>
+  <text
+     class="t"
+     x="19"
+     y="1224.51"
+     fill="#8d94a8"
+     font-size="12px"
+     id="text107">Time</text>
+  <text
+     class="t"
+     x="160"
+     y="1224.51"
+     fill="#e8eaf0"
+     font-size="12px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-variant-numeric:tabular-nums"
+     id="text108">0.00 s</text>
+  <line
+     x1="19"
+     y1="1235.95"
+     x2="160"
+     y2="1235.95"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line108" />
+  <line
+     x1="172"
+     y1="1235.95"
+     x2="313"
+     y2="1235.95"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line109" />
+  <text
+     class="t"
+     x="19"
+     y="1254.91"
+     fill="#8d94a8"
+     font-size="12px"
+     id="text109">Rate</text>
+  <text
+     class="t"
+     x="160"
+     y="1254.91"
+     fill="#8d94a8"
+     font-size="12px"
+     text-anchor="end"
+     style="font-variant-numeric:tabular-nums"
+     id="text110">47 fps</text>
+  <text
+     class="t"
+     x="172"
+     y="1254.91"
+     fill="#8d94a8"
+     font-size="12px"
+     id="text111">JS</text>
+  <text
+     class="t"
+     x="313"
+     y="1254.91"
+     fill="#8d94a8"
+     font-size="12px"
+     text-anchor="end"
+     style="font-variant-numeric:tabular-nums"
+     id="text112">0.0 / 0.0 ms</text>
+  <line
+     x1="328"
+     y1="473.45"
+     x2="342"
+     y2="465.45"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line112" />
+  <circle
+     cx="328"
+     cy="337.45001"
+     r="1.6"
+     fill="#2c3242"
+     id="circle112" />
+  <text
+     class="t"
+     x="352"
+     y="469.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text113">A / B / C — unchanged in shape</text>
+  <text
+     class="t"
+     x="352"
+     y="485.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text114">Lit now means on the pivot rather than selected. Clicking</text>
+  <text
+     class="t"
+     x="352"
+     y="499.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text115">one switches that pendulum in or out, down the same path the</text>
+  <text
+     class="t"
+     x="352"
+     y="513.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text116">links switch takes today, confirm and all. The dot keeps its</text>
+  <text
+     class="t"
+     x="352"
+     y="527.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text117">filled / hollow reading.</text>
+  <line
+     x1="328"
+     y1="512.8"
+     x2="342"
+     y2="549.45"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line117" />
+  <circle
+     cx="328"
+     cy="376.79999"
+     r="1.6"
+     fill="#2c3242"
+     id="circle117" />
+  <text
+     class="t"
+     x="352"
+     y="553.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text118">g and b — the two forces, above the chains</text>
+  <text
+     class="t"
+     x="352"
+     y="569.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text119">g comes out of the flight simulator, b up from the foot of</text>
+  <text
+     class="t"
+     x="352"
+     y="583.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text120">this box. They act on every chain, so they read better above</text>
+  <text
+     class="t"
+     x="352"
+     y="597.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text121">the three than under them. b still follows the selection. g</text>
+  <text
+     class="t"
+     x="352"
+     y="611.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text122">greys out while a profile drives it, and the line that used</text>
+  <text
+     class="t"
+     x="352"
+     y="625.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text123">to say so is a tooltip on the row now. The units line under</text>
+  <text
+     class="t"
+     x="352"
+     y="639.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text124">them carries the m and kg the grid has no room for.</text>
+  <line
+     x1="328"
+     y1="607.95"
+     x2="342"
+     y2="661.45"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line124" />
+  <circle
+     cx="328"
+     cy="471.95001"
+     r="1.6"
+     fill="#2c3242"
+     id="circle124" />
+  <text
+     class="t"
+     x="352"
+     y="665.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text125">Selected — a lit surround, whole row</text>
+  <text
+     class="t"
+     x="352"
+     y="681.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text126">1 px --accent, 7 % accent fill, 5 px radius: exactly a lit</text>
+  <text
+     class="t"
+     x="352"
+     y="695.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text127">tab, drawn around the row instead of around a letter.</text>
+  <text
+     class="t"
+     x="352"
+     y="709.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text128">Initial conditions, State and b follow it. Clicking a row</text>
+  <text
+     class="t"
+     x="352"
+     y="723.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text129">selects it and resets nothing.</text>
+  <line
+     x1="328"
+     y1="701.95"
+     x2="342"
+     y2="745.45"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line129" />
+  <circle
+     cx="328"
+     cy="565.95001"
+     r="1.6"
+     fill="#2c3242"
+     id="circle129" />
+  <text
+     class="t"
+     x="352"
+     y="749.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text130">Active, not selected</text>
+  <text
+     class="t"
+     x="352"
+     y="765.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text131">Figure and boxes at full strength, no surround. L_T carries</text>
+  <text
+     class="t"
+     x="352"
+     y="779.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text132">the accent border because it is the derived one: editing it</text>
+  <text
+     class="t"
+     x="352"
+     y="793.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text133">scales the links together, editing a link rescales its</text>
+  <text
+     class="t"
+     x="352"
+     y="807.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text134">siblings and leaves L_T alone. Each step button fills its</text>
+  <text
+     class="t"
+     x="352"
+     y="821.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text135">whole cell and names the link it moves.</text>
+  <line
+     x1="328"
+     y1="795.95"
+     x2="342"
+     y2="843.45"
+     stroke="#2c3242"
+     stroke-width="1"
+     id="line135" />
+  <circle
+     cx="328"
+     cy="665.95001"
+     r="1.6"
+     fill="#2c3242"
+     id="circle135" />
+  <text
+     class="t"
+     x="352"
+     y="847.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text136">Off — greyed, and the boxes go with it</text>
+  <text
+     class="t"
+     x="352"
+     y="863.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text137">The figure drops to #565e73 — the grey index.js already uses</text>
+  <text
+     class="t"
+     x="352"
+     y="877.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text138">for the flight curve when nothing is flying it — and its</text>
+  <text
+     class="t"
+     x="352"
+     y="891.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text139">seven boxes go. The row is now the switch: click the grey</text>
+  <text
+     class="t"
+     x="352"
+     y="905.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text140">figure to put the pendulum back on the pivot.</text>
+  <rect
+     x="352"
+     y="939.45"
+     width="302"
+     height="40"
+     rx="5"
+     fill="none"
+     stroke="#96b3e9"
+     stroke-width="1"
+     id="rect140" />
+  <line
+     x1="359"
+     y1="959.45"
+     x2="641.5"
+     y2="959.45"
+     stroke="#565e73"
+     stroke-width="3"
+     stroke-linecap="round"
+     id="line140" />
+  <line
+     x1="359"
+     y1="959.45"
+     x2="641.5"
+     y2="959.45"
+     stroke="#2c3242"
+     stroke-width="1.02"
+     stroke-linecap="round"
+     id="line141" />
+  <circle
+     cx="485.471"
+     cy="959.45"
+     r="8.77441"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle141" />
+  <circle
+     cx="579.637"
+     cy="959.45"
+     r="6.54864"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle142" />
+  <circle
+     cx="641.5"
+     cy="959.45"
+     r="5.25"
+     fill="#2c3242"
+     stroke="#565e73"
+     stroke-width="1.5"
+     id="circle143" />
+  <circle
+     cx="359"
+     cy="959.45"
+     r="2.7"
+     fill="#565e73"
+     id="circle144" />
+  <path
+     transform="translate(520,955.4499999999999)"
+     d="M 0 0 L 0 14.5 L 3.6 11.2 L 5.9 16.3 L 8.2 15.3 L 5.8 10.3 L 10.5 10.2 Z"
+     fill="#e8eaf0"
+     stroke="#12151d"
+     stroke-width="1"
+     stroke-linejoin="round"
+     id="path144" />
+  <text
+     class="t"
+     x="352"
+     y="997.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text144">Under the pointer: the accent border every other clickable</text>
+  <text
+     class="t"
+     x="352"
+     y="1011.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text145">thing on this panel answers with, and no fill — which is</text>
+  <text
+     class="t"
+     x="352"
+     y="1025.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text146">what keeps it apart from the lit fill of the selected row.</text>
+  <text
+     class="t"
+     x="352"
+     y="1055.45"
+     fill="#e8eaf0"
+     font-size="11"
+     font-weight="600"
+     id="text147">What it costs</text>
+  <text
+     class="t"
+     x="352"
+     y="1071.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text148">About 77 px of column. Three pendulums are on the panel at</text>
+  <text
+     class="t"
+     x="352"
+     y="1085.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text149">once where one used to be, and g and b sit above them.</text>
+  <text
+     class="t"
+     x="352"
+     y="1099.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text150">Against that: six slider rows and the links switch come off,</text>
+  <text
+     class="t"
+     x="352"
+     y="1113.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text151">g leaves the flight box, and Clear trails stops being a row</text>
+  <text
+     class="t"
+     x="352"
+     y="1127.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text152">of its own. An off pendulum costs only its 26 px figure, so</text>
+  <text
+     class="t"
+     x="352"
+     y="1141.45"
+     fill="#8d94a8"
+     font-size="11"
+     id="text153">switching two off leaves the box shorter than it is today.</text>
+  <circle
+     cx="30.188061"
+     cy="430.8526"
+     r="4"
+     fill="#3a7bf0"
+     id="circle33-1" />
+  <text
+     class="t"
+     x="40.788055"
+     y="434.85138"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text34-6"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">A</text>
+  <rect
+     x="54.820255"
+     y="541.31317"
+     width="17.199009"
+     height="17.199009"
+     rx="9"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="0.527651"
+     id="rect45-2-4"
+     style="fill:#e33d3d;fill-opacity:1;stroke:#f2f5fa;stroke-width:0.80099;stroke-dasharray:none;stroke-opacity:1" />
+  <rect
+     x="77.840919"
+     y="541.31317"
+     width="17.199009"
+     height="17.199009"
+     rx="9"
+     fill="#12151d"
+     stroke="#2c3242"
+     stroke-width="0.527651"
+     id="rect45-2-6-7"
+     style="fill:#e33d3d;fill-opacity:1;stroke:#f2f5fa;stroke-width:0.80099;stroke-dasharray:none;stroke-opacity:1" />
+  <text
+     class="t"
+     x="63.704559"
+     y="553.41461"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text45-0-6"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;fill:#e8eaf0;fill-opacity:1">+</text>
+  <text
+     class="t"
+     x="86.440422"
+     y="553.41193"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text45-0-7-8"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;fill:#f2f5fa;fill-opacity:1">-</text>
+  <circle
+     cx="30.831146"
+     cy="549.91266"
+     r="4"
+     fill="#3a7bf0"
+     id="circle33-1-1"
+     style="fill:#e33d3d;fill-opacity:1" />
+  <text
+     class="t"
+     x="41.431141"
+     y="553.91144"
+     fill="#e8eaf0"
+     font-size="11px"
+     text-anchor="middle"
+     id="text34-6-3"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">B</text>
+  <circle
+     cx="32.864994"
+     cy="671.45001"
+     r="3.25"
+     fill="none"
+     stroke="#ecbe1f"
+     stroke-width="1.5"
+     id="circle35-7" />
+  <text
+     class="t"
+     x="45.465"
+     y="675.35498"
+     fill="#8d94a8"
+     font-size="11px"
+     text-anchor="middle"
+     id="text36-9"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">C</text>
+  <text
+     class="t"
+     x="122.43468"
+     y="635.93262"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text21-6-2"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Potential</text>
+  <text
+     class="t"
+     x="209.77464"
+     y="635.93262"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text22-4-3"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Kinetic</text>
+  <text
+     class="t"
+     x="299.10464"
+     y="635.93262"
+     fill="#8d94a8"
+     font-size="10px"
+     text-anchor="end"
+     id="text23-7-0"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">Total</text>
+  <text
+     class="t"
+     x="75.105614"
+     y="636.17706"
+     fill="#96b3e9"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text24-4-4">19.5 J</text>
+  <text
+     class="t"
+     x="172.4456"
+     y="636.17706"
+     fill="#96b3e9"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text25-8-4">0.0 J</text>
+  <text
+     class="t"
+     x="269.7756"
+     y="636.17706"
+     fill="#e8eaf0"
+     font-size="13px"
+     text-anchor="end"
+     font-weight="600"
+     style="font-family:'-apple-system', BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;font-variant-numeric:tabular-nums"
+     id="text26-3-3">19.5 J</text>
 </svg>

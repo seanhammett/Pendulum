@@ -45,27 +45,29 @@ const STRINGS = {
     'shortcut.label': 'Shortcut 1g baseline',
     'shortcut.tip': 'Trims the 93 s of level flight after the second hypergravity phase down to 10 s. The simulation still runs in real time — there is simply less of it between parabolas.',
 
-    // No placeholder: the box holds all three pendulums, each row named by its
-    // dot. The unit is said once here rather than after each of nine figures.
-    'energy.legend': 'Energy',
-    'energy.unit': '— J',
+    // The three terms, at the foot of each pendulum's Architecture row. They
+    // name the figure beside them rather than heading a column, and each figure
+    // carries its own J, since no legend is left to say it once.
     'energy.potential': 'Potential',
     'energy.kinetic': 'Kinetic',
     'energy.total': 'Total',
 
     'arch.legend': 'Architecture',
     'arch.sub': '— live',
-    // The switch has no label on the panel — the tabs above it are its label —
-    // so this names it for a screen reader instead of being drawn.
-    'arch.links': 'Links',
-    'arch.off': 'Off',
-    'arch.single': 'Single',
-    'arch.double': 'Double',
-    'arch.triple': 'Triple',
-    'arch.links.tip': 'Whether the selected pendulum hangs from the pivot, and on how many linked rods: one is regular and predictable, two or three are chaotic. Off takes it off the pivot and keeps its settings. Changing it re-runs every pendulum from its initial conditions.',
+    // Both step buttons name the link they move, so each is tied to the box it
+    // will create or take away.
+    'arch.add': 'add L{n}',
+    'arch.remove': 'remove L{n}',
+    // One line for all nine boxes below it. The placeholders are the units
+    // themselves, picked out of the sentence in the text colour.
+    'arch.units': 'Lengths in {L}, masses in {m}',
+    'arch.length.tip': 'Length of this rod, in metres. The other rods take up the difference, so the pendulum keeps its reach; edit the total to change that.',
+    'arch.total.tip': 'Pivot to tip, in metres. Changing it scales every rod of this pendulum together, so the shape of the chain is unchanged.',
+    'arch.mass.tip': 'Mass of this bob, in kilograms. Its radius on the stage follows by volume.',
     'arch.friction.tip': 'Viscous friction at every hinge of the selected pendulum, in N·m·s/rad. 0 is a frictionless ideal pendulum.',
-    'arch.pendulum': 'Pendulum {n}',
-    'arch.pendulum.off': 'Pendulum {n} — off',
+    'arch.pendulum': 'Pendulum {n} — on the pivot; click to take it off',
+    'arch.pendulum.off': 'Pendulum {n} — off the pivot; click to hang it',
+    'arch.pendulum.last': 'Pendulum {n} — the last one on the pivot, so it cannot be taken off',
 
     'preset.moon': 'Moon',
     'preset.mars': 'Mars',
@@ -79,12 +81,14 @@ const STRINGS = {
 
     'trails.legend': 'Trails',
     'trails.trace': 'Trace bob {i} of pendulum {n}',
+    // The pair has no label on the panel — the two names are wide enough to be
+    // their own — so this names it for a screen reader instead of being drawn.
     'trails.style': 'Style',
-    'trails.style.tip': 'Line joins the recorded points into the bare path. Dots leaves one mark per frame, unjoined: since the frames are evenly spaced in time, the spacing between the dots is the speed.',
+    'trails.style.tip': 'Lines joins the recorded points into the bare path. Dots leaves one mark per frame, unjoined: since the frames are evenly spaced in time, the spacing between the dots is the speed.',
     'trails.dots': 'Dots',
-    'trails.line': 'Line',
+    'trails.line': 'Lines',
     'trails.length': 'Length',
-    'trails.clear': 'Clear trails',
+    'trails.clear': 'Clear',
 
     'export.legend': 'Export',
     'export.span': 'Span',
@@ -104,7 +108,9 @@ const STRINGS = {
     'export.none': 'nothing traced',
     'export.badspan': 'the end must come after the start',
 
-    'state.legend': 'State — pendulum {n}',
+    // Names no pendulum: the box holds every one of them on the pivot, each
+    // group led by its own letter.
+    'state.legend': 'State',
     'state.time': 'Time',
     'state.rate': 'Rate',
     'state.rate.tip': 'Frames actually delivered, averaged over the last second. 60 is the display refresh and the ceiling; a lower number means frames are being missed.',
@@ -147,23 +153,22 @@ const STRINGS = {
     'shortcut.label': 'Raccourcir le palier 1 g',
     'shortcut.tip': "Réduit à 10 s les 93 s de vol stabilisé qui suivent la seconde phase d'hypergravité. La simulation tourne toujours en temps réel — il y en a simplement moins entre les paraboles.",
 
-    'energy.legend': 'Énergie',
-    'energy.unit': '— J',
     'energy.potential': 'Potentielle',
     'energy.kinetic': 'Cinétique',
     'energy.total': 'Total',
 
     'arch.legend': 'Architecture',
     'arch.sub': '— en direct',
-    'arch.links': 'Segments',
-    'arch.off': 'Aucun',
-    'arch.single': 'Simple',
-    'arch.double': 'Double',
-    'arch.triple': 'Triple',
-    'arch.links.tip': 'Si le pendule sélectionné est suspendu, et sur combien de segments articulés : un seul est régulier et prévisible, deux ou trois sont chaotiques. « Aucun » le retire du point de suspension en conservant tous ses réglages. Le modifier relance tous les pendules depuis leurs conditions initiales.',
+    'arch.add': 'ajouter L{n}',
+    'arch.remove': 'retirer L{n}',
+    'arch.units': 'Longueurs en {L}, masses en {m}',
+    'arch.length.tip': 'Longueur de ce segment, en mètres. Les autres segments absorbent la différence : le pendule conserve sa portée. Modifier le total pour la changer.',
+    'arch.total.tip': "Du point de suspension à l'extrémité, en mètres. Le modifier met à l'échelle tous les segments de ce pendule ensemble : la forme de la chaîne ne change pas.",
+    'arch.mass.tip': 'Masse de cette bille, en kilogrammes. Son rayon sur la scène en découle par le volume.',
     'arch.friction.tip': 'Frottement visqueux à chaque articulation du pendule sélectionné, en N·m·s/rad. 0 correspond au pendule idéal sans frottement.',
-    'arch.pendulum': 'Pendule {n}',
-    'arch.pendulum.off': 'Pendule {n} — retiré',
+    'arch.pendulum': 'Pendule {n} — suspendu ; cliquer pour le retirer',
+    'arch.pendulum.off': 'Pendule {n} — retiré ; cliquer pour le suspendre',
+    'arch.pendulum.last': 'Pendule {n} — le dernier suspendu, il ne peut pas être retiré',
 
     'preset.moon': 'Lune',
     'preset.mars': 'Mars',
@@ -178,11 +183,11 @@ const STRINGS = {
     'trails.legend': 'Traces',
     'trails.trace': 'Tracer la masse {i} du pendule {n}',
     'trails.style': 'Style',
-    'trails.style.tip': "Ligne relie les points enregistrés pour ne montrer que la trajectoire. Points laisse une marque par image, sans les relier : les images étant régulièrement espacées dans le temps, l'écart entre les points donne la vitesse.",
+    'trails.style.tip': "Lignes relie les points enregistrés pour ne montrer que la trajectoire. Points laisse une marque par image, sans les relier : les images étant régulièrement espacées dans le temps, l'écart entre les points donne la vitesse.",
     'trails.dots': 'Points',
-    'trails.line': 'Ligne',
+    'trails.line': 'Lignes',
     'trails.length': 'Durée',
-    'trails.clear': 'Effacer les traces',
+    'trails.clear': 'Effacer',
 
     'export.legend': 'Exporter',
     'export.span': 'Plage',
@@ -202,7 +207,7 @@ const STRINGS = {
     'export.none': 'aucune trace activée',
     'export.badspan': 'la fin doit venir après le début',
 
-    'state.legend': 'État — pendule {n}',
+    'state.legend': 'État',
     'state.time': 'Temps',
     'state.rate': 'Cadence',
     'state.rate.tip': "Images réellement affichées, moyennées sur la dernière seconde. 60 est la fréquence de l'écran, donc le plafond ; en dessous, des images sont perdues.",

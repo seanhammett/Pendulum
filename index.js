@@ -12,7 +12,7 @@ const MAX_STEPS = 20000;
 // much is in use, so changing link count never resizes them.
 const MAX_LINKS = 3;
 
-// Pendulums the page has: three tabs, three colours, three trail rows, all
+// Pendulums the page has: three rows, three colours, three trail rows, all
 // present at all times. How many hang from the pivot is `world`, below.
 const MAX_PENDULUMS = 3;
 
@@ -38,7 +38,7 @@ const env = { g: 9.81 };
 // so three chains are three independent Lagrangian systems drawn on one canvas.
 // Everything here is per chain except env.g, the release time and the clock.
 //
-// slot is the chain's identity — colour, tab, trail row and readout all key off
+// slot is the chain's identity — colour, row, trail row and readout all key off
 // it, and it never changes.
 function makeChain(slot) {
   const d = DEFAULTS[slot];
@@ -598,9 +598,22 @@ const COLOUR = {
   rod: prop('--rod'),
   // Panel chrome, used by the flight profile.
   accent: prop('--accent'),
+  // The inset a number box sits on, which is what an off pendulum's bobs are
+  // filled with in the Architecture figures.
+  line: prop('--line'),
   // Indexed by slot, not by position in the world.
   chain: [0, 1, 2].map((p) => prop('--p' + (p + 1)))
 };
+
+// Nothing is driving it: the profile curve with the flight simulator switched
+// off, a pendulum that is off the pivot. Grey rather than a dimmed chain colour,
+// so "not running" is the same mark wherever it appears.
+const INERT = '#565e73';
+
+// Where you are in the flight cycle, on the profile: the playhead, and the two
+// bounds of the span an export will cover. Deliberately not --accent, which the
+// curve and its fill already wear, and not one of the three chain colours.
+const MARK = '#ffb347';
 
 // The coloured core stroked down the centre of each white rod, as a fraction of
 // the rod's width.
@@ -740,6 +753,71 @@ function draw() {
   ctx.fill();
 }
 
+// --- The panel figures -----------------------------------------------------
+
+// One inline svg per pendulum in the Architecture box. Straight and horizontal:
+// this is what a pendulum is made of, not what it is doing, so it does not
+// follow the angles. Every weight mirrors draw() above at panel scale, so a rod,
+// a bob and a pivot read as the same objects in both places.
+const FIG_H = 26; // row height, sized for the heaviest bob and its ring
+const FIG_BOB = 6; // what bobR is on the canvas
+const FIG_ROD = 2.5;
+const FIG_RING = 1.5;
+const FIG_PAD = 3; // the pivot's own margin at the left edge
+
+// The same law the canvas uses: radius follows mass by volume, clamped.
+const figR = (m) => FIG_BOB * clamp(Math.cbrt(m), 0.6, 1.7);
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(name, attrs) {
+  const node = document.createElementNS(SVG_NS, name);
+  for (const key of Object.keys(attrs)) node.setAttribute(key, attrs[key]);
+  return node;
+}
+
+// Draws one chain into its row's svg. scale is pixels per metre, shared by the
+// three rows and set by the longest of them, exactly as the canvas scales every
+// chain to the largest reach in the world: a shorter pendulum draws shorter, so
+// an edit to a total is visible.
+//
+// Redrawn on an edit and on a resize, not per frame.
+function drawFigure(svg, c, on, scale) {
+  const cy = FIG_H / 2;
+  const colour = on ? COLOUR.chain[c.slot] : INERT;
+  const rod = on ? COLOUR.rod : INERT;
+  const line = { x1: FIG_PAD, y1: cy, x2: FIG_PAD, y2: cy };
+  for (let i = 0; i < c.n; i++) line.x2 += c.L[i] * scale;
+
+  svg.textContent = '';
+  svg.appendChild(svgEl('line', {
+    ...line, stroke: rod, 'stroke-width': FIG_ROD, 'stroke-linecap': 'round'
+  }));
+  // The coloured core down the white rod. An off pendulum carries no chain
+  // colour at all — its pill still does, as a hollow dot — but it keeps the
+  // core, in the panel's line colour, so the rod reads as the same object
+  // greyed rather than as a different one.
+  svg.appendChild(svgEl('line', {
+    ...line,
+    stroke: on ? colour : COLOUR.line,
+    'stroke-width': Math.max(1, FIG_ROD * CORE_RATIO)
+  }));
+
+  let d = 0;
+  for (let i = 0; i < c.n; i++) {
+    d += c.L[i];
+    svg.appendChild(svgEl('circle', {
+      cx: FIG_PAD + d * scale, cy, r: figR(c.m[i]),
+      fill: on ? colour : COLOUR.line, stroke: rod, 'stroke-width': FIG_RING
+    }));
+  }
+
+  // Last and neutral, as on the canvas: the pivot belongs to the world.
+  svg.appendChild(svgEl('circle', {
+    cx: FIG_PAD, cy, r: FIG_BOB * 0.45, fill: on ? COLOUR.pivot : INERT
+  }));
+}
+
 // The g(t) curve for one cycle, with a playhead at the current position.
 const profile = document.getElementById('profile');
 const pctx = profile.getContext('2d');
@@ -808,7 +886,7 @@ function buildLayer(w, h, dpr) {
   lctx.beginPath();
   lctx.moveTo(pts[0][0], pts[0][1]);
   for (const [x, y] of pts) lctx.lineTo(x, y);
-  lctx.strokeStyle = flightOn ? COLOUR.accent : '#565e73';
+  lctx.strokeStyle = flightOn ? COLOUR.accent : INERT;
   lctx.lineWidth = 1.5;
   lctx.stroke();
 }
@@ -854,18 +932,24 @@ function drawProfile() {
     pctx.setLineDash([]);
   }
 
-  // The span an export will cover, in the accent. Drawn over the clamped
-  // shading, since a span chosen before the release is still the span saved.
+  // The span an export will cover. Drawn over the clamped shading, since a span
+  // chosen before the release is still the span saved.
+  //
+  // Marked in the same orange as the playhead, because both are about where you
+  // are in the cycle rather than what the aircraft is doing — but dashed, and
+  // over a fill faint enough to read the curve through, so the two bounds cannot
+  // be taken for the one line that moves.
   if (markSpan) {
     const a = toXt(clamp(markSpan[0], 0, C));
     const b = toXt(clamp(markSpan[1], 0, C));
     if (b > a) {
       pctx.fillStyle = COLOUR.accent;
-      pctx.globalAlpha = 0.18;
+      pctx.globalAlpha = 0.09;
       pctx.fillRect(a, top - 2, b - a, bottom - top + 4);
       pctx.globalAlpha = 1;
-      pctx.strokeStyle = COLOUR.accent;
+      pctx.strokeStyle = MARK;
       pctx.lineWidth = 1;
+      pctx.setLineDash([1, 3]);
       pctx.beginPath();
       // Half-pixel offsets, and inward, so both edges land on a pixel boundary
       // and a span at t = 0 keeps its left edge on the canvas.
@@ -874,19 +958,20 @@ function drawProfile() {
       pctx.moveTo(b - 0.5, top - 2);
       pctx.lineTo(b - 0.5, bottom + 2);
       pctx.stroke();
+      pctx.setLineDash([]);
     }
   }
 
   const { u, level } = flightAt(flightTime);
   const x = toXt(u);
-  pctx.strokeStyle = '#ffb347';
+  pctx.strokeStyle = MARK;
   pctx.lineWidth = 1;
   pctx.beginPath();
   pctx.moveTo(x, top - 2);
   pctx.lineTo(x, bottom + 2);
   pctx.stroke();
 
-  pctx.fillStyle = '#ffb347';
+  pctx.fillStyle = MARK;
   pctx.beginPath();
   pctx.arc(x, toY(level), 3, 0, Math.PI * 2);
   pctx.fill();
@@ -903,36 +988,38 @@ function wrapDeg(rad) {
 
 const set = (id, text) => { document.getElementById(id).textContent = text; };
 
-// State follows the selected tab; Energy shows all three chains at once, and
-// names none of them in its legend. There is no all-chains energy total.
-//
-// A pendulum that is switched off is not being stepped, so what these show is it
-// sitting at its initial conditions. The hollow dot in the State legend and on
-// that pendulum's energy row is what says the numbers will not move.
+// One decimal while the figure is small enough to earn it, none above 100: the
+// three of them share the width of a row, so a number that grew a digit would
+// have to come from somewhere. A trailing unit on each, since there is no legend
+// over them to say it once.
+const joules = (v) => v.toFixed(v < 100 ? 1 : 0) + ' J';
+
+// Every pendulum on the pivot, angles then speeds then energies, into its own
+// row and its own lines. Nothing is written for a pendulum that is off: it is not
+// being stepped, and neither its Architecture row nor its State lines are on the
+// panel to write into.
 function updateReadout() {
-  const c = chains[sel];
-  for (let i = 0; i < c.n; i++) {
-    set('r-t' + (i + 1), wrapDeg(c.s[i]).toFixed(1) + '°');
-    set('r-w' + (i + 1), deg(c.s[c.n + i]).toFixed(0) + '°/s');
+  for (const c of world) {
+    const r = READ[c.slot];
+    for (let i = 0; i < c.n; i++) {
+      setCell(r[i].th, wrapDeg(c.s[i]).toFixed(1) + '°');
+      setCell(r[i].om, deg(c.s[c.n + i]).toFixed(0) + '°/s');
+    }
+
+    // Split rather than summed: in flight the potential term drains to nothing
+    // at 0g while the kinetic term carries on untouched.
+    const pe = potential(c);
+    const ke = kinetic(c);
+    const cell = E_CELL[c.slot];
+    setCell(cell[0], joules(pe));
+    setCell(cell[1], joules(ke));
+    setCell(cell[2], joules(pe + ke));
   }
   set('r-time', simTime.toFixed(2) + ' s');
-
-  // Split rather than summed: in flight the potential term drains to nothing at
-  // 0g while the kinetic term carries on untouched.
-  for (let p = 0; p < MAX_PENDULUMS; p++) {
-    const chain = chains[p];
-    const pe = potential(chain);
-    const ke = kinetic(chain);
-    const cell = E_CELL[p];
-    setCell(cell[0], pe.toFixed(2));
-    setCell(cell[1], ke.toFixed(2));
-    setCell(cell[2], (pe + ke).toFixed(2));
-  }
 }
 
-// Nine figures a frame, so a cell whose text has not changed is not written.
-// The chains that are switched off are the case this is for: they are not being
-// stepped, so their cells hold the same text for as long as they stay off.
+// Up to twenty-seven figures a frame, so a cell whose text has not changed is
+// not written.
 function setCell(node, text) {
   if (node.textContent !== text) node.textContent = text;
 }
@@ -1119,28 +1206,64 @@ const el = (id) => document.getElementById(id);
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
-function num(id, fallback) {
-  const v = parseFloat(el(id).value);
+function numOf(box, fallback) {
+  const v = parseFloat(box.value);
   return Number.isFinite(v) ? v : fallback;
 }
 
-// One tab, tab dot, energy row, trail row and trail checkbox per slot, looked up
-// once — the energy cells especially, since they are rewritten every frame.
+const num = (id, fallback) => numOf(el(id), fallback);
+
+// Everything the panel holds three of, looked up once and indexed by slot: the
+// letter switch and its dot, the three energy cells, the trail row and its
+// checkboxes, and — one entry per link — the initial-condition boxes and the
+// State lines. The energy cells and the State figures especially, since they are
+// rewritten every frame.
 const TABS = [];
 const DOTS = [];
-const E_ROW = [];
-const E_DOT = [];
 const E_CELL = [];
 const TRAIL_ROW = [];
 const TRAIL_BOX = [];
+const INIT = [];
+const READ = [];
 for (let p = 0; p < MAX_PENDULUMS; p++) {
-  TABS.push(el('tab-' + (p + 1)));
+  const n = p + 1;
+  const each = (make) => [1, 2, 3].map(make);
+  TABS.push(el('tab-' + n));
   DOTS.push(TABS[p].querySelector('.dot'));
-  E_ROW.push(el('e-row-' + (p + 1)));
-  E_DOT.push(E_ROW[p].querySelector('.dot'));
-  E_CELL.push(['e-pe-', 'e-ke-', 'e-total-'].map((id) => el(id + (p + 1))));
-  TRAIL_ROW.push(el('trail-row-' + (p + 1)));
-  TRAIL_BOX.push([0, 1, 2].map((i) => el('trail-' + (p + 1) + '-' + (i + 1))));
+  E_CELL.push(['e-pe-', 'e-ke-', 'e-total-'].map((id) => el(id + n)));
+  TRAIL_ROW.push(el('trail-row-' + n));
+  TRAIL_BOX.push([0, 1, 2].map((i) => el('trail-' + n + '-' + (i + 1))));
+  INIT.push(each((i) => ({
+    line: el('init-line-' + n + '-' + i),
+    th: el('t-' + n + '-' + i),
+    om: el('w-' + n + '-' + i)
+  })));
+  READ.push(each((i) => ({
+    line: el('r-line-' + n + '-' + i),
+    th: el('r-t-' + n + '-' + i),
+    om: el('r-w-' + n + '-' + i)
+  })));
+}
+
+// The Architecture box's three rows: each pendulum's figure, its length, mass and
+// total boxes with the cells they sit in, and its two step buttons. All three
+// rows are on the panel at once, so all of this is looked up once here rather
+// than followed from a selection.
+const ARCH = [];
+for (let p = 0; p < MAX_PENDULUMS; p++) {
+  const n = p + 1;
+  const each = (make) => [1, 2, 3].map(make);
+  ARCH.push({
+    row: el('arch-row-' + n),
+    fig: el('arch-fig-' + n),
+    L: each((i) => el('L-' + n + '-' + i)),
+    m: each((i) => el('m-' + n + '-' + i)),
+    total: el('LT-' + n),
+    cellL: each((i) => el('cell-L-' + n + '-' + i)),
+    cellM: each((i) => el('cell-m-' + n + '-' + i)),
+    add: el('arch-add-' + n),
+    del: el('arch-del-' + n)
+  });
 }
 
 // Whether bob i of chain c is being recorded and drawn.
@@ -1182,96 +1305,287 @@ function linkPair(id, onChange) {
   return (v) => { box.value = v; push(box); };
 }
 
-// Rod lengths, masses and friction take effect immediately, mid-flight: angles
-// and rates carry over and the motion continues under the new physics. Every
-// link is wired, including a hidden third. They write into chains[sel], which is
-// why selectPendulum assigns sel before repopulating them — see the note there.
-const setL = [];
-const setM = [];
-for (let i = 0; i < MAX_LINKS; i++) {
-  setL.push(linkPair('L' + (i + 1), (v) => { chains[sel].L[i] = v; }));
-  setM.push(linkPair('m' + (i + 1), (v) => { chains[sel].m[i] = v; }));
-}
+// Friction takes effect immediately, mid-flight, as lengths and masses do:
+// angles and rates carry over and the motion continues under the new physics.
+// It writes into chains[sel], which is why selectPendulum assigns sel before
+// repopulating it — see the note there.
 const setB = linkPair('b', (v) => { chains[sel].b = v; });
 // Gravity is the aircraft's, so it stays outside the selection.
 const setGravity = linkPair('g', (v) => { env.g = v; });
 linkPair('trail-len', (v) => { trailSeconds = v; });
 
-// Per chain too, so they are read as they are typed rather than only at reset;
-// otherwise switching tabs would have to harvest them first.
-function bindInit(id, write) {
-  el(id).addEventListener('input', () => {
-    const v = parseFloat(el(id).value);
-    if (Number.isFinite(v)) write(chains[sel], v);
+// Read as they are typed rather than only at reset. Every pendulum's boxes are
+// on the panel at once, so each writes into its own chain and none of this
+// follows the selection.
+function bindInit(box, write) {
+  box.addEventListener('input', () => {
+    const v = parseFloat(box.value);
+    if (Number.isFinite(v)) write(v);
   });
 }
 
-for (let i = 0; i < MAX_LINKS; i++) {
-  bindInit('t' + (i + 1), (c, v) => { c.th0[i] = v; });
-  bindInit('w' + (i + 1), (c, v) => { c.om0[i] = v; });
+for (let p = 0; p < MAX_PENDULUMS; p++) {
+  const c = chains[p];
+  for (let i = 0; i < MAX_LINKS; i++) {
+    bindInit(INIT[p][i].th, (v) => { c.th0[i] = v; });
+    bindInit(INIT[p][i].om, (v) => { c.om0[i] = v; });
+  }
+}
+
+// --- Rods -------------------------------------------------------------------
+
+// A chain's links and its reach are one set of numbers seen two ways, and the
+// box offers both, so every edit has to keep the other side true: changing the
+// total scales the links together, and changing a link makes the others take up
+// the slack with the total held. Nothing here rounds — the boxes round for
+// display only, so nudging one of them repeatedly cannot walk the total.
+const LMIN = 0.1; // shortest link (m)
+const LMAX_T = 3; // longest chain, pivot to tip (m)
+const MMIN = 0.1; // lightest bob (kg)
+const MMAX = 5;
+
+const reachOf = (c) => {
+  let sum = 0;
+  for (let i = 0; i < c.n; i++) sum += c.L[i];
+  return sum;
+};
+
+const shortestOf = (c) => {
+  let lo = c.L[0];
+  for (let i = 1; i < c.n; i++) lo = Math.min(lo, c.L[i]);
+  return lo;
+};
+
+// Every link scaled by the same factor, so the chain keeps its shape and only
+// its reach changes. It cannot be shrunk so far that a link falls under LMIN:
+// on a chain of equal links that floor is LMIN·n, and on a lopsided one it is
+// whatever the shortest link can survive.
+function setTotal(c, v) {
+  const T = reachOf(c);
+  const want = clamp(v, (T * LMIN) / shortestOf(c), LMAX_T);
+  const k = want / T;
+  for (let i = 0; i < c.n; i++) c.L[i] *= k;
+  return want;
+}
+
+// One link changed with the total held: the others give up or take back the
+// difference in proportion, so their ratios to one another do not move. The
+// link's own ceiling is whatever leaves every other link at LMIN or above, which
+// on a chain of equal links is T − LMIN·(n−1).
+function setLink(c, i, v) {
+  // The one link of a single is the total, which is why its box carries the
+  // total's accent border as well, and why LT beside it holds the same number.
+  if (c.n === 1) return setTotal(c, v);
+
+  const T = reachOf(c);
+  const rest = T - c.L[i];
+  let lo = Infinity;
+  for (let j = 0; j < c.n; j++) if (j !== i) lo = Math.min(lo, c.L[j]);
+
+  const want = clamp(v, LMIN, T - (LMIN * rest) / lo);
+  const k = (T - want) / rest;
+  for (let j = 0; j < c.n; j++) if (j !== i) c.L[j] *= k;
+  c.L[i] = want;
+  return want;
+}
+
+// Adding and removing a link both hold the chain's reach, which is what makes
+// the three rows a comparison: a triple is one length of rod divided three ways
+// rather than a single with two more rods on the end. It is also the rule the
+// shipped defaults were built to.
+function addLink(c) {
+  const n = c.n;
+  const T = reachOf(c);
+  // Every link gives up the same fraction of itself and the new one takes what
+  // they gave. A link already sitting on LMIN has nothing to give, so the
+  // fraction is capped by the shortest of them and the chain grows by the
+  // shortfall instead of letting a link vanish — three links at LMIN is 0.3 m
+  // against a 3 m ceiling, so there is room for that.
+  const keep = Math.max(n / (n + 1), Math.min(1, LMIN / shortestOf(c)));
+  for (let i = 0; i < n; i++) c.L[i] *= keep;
+  c.L[n] = Math.max(LMIN, T * (1 - keep));
+  c.n = n + 1;
+  // Its mass is whatever this chain was holding for that link, which is the
+  // markup's value until someone changes it; see DEFAULTS.
+}
+
+// The tip comes off and its length goes back into the links above it, in
+// proportion, so those keep their ratios and the reach is unchanged.
+function removeLink(c) {
+  const T = reachOf(c);
+  const k = T / (T - c.L[c.n - 1]);
+  c.n -= 1;
+  for (let i = 0; i < c.n; i++) c.L[i] *= k;
 }
 
 // Link count is architecture, not a live parameter: changing it re-runs from the
-// initial conditions rather than growing a limb mid-swing. Zero links is off —
-// whether a pendulum hangs and how many rods it hangs by are one control,
-// because a pendulum with no rods is a pendulum that is not there.
-const linkButtons = {
-  0: el('links-0'), 1: el('links-1'), 2: el('links-2'), 3: el('links-3')
-};
+// initial conditions rather than growing a limb mid-swing.
+function setLinkCount(slot, n) {
+  const c = chains[slot];
+  if (n < 1 || n > MAX_LINKS || n === c.n) return;
+  if (n > c.n) addLink(c); else removeLink(c);
+  c.s = new Float64Array(2 * c.n);
+  // The chain has a new tip, and the trail was following the old one.
+  tipOnly(c);
+  paintSelection();
+  reset();
+}
 
-// What the switch reads for a chain: its link count while hanging, 0 when not.
-// The chain keeps its n either way, so the panel shows the right rows for a
-// pendulum that is switched off.
-const linksOf = (c) => (hanging(c) ? c.n : 0);
+// --- On the pivot -----------------------------------------------------------
 
-function setLinks(count) {
-  const c = chains[sel];
-  if (count === 0) {
+// Splices a chain in or out of the world. A pendulum keeps everything about it
+// while it is off, so switching it back on returns the same pendulum.
+function setActive(slot, on) {
+  const c = chains[slot];
+  if (on === hanging(c)) return;
+  if (on) {
+    world.push(c);
+    world.sort((a, x) => a.slot - x.slot);
+  } else {
     // Guarded as well as disabled: an empty world would take the stage scale,
     // the clock and the clamped phase with it.
     if (world.length < 2) return;
     world.splice(world.indexOf(c), 1);
-  } else {
-    c.n = count;
-    c.s = new Float64Array(2 * count);
-    // The chain has a new tip, and the trail was following the old one.
-    tipOnly(c);
-    if (!hanging(c)) {
-      world.push(c);
-      world.sort((a, x) => a.slot - x.slot);
-    }
+    // The panel edits something that is on the pivot. b writes into the selected
+    // chain, and an off row carries no lit surround, so leaving the selection on
+    // the pendulum that has just gone grey would leave the slider editing a
+    // pendulum nothing on the panel names.
+    if (slot === sel) selectPendulum(world[0].slot);
   }
   paintSelection();
   reset();
 }
 
-for (const [k, button] of Object.entries(linkButtons)) {
-  const count = Number(k);
-  button.addEventListener('click', () => {
-    if (count !== linksOf(chains[sel])) confirmReset(() => setLinks(count));
+// Putting a pendulum back on the pivot also points the box at it: the row that
+// was clicked is the row the box is now editing.
+function activate(slot) {
+  confirmReset(() => { selectPendulum(slot); setActive(slot, true); });
+}
+
+// --- The pendulum rows ------------------------------------------------------
+
+// Every box writes straight into its own chain and then the box is repainted,
+// because one edit moves its neighbours: a length moves the other lengths, a
+// total moves all of them.
+//
+// Never the box being typed in, though — half a number is a number, and a box
+// that rewrote itself on every keystroke would turn the 0 of 0.5 into the
+// minimum before the point was reached. It is squared up on the way out
+// instead, which is also when the value is rounded to what the box can show, so
+// the simulation runs on the full precision it was given until then.
+function bindArchBox(input, apply) {
+  input.addEventListener('input', () => {
+    const raw = parseFloat(input.value);
+    if (!Number.isFinite(raw)) return;
+    apply(raw);
+    paintArch(input);
   });
+  input.addEventListener('change', () => paintArch());
+}
+
+for (let p = 0; p < MAX_PENDULUMS; p++) {
+  const c = chains[p];
+  const a = ARCH[p];
+  for (let i = 0; i < MAX_LINKS; i++) {
+    bindArchBox(a.L[i], (v) => setLink(c, i, v));
+    bindArchBox(a.m[i], (v) => { c.m[i] = clamp(v, MMIN, MMAX); return c.m[i]; });
+  }
+  bindArchBox(a.total, (v) => setTotal(c, v));
+
+  a.add.addEventListener('click', () => confirmReset(() => setLinkCount(p, c.n + 1)));
+  a.del.addEventListener('click', () => confirmReset(() => setLinkCount(p, c.n - 1)));
+
+  // Clicking anywhere in an active row selects that pendulum; an off row has no
+  // controls in it, and clicking it is what puts the pendulum back on the pivot.
+  a.row.addEventListener('click', () => {
+    if (!hanging(c)) activate(p);
+    else if (p !== sel) selectPendulum(p);
+  });
+  // Reaching a box by keyboard is the same choice as reaching it by pointer.
+  a.row.addEventListener('focusin', () => { if (p !== sel) selectPendulum(p); });
+}
+
+// The figures are drawn in CSS pixels rather than to a viewBox, so a panel that
+// changes width — the narrow layout, or a window dragged under it — has to have
+// them drawn again. Repainting does not change the row's size, so this cannot
+// feed itself.
+new ResizeObserver(() => paintArch()).observe(ARCH[0].row);
+
+// Everything inside the three rows: which boxes are there, what they say, the
+// state of the pill and the figure beside it. Called after every edit, and by
+// paintSelection, so a row's lit surround and its contents are never out of step.
+//
+// `typing` is the one box not to rewrite: the one the new value came from, which
+// still has the cursor in it.
+function paintArch(typing) {
+  // One scale for the three rows, from the longest chain in the box whether it
+  // is hanging or not — as the canvas scales every chain to the largest reach.
+  let longest = 0;
+  let widest = 0;
+  for (const c of chains) {
+    longest = Math.max(longest, reachOf(c));
+    for (let i = 0; i < c.n; i++) widest = Math.max(widest, figR(c.m[i]));
+  }
+
+  for (let p = 0; p < MAX_PENDULUMS; p++) {
+    const c = chains[p];
+    const a = ARCH[p];
+    const on = hanging(c);
+
+    a.row.classList.toggle('off', !on);
+    a.row.classList.toggle('sel', on && p === sel);
+    // The off row is a switch, and the only one on the panel with no label.
+    a.row.title = on ? '' : fmt('arch.pendulum.off', { n: CHAIN_NAME[p] });
+
+    // The width the svg is given, less the head column, for the first paint of
+    // a panel that has not been laid out yet.
+    const width = a.fig.clientWidth || 207;
+    drawFigure(a.fig, c, on, (width - FIG_PAD - widest - 1) / longest);
+
+    for (let i = 0; i < MAX_LINKS; i++) {
+      a.cellL[i].hidden = i >= c.n;
+      a.cellM[i].hidden = i >= c.n;
+      if (a.L[i] !== typing) a.L[i].value = c.L[i].toFixed(3);
+      if (a.m[i] !== typing) a.m[i].value = c.m[i].toFixed(2);
+    }
+
+    // On a single the one link is the total, so both boxes carry the mark and
+    // both scale the chain. The total keeps its place either way, which is what
+    // holds the three rows in line.
+    a.cellL[0].classList.toggle('total', c.n === 1);
+    if (a.total !== typing) a.total.value = reachOf(c).toFixed(3);
+
+    // The two round buttons carry a sign, not a name, so what they will do is
+    // said in the tooltip: each names the link it adds or takes away. They grey
+    // out where they run out rather than disappearing — add while the chain is
+    // short of three links, remove while it has more than one.
+    setStep(a.add, c.n >= MAX_LINKS, 'arch.add', c.n + 1);
+    setStep(a.del, c.n < 2, 'arch.remove', c.n);
+  }
+}
+
+// A step button's state and the name it answers to, which is the only place it
+// is written: the face of the button is a + or a −.
+function setStep(button, off, key, n) {
+  const name = fmt(key, { n });
+  button.disabled = off;
+  button.title = name;
+  button.setAttribute('aria-label', name);
 }
 
 // --- Selection --------------------------------------------------------------
 
-// Sets which pendulum the panel is editing, then repopulates every per-chain
-// control from it. Any slot can be selected, hanging or not.
+// Sets which pendulum the panel is editing, then repopulates the one control
+// that still follows the selection: friction. Nothing else does any more — the
+// rods, the initial conditions and the state of every pendulum are all on the
+// panel at once, each in its own row or line, always live.
 //
-// sel is assigned first, and must be: the setters below call linkPair's push(),
-// which fires onChange, which writes to chains[sel]. Repopulating before
-// switching would write tab B's values into pendulum A on the way past.
+// sel is assigned first, and must be: setB calls linkPair's push(), which fires
+// onChange, which writes to chains[sel]. Repopulating before switching would
+// write pendulum B's friction into pendulum A on the way past.
 function selectPendulum(slot) {
   sel = slot;
-  const c = chains[slot];
-
-  for (let k = 0; k < MAX_LINKS; k++) {
-    setL[k](c.L[k]);
-    setM[k](c.m[k]);
-    el('t' + (k + 1)).value = c.th0[k];
-    el('w' + (k + 1)).value = c.om0[k];
-  }
-  setB(c.b);
-
+  setB(chains[slot].b);
   paintSelection();
 }
 
@@ -1279,38 +1593,31 @@ function selectPendulum(slot) {
 // them are hanging. Split out from selectPendulum because a language switch and
 // a change of link count need it without touching the values.
 function paintSelection() {
-  const c = chains[sel];
-
-  for (const [k, button] of Object.entries(linkButtons)) {
-    button.classList.toggle('on', Number(k) === linksOf(c));
-  }
-  // Something has to be hanging, so the last pendulum on the pivot cannot be
-  // switched off. Disabled rather than hidden, so the segment keeps its place.
-  linkButtons[0].disabled = hanging(c) && world.length < 2;
-
-  // A link's controls and readouts appear and disappear together, so the panel
-  // shows only the links this pendulum has. Keyed off c.n rather than the
-  // switch, so one that is switched off still shows the shape it will have.
-  for (const id of ['row-L2', 'row-m2', 'init-t2', 'init-w2', 'r-row-t2', 'r-row-w2']) {
-    el(id).hidden = c.n < 2;
-  }
-  for (const id of ['row-L3', 'row-m3', 'init-t3', 'init-w3', 'r-row-t3', 'r-row-w3']) {
-    el(id).hidden = c.n < 3;
-  }
-
   for (let p = 0; p < MAX_PENDULUMS; p++) {
     const chain = chains[p];
     const on = hanging(chain);
-    // The tab says which pendulum the panel is on; its dot says whether that
-    // pendulum is on the pivot. Two marks, since a tab can be selected and empty.
-    TABS[p].classList.toggle('on', p === sel);
-    TABS[p].title = fmt(on ? 'arch.pendulum' : 'arch.pendulum.off', { n: CHAIN_NAME[p] });
+    // The letter is the switch, and its row lights when the pendulum is on the
+    // pivot; the dot says the same thing a second way. Which of them the box is
+    // editing is said by the same surround at full accent.
+    //
+    // Something has to be hanging, so the last one there cannot be switched off:
+    // its letter disables rather than doing nothing when it is pressed.
+    const last = on && world.length < 2;
+    const key = last ? 'arch.pendulum.last' : (on ? 'arch.pendulum' : 'arch.pendulum.off');
+    TABS[p].disabled = last;
+    TABS[p].title = fmt(key, { n: CHAIN_NAME[p] });
     DOTS[p].classList.toggle('off', !on);
-    // The same mark on this pendulum's energy row, which is all that names the
-    // row. Selection is not marked there: Energy shows all three either way.
-    E_DOT[p].classList.toggle('off', !on);
-    E_ROW[p].classList.toggle('off', !on);
     TRAIL_ROW[p].hidden = !on;
+
+    // One line each in Initial conditions and State per link this pendulum has,
+    // and none at all while it is off the pivot: it is not being released from
+    // anything and not being stepped. The two boxes hold the same shape, so one
+    // condition covers both.
+    for (let i = 0; i < MAX_LINKS; i++) {
+      const show = on && i < chain.n;
+      INIT[p][i].line.hidden = !show;
+      READ[p][i].line.hidden = !show;
+    }
     // One toggle per link the chain has, except that bob 1 is offered only on a
     // single. They carry a bare numeral, so the tooltip names the bob and the
     // pendulum.
@@ -1321,18 +1628,24 @@ function paintSelection() {
     }
   }
 
-  set('legend-state', fmt('state.legend', { n: chainName(c) }));
-  // Hollow when the selected pendulum is not hanging. The Energy box has no
-  // legend dot — it is not on one pendulum, and its rows carry their own.
-  el('dot-state').className = 'dot p' + (c.slot + 1) + (hanging(c) ? '' : ' off');
+  // Last, and every time: the rows show which pendulum is selected as well as
+  // what each one is made of.
+  paintArch();
 }
 
-// Selecting a tab resets nothing: it changes which pendulum the panel is
-// pointed at, and the run carries on underneath. Switching one on or off does
-// reset the world, so that every chain shares one t = 0.
+// The letter switches its pendulum on and off the pivot. Selecting one is done
+// by clicking anywhere else in its row, and resets nothing; switching one on or
+// off does reset the world, so that every chain shares one t = 0, and so it asks
+// first.
+//
+// The click stops here. The row it sits in treats a click as either "select me"
+// or, when the pendulum is off, "put me back" — and both of those would fire a
+// second time behind this one, the off case raising a second dialog.
 for (let p = 0; p < MAX_PENDULUMS; p++) {
-  TABS[p].addEventListener('click', () => {
-    if (p !== sel) selectPendulum(p);
+  TABS[p].addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (hanging(chains[p])) confirmReset(() => setActive(p, false));
+    else activate(p);
   });
 }
 
@@ -1372,32 +1685,37 @@ function updateFlightReadout() {
   set('f-t', fmt('flight.clock', { u: u.toFixed(1), c: cycle() }));
 }
 
-// Where the run starts and which phase the release lands in. Assembled from the
-// template, since the clauses reorder between languages; values go in as text
-// nodes, never as markup.
+// Writes a template string into a node with its {placeholders} replaced by
+// spans, so a sentence whose clauses reorder between languages can still pick
+// out the values inside it. Each value is [id, text], the id optional; the text
+// goes in as a text node, never as markup.
+function writeParts(node, key, vals) {
+  node.textContent = '';
+  for (const part of t(key).split(/(\{\w+\})/)) {
+    if (!part) continue;
+    if (!vals[part]) {
+      node.appendChild(document.createTextNode(part));
+      continue;
+    }
+    const [id, text] = vals[part];
+    const span = document.createElement('span');
+    if (id) span.id = id;
+    span.textContent = text;
+    node.appendChild(span);
+  }
+}
+
+// Where the run starts and which phase the release lands in.
 //
 // Takes the value rather than reading `release`, because while the slider is
 // dragged the note previews a release that has not been committed — the run is
 // still flying the old one. See setRelease below.
 function updateReleaseNote(v = release) {
-  const vals = {
+  writeParts(el('release-note'), 'release.note', {
     '{start}': ['r-start', `t = ${Math.max(0, v - LEAD_IN)} s`],
     '{when}': ['r-when', `t = ${v} s`],
     '{where}': ['r-where', phaseInline(flightAt(v).ph)]
-  };
-
-  const p = el('release-note');
-  p.textContent = '';
-  for (const part of t('release.note').split(/(\{\w+\})/)) {
-    if (!part) continue;
-    if (vals[part]) {
-      const span = document.createElement('span');
-      [span.id, span.textContent] = vals[part];
-      p.appendChild(span);
-    } else {
-      p.appendChild(document.createTextNode(part));
-    }
-  }
+  });
 }
 
 // Repaints every translated string wholesale, so no label can be left behind in
@@ -1408,8 +1726,8 @@ function applyLang() {
 
   for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
   for (const node of document.querySelectorAll('[data-i18n-title]')) node.title = t(node.dataset.i18nTitle);
-  // For a control whose name is not written on the panel — the links switch,
-  // whose label the tabs above it took over.
+  // For a control whose name is not written on the panel — the trail style
+  // pair, which took the full width its label used to lead.
   for (const node of document.querySelectorAll('[data-i18n-aria]')) {
     node.setAttribute('aria-label', t(node.dataset.i18nAria));
   }
@@ -1422,9 +1740,16 @@ function applyLang() {
   btn.setAttribute('aria-label', LANG_TIP[other]);
 
   // The rest is written by JS, so it has to be asked to redraw. The State legend
-  // and the tab tooltips carry the pendulum's letter, so they come from the
+  // and the switch tooltips carry the pendulum's letter, so they come from the
   // selection rather than from a bare key.
   el('play').textContent = t(running ? 'btn.pause' : 'btn.start');
+  // The units the nine boxes below it are in, with the units themselves picked
+  // out of the sentence.
+  writeParts(el('arch-units'), 'arch.units', { '{L}': [null, 'm'], '{m}': [null, 'kg'] });
+  // Set from JS rather than data-i18n-title, because it is on the row only while
+  // the profile is flying — so it has to be rewritten here as well as there, or
+  // a language switch mid-flight would leave it in the old one.
+  el('row-g').title = flightOn ? t('flight.driven') : '';
   paintSelection();
   updateReleaseNote();
   updateFlightReadout();
@@ -1435,7 +1760,10 @@ function setFlight(on) {
   flightTime = 0;
   el('flight-on').checked = on;
   el('flight').classList.toggle('on', on);
-  el('g-driven').hidden = !on;
+  // Why the row above is greyed, on the row rather than on the input: a disabled
+  // input does not reliably raise the pointer events a tooltip needs, and this
+  // is there precisely while g is disabled.
+  el('row-g').title = on ? t('flight.driven') : '';
   for (const c of gControls) c.disabled = on;
 
   if (on) {
@@ -1590,7 +1918,7 @@ function confirmReset(onYes, onNo) {
 }
 
 // Every chain from its own initial conditions, and the clock once: one pivot,
-// one t = 0. Chains that are not hanging are reset too, so a tab shows the
+// one t = 0. Chains that are not hanging are reset too, so a row shows the
 // pendulum it will put on the pivot rather than whatever it was left holding.
 function reset() {
   if (flightOn) {
@@ -1644,15 +1972,18 @@ el('reset').addEventListener('click', reset);
 // calls on its own way to announcing itself.
 el('clear').addEventListener('click', () => { clearTrails(); worldChanged(); });
 
-// Snapshot the selected chain's live state into its initial-condition boxes, so
-// an interesting configuration found mid-flight can be replayed.
+// Snapshot the live state into the initial-condition boxes, so an interesting
+// configuration found mid-flight can be replayed. Every pendulum on the pivot,
+// not the selected one alone: they were caught in that configuration together,
+// and the box above shows all of them.
 el('use-current').addEventListener('click', () => {
-  const c = chains[sel];
-  for (let i = 0; i < c.n; i++) {
-    c.th0[i] = Number(wrapDeg(c.s[i]).toFixed(1));
-    c.om0[i] = Number(deg(c.s[c.n + i]).toFixed(1));
-    el('t' + (i + 1)).value = c.th0[i];
-    el('w' + (i + 1)).value = c.om0[i];
+  for (const c of world) {
+    for (let i = 0; i < c.n; i++) {
+      c.th0[i] = Number(wrapDeg(c.s[i]).toFixed(1));
+      c.om0[i] = Number(deg(c.s[c.n + i]).toFixed(1));
+      INIT[c.slot][i].th.value = c.th0[i];
+      INIT[c.slot][i].om.value = c.om0[i];
+    }
   }
 });
 
@@ -1666,20 +1997,28 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Pendulum A takes its parameters from the boxes rather than from DEFAULTS, so
-// the markup and the load cannot disagree.
-for (let i = 0; i < MAX_LINKS; i++) {
-  chains[0].L[i] = num('L' + (i + 1), DEFAULTS[0].L[i]);
-  chains[0].m[i] = num('m' + (i + 1), DEFAULTS[0].m[i]);
-  chains[0].th0[i] = num('t' + (i + 1), i === 0 ? 90 : 0);
-  chains[0].om0[i] = num('w' + (i + 1), 0);
+// Every pendulum takes its rods and its initial conditions from its own boxes
+// rather than from DEFAULTS, so the markup and the load cannot disagree. All
+// three are on the panel at once now, so all three are stated there; only the
+// link counts still come from the table, since a link count is said by the markup
+// only in which boxes it hides.
+for (let p = 0; p < MAX_PENDULUMS; p++) {
+  for (let i = 0; i < MAX_LINKS; i++) {
+    chains[p].L[i] = num('L-' + (p + 1) + '-' + (i + 1), DEFAULTS[p].L[i]);
+    chains[p].m[i] = num('m-' + (p + 1) + '-' + (i + 1), DEFAULTS[p].m[i]);
+    chains[p].th0[i] = numOf(INIT[p][i].th, i === 0 ? 90 : 0);
+    chains[p].om0[i] = numOf(INIT[p][i].om, 0);
+  }
 }
+
+// Friction is the one parameter still read from a single box, because it is the
+// one that follows the selection, and the panel opens on A.
 chains[0].b = num('b', 0.001);
 
-// B and C come fully built out of DEFAULTS at load, not at switch-on, so one
-// that is switched off and then tuned is not overwritten when it comes back.
-// Only their trails are left, since a checkbox cannot be derived from a link
-// count in the markup.
+// B and C are fully built at load rather than at switch-on, so one that is
+// switched off and then tuned is not overwritten when it comes back. Only their
+// trails are left, since a checkbox cannot be derived from a link count in the
+// markup.
 for (let p = 1; p < MAX_PENDULUMS; p++) tipOnly(chains[p]);
 env.g = num('g', 9.81);
 release = num('release', 0);

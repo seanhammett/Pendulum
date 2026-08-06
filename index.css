@@ -7,9 +7,10 @@
   --accent: #96b3e9;
   --accent-dim: #2f3f7a;
 
-  /* One colour per pendulum, worn by every bob in its chain, its rod's core,
-     its trails, its tab and its energy row — so a pendulum reads as one object
-     of one colour. Which bob is which is said by position and by radius.
+  /* One colour per pendulum, worn by every bob in its chain, its rod's core, its
+     trails and the letter at the head of each of its rows — so a pendulum reads
+     as one object of one colour. Which bob is which is said by position and by
+     radius.
 
      Primaries rather than neons: three hues this far apart stay separable where
      two trails overlap. Deliberately not --accent, which marks what can be
@@ -136,8 +137,8 @@ button.primary {
   font-weight: 600;
 }
 
-/* Clear trails and Use current state as initial: the tail of their boxes, so
-   they sit at a preset button's height and in the muted colour. */
+/* Use current state as initial: the tail of its box, so it sits at a preset
+   button's height and in the muted colour. */
 button.wide {
   width: 100%;
   margin-top: 8px;
@@ -181,21 +182,47 @@ legend small, label small {
 
 .row > label { color: var(--text); white-space: nowrap; }
 
-/* Visually separate each limb's length/mass pair. */
+/* Double the usual gap, for a row that starts a new thought rather than
+   continuing the one above it. Not for a row that heads its box — see below. */
 .row.gap { margin-top: 12px; }
 
-.grid {
+/* The first thing in a box takes no space of its own above it: the fieldset's
+   6px of padding is already the gap, and anything on top of that leaves the
+   legend floating over a hole. This is what Initial conditions and State get for
+   free, their grids carrying no margin, and it is now what every box gets.
+
+   #profile is the deliberate exception and keeps its 10px: it is a picture the
+   width of the box, not a row of controls. */
+fieldset > .row:first-of-type,
+fieldset > .trail-bar:first-of-type { margin-top: 0; }
+
+/* Initial conditions and State: one line per link of every pendulum on the
+   pivot, three columns wide — the chain's letter, then θ and ω. The letter
+   column is empty on a pendulum's second and third lines, which is what makes
+   its lines read as a group without a heading of their own.
+
+   Both boxes use it, so a state sits under the condition it was released from in
+   the same column at the same width. */
+.chain-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 10px;
+  grid-template-columns: 10px 1fr 1fr;
+  align-items: center;
+  gap: 4px 10px;
 }
 
-.grid label {
+/* The line is display: contents, so its three cells are items of the grid above
+   rather than of the line: the line exists to be hidden as one, and to carry the
+   two rules below. */
+.chain-line { display: contents; }
+
+/* The pendulum a group belongs to, and the top of the box, need no gap above. */
+.chain-line.gap > * { margin-top: 6px; }
+
+.chain-grid label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  margin-top: 4px;
   color: var(--text);
 }
 
@@ -203,9 +230,8 @@ legend small, label small {
    with the hidden attribute, which a display rule would otherwise beat — the
    same trap as .presets below. */
 .row[hidden],
-.grid label[hidden],
-.check[hidden],
-.readout div[hidden] { display: none; }
+.chain-line[hidden],
+.check[hidden] { display: none; }
 
 input[type="number"] {
   width: 100%;
@@ -218,7 +244,7 @@ input[type="number"] {
   font-variant-numeric: tabular-nums;
 }
 
-.grid input[type="number"] { width: 68px; }
+.chain-grid input[type="number"] { width: 68px; }
 
 input[type="number"]:focus { outline: none; border-color: var(--accent); }
 
@@ -262,11 +288,10 @@ input[type="range"]::-webkit-slider-thumb {
 /* --- flight simulator --- */
 
 /* Highlighted while the profile is flying, the one mode that takes gravity out
-   of your hands. */
-#flight.on {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-}
+   of your hands. The border and the legend only: a tinted fill at box size is
+   reserved for the pendulum rows, where it says which chains are on the pivot,
+   and a box wearing it too would dilute that. */
+#flight.on { border-color: var(--accent); }
 
 #flight.on legend { color: var(--accent); }
 
@@ -318,12 +343,6 @@ input[type="range"]::-webkit-slider-thumb {
   font-variant-numeric: tabular-nums;
 }
 
-.driven {
-  margin: 6px 0 0;
-  color: var(--accent);
-  font-size: 11px;
-}
-
 .release-note {
   margin: 6px 0 0;
   color: var(--muted);
@@ -331,57 +350,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .release-note span { color: var(--text); }
-
-/* --- energy --- */
-
-.energy {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
-}
-
-.energy legend { color: var(--accent); }
-
-/* Dot, then one column per term. The three number columns are equal fractions
-   of what is left rather than sized to their contents, so the figures sit in
-   the same places on every frame and in every row and a column reads down as a
-   column. The header and data rows are display: contents, so all four are items
-   of the one grid; they exist only to group a row for the JS and the rule
-   below. */
-.e-grid {
-  display: grid;
-  grid-template-columns: 8px repeat(3, 1fr);
-  align-items: center;
-  gap: 3px 8px;
-  margin-top: 3px;
-}
-
-.e-head, .e-row { display: contents; }
-
-.e-head span {
-  color: var(--muted);
-  font-size: 10px;
-  text-align: right;
-}
-
-.e-row b {
-  color: var(--accent);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-/* The total in the plain text colour, which picks the summed column out of the
-   two accented ones without a rule or a heavier weight. */
-.e-row .e-tot { color: var(--text); }
-
-/* A pendulum that is not on the pivot: its figures dim as well as its dot going
-   hollow. Dimmed rather than hidden — those numbers are the initial conditions
-   switching it on would start from. */
-.e-row.off b { color: var(--muted); }
-
-/* Faded rather than --accent-dim, which is a background colour too dark to read
-   as 13px text. */
-.e-row.off .e-tot { color: color-mix(in srgb, var(--accent) 55%, transparent); }
 
 input:disabled, button:disabled {
   opacity: 0.4;
@@ -454,43 +422,255 @@ button:disabled:hover { border-color: var(--line); }
   color: var(--accent);
 }
 
-/* --- pendulum tabs --- */
+/* --- architecture rows --- */
 
-/* Three of them, always, sharing the row equally: the strip is a fixed row of
-   the three pendulums the page has rather than a list that grows, so nothing
-   moves under the pointer when one is switched on or off. */
-.tabs {
+/* One per pendulum, all three always drawn, and the row is the pendulum: the lit
+   surround says it is on the pivot. A 1px border in every state, so what changes
+   between the three of them is only its colour and its fill and nothing moves.
+   Pulled 5px out into the fieldset's padding — the surround sits at the padding
+   edge, which is what leaves the figure and the boxes their full width inside
+   it.
+
+   This tinted fill is the panel's only one at box size, which is what makes it
+   readable at a glance as "these are the pendulums hanging". */
+.arch-row {
+  margin: 10px -5px 0;
+  padding: 4px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+/* And of those, the one the box is editing: the same surround at full accent.
+   Selection is a sharper edge on a lit row rather than a device of its own,
+   since every row that can be selected is already lit. */
+.arch-row.sel { border-color: var(--accent); }
+
+/* Off the pivot: the figure greys, everything under it goes, and the empty row
+   becomes the switch that puts the pendulum back. Hovering answers with the
+   accent border every other clickable thing here answers with — and no fill,
+   which is what keeps it apart from the lit rows above. */
+.arch-row.off {
+  border-color: var(--line);
+  background: none;
+  cursor: pointer;
+}
+
+.arch-row.off:hover { border-color: var(--accent); }
+
+/* Neither the numbers a pendulum is made of nor the energies it holds: it is not
+   being stepped, so both would be a reading of nothing. */
+.arch-row.off .arch-grid,
+.arch-row.off .arch-e { display: none; }
+
+/* Nothing to add to or take away from a pendulum that is not on the pivot, so
+   the head drops to its switch alone. */
+.arch-row.off .arch-step { display: none; }
+
+/* Fixed first column rather than a shrink-to-fit one: the pill loses its two
+   buttons when the pendulum comes off the pivot, and the figures would step
+   sideways with it. This way the pivots stay in one line down the box. */
+.arch-head {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+  align-items: center;
+}
+
+/* Switch, grow and shorten, at the head of the figure they act on. No surround
+   of its own: the row is the thing that lights, and a lit box inside a lit box
+   said the same thing twice. --c is the chain's colour, taken from the same
+   custom properties as the dot inside it and passed down to the two round
+   buttons. */
+.arch-lead {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  padding: 4px;
+}
+
+.arch-lead.p1 { --c: var(--p1); }
+.arch-lead.p2 { --c: var(--p2); }
+.arch-lead.p3 { --c: var(--p3); }
+
+/* The dot and the letter. The row's own surface is what lights, so this carries
+   no border and no background. */
+.arch-name {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin: 4px 0 6px;
-}
-
-.tab {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 4px 8px;
+  min-width: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--muted);
   font-size: 11px;
 }
 
-.tab.on {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+.arch-row:not(.off) .arch-name { color: var(--text); }
+
+.arch-name:hover { color: var(--text); }
+
+/* One rod's worth each way. Round and filled in the chain's colour, so the two
+   actions that change what a pendulum *is* look like nothing else on the panel
+   — and grey out in place rather than disappearing, which would move the other
+   one under the pointer. */
+.arch-step {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--rod);
+  border-radius: 50%;
+  background: var(--c);
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Opaque rather than the panel's usual 40%: at 18px across, a faded circle
+   reads as a smudge. Panel fill and a muted ring say the same thing at full
+   strength. */
+.arch-step:disabled {
+  border-color: var(--muted);
+  background: var(--panel);
+  color: var(--muted);
+  opacity: 1;
+}
+
+.arch-step:disabled:hover { border-color: var(--muted); }
+
+/* No viewBox: user units are CSS pixels, so index.js draws straight into the
+   width the panel gives it. Sized for the heaviest bob plus its ring, and the
+   same height as the switch beside it. */
+.arch-fig {
+  display: block;
+  width: 100%;
+  height: 26px;
+}
+
+/* The total at the left, where it is in line down the three rows, and the links
+   centred in what is left of the width — so a single, a double and a triple are
+   each balanced under their own figure rather than pinned to one edge.
+
+   Aligned to the top of the block, which puts the total in line with the lengths
+   it is the sum of rather than floating between them and the masses. */
+.arch-grid {
+  display: flex;
+  align-items: start;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* A column per link, laid out by the browser rather than by index.js: the cells
+   are in the document in the order L1 m1 L2 m2 L3 m3, so a hidden pair takes
+   its column with it and the rest re-centre. A triple and its total come to
+   278px, which is what sets the gap and the label width: the box has 292 inside
+   it, less whatever the panel's scrollbar is taking that frame. */
+.arch-links {
+  display: grid;
+  flex: 1;
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  justify-content: center;
+  gap: 4px;
+}
+
+.arch-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: var(--text);
 }
 
-/* The links switch directly under the tabs, spanning the box. .seg's own
-   grid-column is inert here — this one is not inside a .row. */
-.seg.arch { margin-bottom: 2px; }
+/* display:flex above would otherwise beat the hidden attribute, the same trap
+   as .presets and .row. */
+.arch-cell[hidden] { display: none; }
 
-/* The swatch that ties a tab, a trail row and an energy row to the chain on the
-   canvas, from the same custom properties the canvas reads. The colour is set
-   as a variable, so filled and hollow are one rule each rather than one per
-   chain. */
+/* Right-aligned against the box it names, and a size down from the value: a
+   subscripted m is the widest label here and the three of them across a triple
+   are what the row has least room for. */
+.arch-cell > span {
+  flex: none;
+  min-width: 14px;
+  font-size: 11px;
+  text-align: right;
+}
+
+/* Fixed, not flexible: the cells size the row rather than the row sizing the
+   cells, which is what lets the links be centred in it. Wide enough for a
+   leading digit and three decimals, which is the most a box has to show. */
+.arch-cell input[type="number"] {
+  width: 46px;
+  flex: none;
+  padding: 2px 4px;
+  font-size: 12px;
+}
+
+/* These cells are half the width of a .row's number box, and the spinners would
+   take a digit's worth of that whenever the pointer crossed one. Arrow keys
+   still step the value. */
+.arch-cell input[type="number"] { appearance: textfield; }
+
+.arch-cell input[type="number"]::-webkit-inner-spin-button,
+.arch-cell input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+/* The total, which the links are always scaled to keep. Marked with the accent
+   border a focused box takes, since it is the one box that moves the whole
+   chain rather than one rod of it — and on a single, where L1 is the total, on
+   both boxes, because both do that job. */
+.arch-cell.total input[type="number"] { border-color: var(--accent); }
+
+/* The three energies, closing the row. Split rather than summed, because in
+   flight the potential term drains to nothing at 0g while the kinetic term
+   carries on: what the pair does across a parabola is the thing worth watching.
+
+   Each figure leads its own name, and the three pairs are spread across the row.
+   The figures are a fixed width, so a pair keeps its width as the numbers move
+   and the spreading never shifts anything sideways. */
+.arch-e {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.arch-e > div {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+/* A floor rather than a fixed width, so the widest figure the physics can reach
+   still sits inside it and an absurd one pushes its own name across rather than
+   printing over it. */
+.arch-e b {
+  min-width: 42px;
+  flex: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* The total in the plain text colour, which picks the sum out of the two
+   accented terms without a rule or a heavier weight. */
+.arch-e .e-tot { color: var(--text); }
+
+/* A size under the numbers they name, as the box labels are. */
+.arch-e span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+/* The swatch that ties a pendulum's row to the chain on the canvas, from the
+   same custom properties the canvas reads. The colour is set as a variable, so
+   filled and hollow are one rule each rather than one per chain. */
 .dot {
   display: inline-block;
   width: 8px;
@@ -514,11 +694,10 @@ button:disabled:hover { border-color: var(--line); }
   box-shadow: inset 0 0 0 1.5px var(--c);
 }
 
-legend .dot { margin-right: 5px; }
-
 /* The chain's letter in the chain's colour, which is what heads each group of
-   trail toggles. Same job as the dot and the same width, but it can be said out
-   loud: B2 names a trace, a red dot does not. */
+   trail toggles and each pendulum's lines in Initial conditions and State. Same
+   job as the dot and the same width, but it can be said out loud: B2 names a
+   trace, a red dot does not. */
 .name {
   flex: none;
   min-width: 9px;
@@ -529,6 +708,28 @@ legend .dot { margin-right: 5px; }
 .name.p1 { color: var(--p1); }
 .name.p2 { color: var(--p2); }
 .name.p3 { color: var(--p3); }
+
+/* --- trails --- */
+
+/* The style pair with no label in front of it, so both names take the full
+   width. .seg's own grid-column is inert here — this one is not inside a .row. */
+.style-row { margin-top: 12px; }
+
+/* Clear at the head, in the cell a label would have taken, then a shortened
+   slider, then the label against the value it names. The one row on the panel
+   that does not lead with its label, because the cell it would lead with is
+   doing something more useful. */
+.len-row { grid-template-columns: 60px 1fr auto 62px; }
+
+/* A tail-of-the-box button that is not the width of the box: .wide's weight
+   without .wide's span. */
+.len-row #clear {
+  padding: 3px 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.len-row #clear:hover { color: var(--text); }
 
 /* --- trail toggles --- */
 
@@ -549,9 +750,9 @@ legend .dot { margin-right: 5px; }
    as .presets and .row. */
 .trail-set[hidden], .tog[hidden] { display: none; }
 
-/* The same shape and lit state as .tab, since both say which things on the
-   canvas the panel is acting on. Its own rule rather than sharing .tab's: a tab
-   is one choice among several, these are nine independent ones. */
+/* The same lit vocabulary as an Architecture row, since both say which things on
+   the canvas are being drawn — at control size rather than box size, because
+   these are nine independent switches. */
 .tog {
   position: relative;
   display: flex;
@@ -692,13 +893,9 @@ legend .dot { margin-right: 5px; }
 
 /* --- readout --- */
 
-.readout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px 12px;
-}
-
-.readout div {
+/* Read-only where Initial conditions is editable, so the value takes the place
+   its number box has there. */
+.readout .chain-line > div {
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -712,14 +909,10 @@ legend .dot { margin-right: 5px; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Instrumentation rather than physics, so it sits quieter and behind a rule.
-   .lead forces column 1, which pushes it to a new row when the one it would
-   have joined is occupied — that keeps the pair together at two links or
-   three. */
-.readout .perf.lead { grid-column-start: 1; }
-
-.readout .perf.lead,
-.readout .perf.lead + .perf {
+/* Instrumentation rather than physics, so the last line sits quieter and behind
+   a rule. Drawn on the cells rather than the line, since the line itself has no
+   box of its own to put a border on. */
+.readout .perf > * {
   margin-top: 5px;
   padding-top: 5px;
   border-top: 1px solid var(--line);

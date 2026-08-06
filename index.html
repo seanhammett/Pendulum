@@ -26,6 +26,9 @@
     <div class="buttons">
       <button id="play" class="primary">Start</button>
       <button id="reset" data-i18n="btn.reset">Reset</button>
+      <!-- A dot in the colour the page's text is wearing: light on dark, dark
+           on light. Its title says which way clicking goes. -->
+      <button id="theme"></button>
       <!-- Shows the language you are not in, i.e. what clicking gets you. -->
       <button id="lang">EN</button>
     </div>
@@ -56,7 +59,7 @@
       <label class="check foot" data-i18n-title="shortcut.tip"><input id="shortcut" type="checkbox"><span data-i18n="shortcut.label">Shortcut 1g baseline</span></label>
     </fieldset>
 
-    <fieldset>
+    <fieldset id="arch">
       <legend><span data-i18n="arch.legend">Architecture</span> <small data-i18n="arch.sub">&mdash; live</small></legend>
 
       <!-- The two forces, above the three chains they act on.

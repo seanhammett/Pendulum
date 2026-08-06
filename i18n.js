@@ -18,6 +18,10 @@ const STRINGS = {
     'btn.reset': 'Reset',
     'btn.cancel': 'Cancel',
     'btn.continue': 'Continue',
+    // The theme switch carries no text, so its whole name is in its tooltip,
+    // and it names the theme clicking gets you rather than the one you are in.
+    'theme.dark': 'Switch to dark mode',
+    'theme.light': 'Switch to light mode',
     // Shown by the controls that cannot be applied to a run in progress. The
     // title is the question; the body names what answering it costs.
     'reset.title': 'Restart the run?',
@@ -126,6 +130,8 @@ const STRINGS = {
     'btn.reset': 'Réinitialiser',
     'btn.cancel': 'Annuler',
     'btn.continue': 'Continuer',
+    'theme.dark': 'Passer en mode sombre',
+    'theme.light': 'Passer en mode clair',
     'reset.title': 'Relancer la simulation ?',
     'reset.confirm': "Ceci relance tous les pendules depuis leurs conditions initiales et efface les traces.\n\nLa simulation est en pause le temps de décider, et repart elle aussi en pause.",
 

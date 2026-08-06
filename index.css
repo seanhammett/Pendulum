@@ -15,7 +15,7 @@
      Primaries rather than neons: three hues this far apart stay separable where
      two trails overlap. Deliberately not --accent, which marks what can be
      clicked; blue stays saturated enough not to be taken for it, and none of
-     the three collides with the #ffb347 playhead or the #8d94a8 release marker.
+     the three collides with the #ffb347 playhead or the muted release marker.
      Yellow sits brighter, which is what it takes to carry the same weight
      against this background.
 
@@ -28,6 +28,39 @@
   /* Rods, opaque, so they read as structure holding the masses up rather than
      as another trace. */
   --rod: #f2f5fa;
+
+  /* Read by the canvas as well as the panel, so the light theme below can move
+     them with everything else rather than leaving hard-coded colours behind.
+     --ink is what sits on top of the accent — a filled button, a ticked box.
+     --inert is "nothing is driving it": an off pendulum, a dead profile curve.
+     --shade is what the clamped span of the profile is dimmed with. */
+  --ink: #0e1117;
+  --inert: #565e73;
+  --shade: rgba(18, 21, 29, 0.62);
+  --scrim: rgba(10, 12, 17, 0.62);
+}
+
+/* Light mode. Only the palette moves: every rule below reads these properties,
+   so the whole panel and the stage follow from this one block. The three chain
+   colours are deliberately not among them: a chain is identified by its hue
+   everywhere it appears, so it keeps the same one in both themes. */
+:root[data-theme="light"] {
+  --bg: #eef1f6;
+  --panel: #ffffff;
+  --line: #cdd3e0;
+  --text: #1b1f2a;
+  --muted: #646d84;
+  --accent: #2f5fb8;
+  --accent-dim: #b6c6e6;
+
+  /* The rods stay opaque structure, so on a pale stage they turn dark rather
+     than white — otherwise they vanish into the panel behind them. */
+  --rod: #39415a;
+
+  --ink: #ffffff;
+  --inert: #a4acc0;
+  --shade: rgba(238, 241, 246, 0.66);
+  --scrim: rgba(27, 31, 42, 0.4);
 }
 
 /* The three above, --rod and --text are read by the canvas, for the bobs and
@@ -130,10 +163,34 @@ button:hover { border-color: var(--accent); }
 
 #lang:hover { color: var(--text); }
 
+/* The theme switch, beside the language one and as small: a filled box holding
+   a single dot, both wearing the theme inverted — a light dot on a dark box
+   while the page is light, the reverse once it is not. It is the one thing on
+   the panel that shows you the other mode, which is what clicking it gets you.
+   No text, so nothing to translate; the tooltip says which way it goes. */
+#theme {
+  display: flex;
+  width: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0;
+  border-color: var(--text);
+  background: var(--text);
+}
+
+#theme::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--panel);
+}
+
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0e1117;
+  color: var(--ink);
   font-weight: 600;
 }
 
@@ -394,6 +451,14 @@ button:disabled:hover { border-color: var(--line); }
     center / 11px no-repeat;
 }
 
+/* The tick is baked into a data URI, which cannot read a custom property, so
+   the light theme carries its own copy with the stroke inverted. */
+:root[data-theme="light"] .check input[type="checkbox"]:checked {
+  background: var(--accent)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.6 6.3 4.9 8.6 9.4 3.7' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 11px no-repeat;
+}
+
 .check input[type="checkbox"]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -421,6 +486,13 @@ button:disabled:hover { border-color: var(--line); }
   background: color-mix(in srgb, var(--accent) 7%, transparent);
   color: var(--accent);
 }
+
+/* The box the sculptures are built in, held at the same weight the flight
+   simulator gets while it is flying — border and legend in the accent, no fill.
+   Unconditional here: unlike the simulator this box is never off. */
+#arch { border-color: var(--accent); }
+
+#arch > legend { color: var(--accent); }
 
 /* --- architecture rows --- */
 
@@ -529,6 +601,11 @@ button:disabled:hover { border-color: var(--line); }
   font-size: 12px;
   line-height: 1;
 }
+
+/* The chain colours do not move between themes, so neither does what reads on
+   top of them: the glyph stays light even once the panel around it is not. In
+   dark mode --text already is, so only light mode needs saying. */
+:root[data-theme="light"] .arch-step:enabled { color: #f4f6fb; }
 
 /* Opaque rather than the panel's usual 40%: at 18px across, a faded circle
    reads as a smudge. Panel fill and a muted ring say the same thing at full
@@ -865,7 +942,7 @@ button:disabled:hover { border-color: var(--line); }
   font: inherit;
 }
 
-.ask::backdrop { background: rgba(10, 12, 17, 0.62); }
+.ask::backdrop { background: var(--scrim); }
 
 .ask h2 {
   margin: 0 0 8px;

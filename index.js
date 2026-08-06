@@ -557,6 +557,11 @@ function flightAt(t) {
 // French by default, and not persisted, so every load opens in French.
 let lang = 'fr';
 
+// Dark by default, and not persisted either, for the same reason: the page
+// opens the same way every time. 'dark' is the bare :root palette, so the
+// attribute is only ever set to switch away from it.
+let theme = 'dark';
+
 // Falls back to English rather than showing a raw key.
 const t = (key) => STRINGS[lang][key] ?? STRINGS.en[key] ?? key;
 
@@ -589,26 +594,41 @@ new ResizeObserver(sizeCanvas).observe(wrap);
 
 // The stage's palette, read from the same custom properties as the panel's, so
 // the colours are defined once — in the stylesheet.
+// Re-read rather than read once: the theme switch rewrites every one of these
+// properties, and the canvas has to follow it. readPalette() overwrites the
+// same object in place, so everything that closed over COLOUR keeps working.
 const css = getComputedStyle(document.documentElement);
 const prop = (name) => css.getPropertyValue(name).trim();
-const COLOUR = {
-  // The pivot belongs to the world rather than any one chain, so it is neutral.
-  pivot: prop('--text'),
-  // Rods are white for every chain; the chain's colour runs down their core.
-  rod: prop('--rod'),
-  // Panel chrome, used by the flight profile.
-  accent: prop('--accent'),
-  // The inset a number box sits on, which is what an off pendulum's bobs are
-  // filled with in the Architecture figures.
-  line: prop('--line'),
-  // Indexed by slot, not by position in the world.
-  chain: [0, 1, 2].map((p) => prop('--p' + (p + 1)))
-};
+const COLOUR = {};
 
-// Nothing is driving it: the profile curve with the flight simulator switched
-// off, a pendulum that is off the pivot. Grey rather than a dimmed chain colour,
-// so "not running" is the same mark wherever it appears.
-const INERT = '#565e73';
+function readPalette() {
+  Object.assign(COLOUR, {
+    // The pivot belongs to the world rather than any one chain, so it is
+    // neutral.
+    pivot: prop('--text'),
+    // Rods are one colour for every chain; the chain's colour runs down their
+    // core.
+    rod: prop('--rod'),
+    // Panel chrome, used by the flight profile.
+    accent: prop('--accent'),
+    // The inset a number box sits on, which is what an off pendulum's bobs are
+    // filled with in the Architecture figures.
+    line: prop('--line'),
+    // Nothing is driving it: the profile curve with the flight simulator
+    // switched off, a pendulum that is off the pivot. Grey rather than a
+    // dimmed chain colour, so "not running" is the same mark wherever it
+    // appears.
+    inert: prop('--inert'),
+    // The shading over the profile's clamped span, and the release marker
+    // standing at its edge.
+    shade: prop('--shade'),
+    muted: prop('--muted'),
+    // Indexed by slot, not by position in the world.
+    chain: [0, 1, 2].map((p) => prop('--p' + (p + 1)))
+  });
+}
+
+readPalette();
 
 // Where you are in the flight cycle, on the profile: the playhead, and the two
 // bounds of the span an export will cover. Deliberately not --accent, which the
@@ -784,8 +804,8 @@ function svgEl(name, attrs) {
 // Redrawn on an edit and on a resize, not per frame.
 function drawFigure(svg, c, on, scale) {
   const cy = FIG_H / 2;
-  const colour = on ? COLOUR.chain[c.slot] : INERT;
-  const rod = on ? COLOUR.rod : INERT;
+  const colour = on ? COLOUR.chain[c.slot] : COLOUR.inert;
+  const rod = on ? COLOUR.rod : COLOUR.inert;
   const line = { x1: FIG_PAD, y1: cy, x2: FIG_PAD, y2: cy };
   for (let i = 0; i < c.n; i++) line.x2 += c.L[i] * scale;
 
@@ -814,7 +834,7 @@ function drawFigure(svg, c, on, scale) {
 
   // Last and neutral, as on the canvas: the pivot belongs to the world.
   svg.appendChild(svgEl('circle', {
-    cx: FIG_PAD, cy, r: FIG_BOB * 0.45, fill: on ? COLOUR.pivot : INERT
+    cx: FIG_PAD, cy, r: FIG_BOB * 0.45, fill: on ? COLOUR.pivot : COLOUR.inert
   }));
 }
 
@@ -855,7 +875,7 @@ function buildLayer(w, h, dpr) {
   const toY = (level) => bottom - (level / 1.8) * (bottom - top);
 
   // 1g reference line.
-  lctx.strokeStyle = '#2c3242';
+  lctx.strokeStyle = COLOUR.line;
   lctx.setLineDash([3, 3]);
   lctx.lineWidth = 1;
   lctx.beginPath();
@@ -886,7 +906,7 @@ function buildLayer(w, h, dpr) {
   lctx.beginPath();
   lctx.moveTo(pts[0][0], pts[0][1]);
   for (const [x, y] of pts) lctx.lineTo(x, y);
-  lctx.strokeStyle = flightOn ? COLOUR.accent : INERT;
+  lctx.strokeStyle = flightOn ? COLOUR.accent : COLOUR.inert;
   lctx.lineWidth = 1.5;
   lctx.stroke();
 }
@@ -920,9 +940,9 @@ function drawProfile() {
   // Shade the span during which the piece is clamped, and mark the release.
   if (release > 0) {
     const rx = toXt(release);
-    pctx.fillStyle = 'rgba(18, 21, 29, 0.62)';
+    pctx.fillStyle = COLOUR.shade;
     pctx.fillRect(0, 0, rx, h);
-    pctx.strokeStyle = '#8d94a8';
+    pctx.strokeStyle = COLOUR.muted;
     pctx.setLineDash([2, 2]);
     pctx.lineWidth = 1;
     pctx.beginPath();
@@ -1739,6 +1759,10 @@ function applyLang() {
   btn.title = LANG_TIP[other];
   btn.setAttribute('aria-label', LANG_TIP[other]);
 
+  // The theme switch says its whole name in its tooltip, so it is translated
+  // here as well as rewritten on a click.
+  applyTheme();
+
   // The rest is written by JS, so it has to be asked to redraw. The State legend
   // and the switch tooltips carry the pendulum's letter, so they come from the
   // selection rather than from a bare key.
@@ -1753,6 +1777,16 @@ function applyLang() {
   paintSelection();
   updateReleaseNote();
   updateFlightReadout();
+}
+
+// The switch carries no text of its own — a dot the colour of the page's text,
+// which is light on dark and dark on light without a rule for either — so all
+// there is to write is its name, and that names the theme a click gets you.
+function applyTheme() {
+  const tip = t(theme === 'dark' ? 'theme.light' : 'theme.dark');
+  const btn = el('theme');
+  btn.title = tip;
+  btn.setAttribute('aria-label', tip);
 }
 
 function setFlight(on) {
@@ -1963,6 +1997,21 @@ el('play').addEventListener('click', () => setRunning(!running));
 el('lang').addEventListener('click', () => {
   lang = lang === 'fr' ? 'en' : 'fr';
   applyLang();
+});
+
+// Dark by default, which is the palette :root carries; light is the one thing
+// the attribute switches on. Everything the page draws in CSS follows from the
+// custom properties alone, so the only work here is the handful of colours JS
+// holds copies of.
+el('theme').addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  readPalette();
+  // The profile's static half is cached against its inputs, and a repaint of
+  // the panel is what the colours it was painted in changed under it.
+  layerKey = '';
+  paintArch();
+  applyTheme();
 });
 
 // No confirmation: the button says Reset. It pauses, because reset() does.

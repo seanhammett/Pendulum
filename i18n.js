@@ -94,6 +94,12 @@ const STRINGS = {
     'trails.line': 'Lines',
     'trails.length': 'Length',
     'trails.clear': 'Clear',
+    // The colour pair in the corner of the box. Named for a screen reader the
+    // same way the style pair is, since it carries no label either.
+    'trails.colour': 'Trail colour',
+    'trails.colour.tip': 'Chain draws each pendulum in its own colour. Gravity draws them all in one, taken from how strong gravity was at the moment each point was recorded: white at 0 g, darkening to near-black at the 1.8 g of hypergravity. Every point keeps the g it was drawn under, so switching recolours the trail you already have.',
+    'trails.colour.chain': 'Chain',
+    'trails.colour.gravity': 'Gravity',
 
     'export.legend': 'Export',
     'export.span': 'Span',
@@ -196,6 +202,10 @@ const STRINGS = {
     'trails.line': 'Lignes',
     'trails.length': 'Durée',
     'trails.clear': 'Effacer',
+    'trails.colour': 'Couleur des traces',
+    'trails.colour.tip': "Pendule trace chaque pendule dans sa propre couleur. Gravité les trace tous dans une seule, prise de l'intensité de la pesanteur au moment où chaque point a été enregistré : blanc à 0 g, jusqu'au presque noir aux 1.8 g de l'hypergravité. Chaque point conserve le g sous lequel il a été tracé : changer de mode recolore la trace déjà en place.",
+    'trails.colour.chain': 'Pendule',
+    'trails.colour.gravity': 'Gravité',
 
     'export.legend': 'Exporter',
     'export.span': 'Plage',

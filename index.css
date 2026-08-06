@@ -29,6 +29,21 @@
      as another trace. */
   --rod: #f2f5fa;
 
+  /* The two ends of the gravity colour mode's ramp. In that mode the chain
+     colours are set aside and every trail is drawn in one colour, mixed along
+     this ramp by the magnitude of g at the moment each point was laid down:
+     white while the aircraft is weightless, near-black at the 1.8 g of the
+     hypergravity phases. The dark end sits below --bg as well as --panel, so the
+     heaviest trace reads as a shadow on the stage rather than as the stage.
+
+     Both ends are the same in either theme, unlike everything else here: the
+     ramp says what gravity was, and a mode whose white meant one thing on a dark
+     stage and another on a pale one would not. The cost is that the 0 g end is
+     faint against the light theme's white stage — override --grav-0 in the block
+     below to trade the literal white for contrast there. */
+  --grav-0: #ffffff;
+  --grav-max: #0a0c11;
+
   /* Read by the canvas as well as the panel, so the light theme below can move
      them with everything else rather than leaving hard-coded colours behind.
      --ink is what sits on top of the accent — a filled button, a ticked box.
@@ -809,6 +824,29 @@ button:disabled:hover { border-color: var(--line); }
 .name.p3 { color: var(--p3); }
 
 /* --- trails --- */
+
+/* The colour mode rides the far end of the trail bar, in the box's top inside
+   corner: the auto margin takes every pixel the switches leave, which is what
+   holds it in the corner as they come and go with the link counts.
+
+   An item of that flex line rather than a corner laid over it, so the two can
+   never meet: with all nine bobs traceable the switches want more than one line,
+   and the mode wraps with them instead of being sat on. flex: none so it wraps
+   whole rather than squeezing its names. */
+.corner {
+  flex: none;
+  gap: 3px;
+  margin-left: auto;
+}
+
+/* Smaller and tighter than the Dots / Lines pair below, and not stretched to
+   share a width: this one is sized by its two names, since it holds a corner
+   rather than filling a column. */
+.corner button {
+  flex: none;
+  padding: 1px 6px;
+  font-size: 10px;
+}
 
 /* The style pair with no label in front of it, so both names take the full
    width. .seg's own grid-column is inert here — this one is not inside a .row. */

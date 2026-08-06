@@ -63,9 +63,12 @@ function makeChain(slot) {
     // Simulated time this chain has reached (s). Chains sit up to one of their
     // own steps apart, worst measured 232 µs.
     t: 0,
-    // Each traced bob's path as world-space [x, y, t], indexed by bob, so a
-    // trail survives a change of view scale. Entry 0 is filled only on a single
-    // pendulum; on a longer chain that bob's circle is its own rod's sweep.
+    // Each traced bob's path as world-space [x, y, t, g], indexed by bob, so a
+    // trail survives a change of view scale. g is the gravity the point was
+    // recorded under, kept whichever colour mode is on, so switching to the
+    // gravity ramp colours the points already drawn rather than starting again.
+    // Entry 0 is filled only on a single pendulum; on a longer chain that bob's
+    // circle is its own rod's sweep.
     trails: [[], [], []],
     // The same points kept longer for the exporter; see the tape section.
     // Allocated on first write.
@@ -624,9 +627,55 @@ function readPalette() {
     shade: prop('--shade'),
     muted: prop('--muted'),
     // Indexed by slot, not by position in the world.
-    chain: [0, 1, 2].map((p) => prop('--p' + (p + 1)))
+    chain: [0, 1, 2].map((p) => prop('--p' + (p + 1))),
+    // The two ends of the gravity ramp, mixed into GRAV_RAMP below.
+    grav: [prop('--grav-0'), prop('--grav-max')]
   });
+  buildRamp();
 }
+
+// --- The gravity ramp ------------------------------------------------------
+//
+// The colour a trail is drawn in while the gravity mode is on: one colour for
+// every chain, taken from the magnitude of g at the moment each point was
+// recorded rather than from which pendulum recorded it.
+//
+// Mixed once into a table of shades rather than per point per frame, and
+// quantised, which is also what lets drawTrail batch a run of points into one
+// draw — see the second cut it makes there.
+const TRAIL_SHADES = 48;
+const GRAV_RAMP = [];
+
+// #rgb and #rrggbb both, since these two ends are written by hand in the
+// stylesheet.
+function hexRGB(hex) {
+  const s = hex.replace('#', '');
+  const w = s.length === 3 ? s.replace(/./g, (c) => c + c) : s;
+  return [0, 2, 4].map((i) => parseInt(w.slice(i, i + 2), 16));
+}
+
+function buildRamp() {
+  const [lo, hi] = COLOUR.grav.map(hexRGB);
+  GRAV_RAMP.length = 0;
+  for (let i = 0; i < TRAIL_SHADES; i++) {
+    const x = i / (TRAIL_SHADES - 1);
+    const [r, g, b] = lo.map((c, k) => Math.round(c + (hi[k] - c) * x));
+    GRAV_RAMP.push(`rgb(${r},${g},${b})`);
+  }
+}
+
+// The top of the ramp is the profile's own ceiling — the 1.8 g of the
+// hypergravity phases — read off the phase table rather than written again, so
+// the darkest a trail goes is the heaviest the aircraft flies.
+const GRAV_TOP = G_EARTH * Math.max(...PHASES.map((p) => Math.max(p.from, p.to)));
+
+// Magnitude, so an aircraft pushing down reads as the same weight as one pushing
+// up, and clamped at both ends: the manual g control reaches well past the
+// profile's ceiling in both directions, and everything beyond it is the darkest
+// the ramp has.
+const shadeOf = (g) => GRAV_RAMP[Math.round(
+  Math.min(Math.max(Math.abs(g) / GRAV_TOP, 0), 1) * (TRAIL_SHADES - 1)
+)];
 
 readPalette();
 
@@ -655,13 +704,53 @@ const TRAIL_CHUNKS = 24;
 const TRAIL_DOT = 1.25;
 let trailStyle = 'line';
 
+// And two things a trail can be coloured by:
+//
+//   'chain'   — the pendulum that drew it, so a chain is one colour wherever it
+//               appears on the page. The default.
+//   'gravity' — the gravity it was drawn under, one ramp for every chain, so
+//               the trail carries the flight profile as well as the path.
+//
+// Both read the same recorded points, which carry the g they were recorded at:
+// switching redraws what is already there rather than clearing it, exactly as
+// the style pair does.
+let trailColour = 'chain';
+
 function drawTrail(pts, colour, toX, toY) {
   if (!pts.length) return;
   const dots = trailStyle === 'dots';
-  ctx.fillStyle = colour;
-  ctx.strokeStyle = colour;
+  const byG = trailColour === 'gravity';
   ctx.lineWidth = 1.5;
   ctx.lineJoin = 'round';
+  // The chain's colour is set once for the whole trail; the gravity mode is the
+  // one that has a new colour to set on every run.
+  if (!byG) {
+    ctx.fillStyle = colour;
+    ctx.strokeStyle = colour;
+  }
+
+  // One batched draw of pts[a…b), in `shade` or in the colour already set, at
+  // whatever alpha is set.
+  const run = (a, b, shade) => {
+    if (shade) {
+      ctx.fillStyle = shade;
+      ctx.strokeStyle = shade;
+    }
+    ctx.beginPath();
+    for (let i = a; i < b; i++) {
+      const x = toX(pts[i][0]);
+      const y = toY(pts[i][1]);
+      if (!dots) {
+        if (i === a) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        continue;
+      }
+      // Start a fresh subpath at each dot, or the arcs are joined by the line
+      // this style exists to do without.
+      ctx.moveTo(x + TRAIL_DOT, y);
+      ctx.arc(x, y, TRAIL_DOT, 0, Math.PI * 2);
+    }
+    if (dots) ctx.fill(); else ctx.stroke();
+  };
 
   for (let c = 0; c < TRAIL_CHUNKS; c++) {
     const from = Math.floor((c * pts.length) / TRAIL_CHUNKS);
@@ -673,20 +762,28 @@ function drawTrail(pts, colour, toX, toY) {
     const start = dots ? from : Math.max(0, from - 1);
 
     ctx.globalAlpha = ((c + 1) / TRAIL_CHUNKS) * 0.75;
-    ctx.beginPath();
-    for (let i = start; i < to; i++) {
-      const x = toX(pts[i][0]);
-      const y = toY(pts[i][1]);
-      if (!dots) {
-        if (i === start) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        continue;
-      }
-      // Start a fresh subpath at each dot, or the arcs are joined by the line
-      // this style exists to do without.
-      ctx.moveTo(x + TRAIL_DOT, y);
-      ctx.arc(x, y, TRAIL_DOT, 0, Math.PI * 2);
+    if (!byG) {
+      run(start, to);
+      continue;
     }
-    if (dots) ctx.fill(); else ctx.stroke();
+
+    // In the gravity mode the colour moves along the chunk as well as between
+    // chunks, and faster: 1.8 g to 0 inside the 5 s injection, a twelfth of the
+    // longest trail. So the chunk is cut again wherever the shade steps, which
+    // holds the ramp smooth at any trail length — and costs nothing over the
+    // fade's own 24 draws while g is flat, which is most of a cycle.
+    let a = start;
+    let shade = shadeOf(pts[a][3]);
+    for (let i = a + 1; i < to; i++) {
+      const next = shadeOf(pts[i][3]);
+      if (next === shade) continue;
+      // The line hands the shared point on to the next run, so the segment
+      // across the step is drawn once, in the older shade.
+      run(a, dots ? i : i + 1, shade);
+      a = i;
+      shade = next;
+    }
+    run(a, to, shade);
   }
 
   ctx.globalAlpha = 1;
@@ -1184,7 +1281,10 @@ function recordTrail() {
     const p = positions(c);
     for (let i = firstTraced(c); i < c.n; i++) {
       const pts = c.trails[i];
-      pts.push([p[i][0], p[i][1], c.t]);
+      // env.g rather than the profile's level: the manual control is gravity
+      // too, and it is the number the chain was actually integrated with this
+      // frame either way.
+      pts.push([p[i][0], p[i][1], c.t, env.g]);
       while (pts.length && pts[0][2] < cutoff) pts.shift();
 
       const tp = c.tape[i] || (c.tape[i] = makeTape());
@@ -1785,6 +1885,17 @@ for (const [style, button] of Object.entries(trailStyles)) {
   button.addEventListener('click', () => {
     trailStyle = style;
     for (const [key, b] of Object.entries(trailStyles)) b.classList.toggle('on', key === style);
+  });
+}
+
+// The colour pair in the box's corner, the same one control in two buttons.
+// Every point carries the g it was recorded under, so this only changes how what
+// is already there is drawn — nothing is cleared and nothing is re-recorded.
+const trailColours = { chain: el('colour-chain'), gravity: el('colour-gravity') };
+for (const [mode, button] of Object.entries(trailColours)) {
+  button.addEventListener('click', () => {
+    trailColour = mode;
+    for (const [key, b] of Object.entries(trailColours)) b.classList.toggle('on', key === mode);
   });
 }
 

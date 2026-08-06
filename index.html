@@ -261,6 +261,7 @@
       <button id="use-current" class="wide" data-i18n="init.use">Use current state as initial</button>
     </fieldset>
 
+    <!-- The trails: which bobs are traced and what the traces look like. -->
     <fieldset>
       <legend data-i18n="trails.legend">Trails</legend>
       <!-- Every traceable bob on one line, not following the Architecture
@@ -288,6 +289,19 @@
           <label class="tog" id="trail-3-1-row" title="" hidden><input id="trail-3-1" type="checkbox">1</label>
           <label class="tog" id="trail-3-2-row" title=""><input id="trail-3-2" type="checkbox">2</label>
           <label class="tog" id="trail-3-3-row" title=""><input id="trail-3-3" type="checkbox" checked>3</label>
+        </span>
+        <!-- What every trail is drawn in: Chain gives each pendulum its own
+             colour, Gravity gives them all one, mixed by the g each point was
+             recorded under.
+
+             At the end of the line that says which bobs are traced, pushed to
+             the far corner of the box: it belongs with them — it is the last
+             thing said about what gets drawn — but it is a setting on all of
+             them at once rather than a tenth switch, so it keeps the whole gap
+             to itself. Its own name, since the row it shares has none. -->
+        <span class="seg corner" role="group" data-i18n-aria="trails.colour" data-i18n-title="trails.colour.tip">
+          <button id="colour-chain" class="on" data-i18n="trails.colour.chain">Chain</button>
+          <button id="colour-gravity" data-i18n="trails.colour.gravity">Gravity</button>
         </span>
       </div>
       <!-- Unlabelled, so the two names take the full width: Dots and Lines say

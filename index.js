@@ -1229,16 +1229,22 @@ const TAPE_HZ = 60;
 const TAPE_DT = 1 / TAPE_HZ;
 const TAPE_CAP = Math.ceil(TAPE_SECONDS * TAPE_HZ);
 
-// Flat [x, y, t] triples in a ring: 21 600 points, 518 KB, no allocation per
+// Flat [x, y, t, g] quads in a ring: 21 600 points, 691 KB, no allocation per
 // point. Never pruned — the oldest falls off the far end as the newest is
 // written.
-const makeTape = () => ({ buf: new Float64Array(TAPE_CAP * 3), head: 0, len: 0, next: 0 });
+//
+// g rides along for the same reason the display trail carries it: the colour
+// mode is a way of drawing points already recorded, so an export has to be able
+// to ask a point what gravity it was flown under however long ago that was.
+const TAPE_W = 4;
+const makeTape = () => ({ buf: new Float64Array(TAPE_CAP * TAPE_W), head: 0, len: 0, next: 0 });
 
-function tapePush(tp, x, y, t) {
-  const j = tp.head * 3;
+function tapePush(tp, x, y, t, g) {
+  const j = tp.head * TAPE_W;
   tp.buf[j] = x;
   tp.buf[j + 1] = y;
   tp.buf[j + 2] = t;
+  tp.buf[j + 3] = g;
   tp.head = (tp.head + 1) % TAPE_CAP;
   if (tp.len < TAPE_CAP) tp.len++;
   // Advanced rather than set, so the sample rate does not drift with the frame
@@ -1248,16 +1254,18 @@ function tapePush(tp, x, y, t) {
   if (tp.next < t) tp.next = t;
 }
 
-// The ring read back oldest first, as [x, y, t] in the window [from, to] of this
-// chain's own time. Boxed here because this runs once per export, not per frame.
+// The ring read back oldest first, as [x, y, t, g] in the window [from, to] of
+// this chain's own time — the same shape as a display trail's points, so the
+// exporter reads the two the same way. Boxed here because this runs once per
+// export, not per frame.
 function tapePoints(tp, from, to) {
   const out = [];
   if (!tp) return out;
   const start = (tp.head - tp.len + TAPE_CAP) % TAPE_CAP;
   for (let k = 0; k < tp.len; k++) {
-    const j = ((start + k) % TAPE_CAP) * 3;
+    const j = ((start + k) % TAPE_CAP) * TAPE_W;
     const t = tp.buf[j + 2];
-    if (t >= from && t <= to) out.push([tp.buf[j], tp.buf[j + 1], t]);
+    if (t >= from && t <= to) out.push([tp.buf[j], tp.buf[j + 1], t, tp.buf[j + 3]]);
   }
   return out;
 }
@@ -1266,7 +1274,7 @@ function tapePoints(tp, from, to) {
 // simply t − TAPE_SECONDS: a tape rewound by a reset or a parameter change
 // holds only what has been run since.
 const tapeStart = (tp) => (tp && tp.len
-  ? tp.buf[(((tp.head - tp.len + TAPE_CAP) % TAPE_CAP) * 3) + 2]
+  ? tp.buf[(((tp.head - tp.len + TAPE_CAP) % TAPE_CAP) * TAPE_W) + 2]
   : Infinity);
 
 // --- Loop ------------------------------------------------------------------
@@ -1288,7 +1296,7 @@ function recordTrail() {
       while (pts.length && pts[0][2] < cutoff) pts.shift();
 
       const tp = c.tape[i] || (c.tape[i] = makeTape());
-      if (c.t >= tp.next) tapePush(tp, p[i][0], p[i][1], c.t);
+      if (c.t >= tp.next) tapePush(tp, p[i][0], p[i][1], c.t, env.g);
     }
   }
 }

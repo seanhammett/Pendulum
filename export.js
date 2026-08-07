@@ -7,8 +7,9 @@
 //
 // Loaded after index.js. Both are classic scripts, so index.js's top-level
 // bindings — world, PHASES, cycle, startTime, trailSeconds, simTime, flightTime,
-// COLOUR, trailStyle, traced, firstTraced, the tape functions, el, t and fmt —
-// are readable here without either file exporting anything.
+// COLOUR, trailStyle, trailColour, shadeOf, traced, firstTraced, the tape
+// functions, el, t and fmt — are readable here without either file exporting
+// anything.
 //
 // Nothing here runs per frame; every function hangs off a click or a change.
 //
@@ -79,8 +80,8 @@ function segmentWindow() {
   return { from: k * C + t0, to: k * C + t1, cycleNo: k + 1, span: t1 - t0, live: false };
 }
 
-// Every traced bob's points inside the window, in world metres. Reads and
-// mutates nothing.
+// Every traced bob's points inside the window, as world-metre [x, y, t, g].
+// Reads and mutates nothing.
 //
 // Nothing is thinned: every point recorded is a point exported, in both styles.
 // The budget is fixed — 60 Hz, a span of at most one 180 s cycle, at most six
@@ -100,6 +101,8 @@ function collect(w) {
         ? c.trails[i]
         : tapePoints(c.tape[i], w.from - startTime(), w.to - startTime());
       if (pts.length) {
+        // The chain's own colour, which is the whole answer in the chain mode
+        // and the fallback the gravity mode never reaches; runsOf() decides.
         rows.push({ chain: c, bob: i + 1, colour: COLOUR.chain[c.slot], pts });
       }
     }
@@ -154,6 +157,37 @@ function frameOf() {
   };
 }
 
+// --- Colour ----------------------------------------------------------------
+
+// The trail colour control reaches the file as well as the stage: a mode is a
+// way of drawing points already recorded, and the two pictures are of the same
+// points, so they cannot disagree about what colour those points are.
+//
+// A row cut into runs of one colour, which is all either format needs to know
+// about the modes. In the chain mode that is the row itself, in one run. In the
+// gravity mode it is one run per step of the ramp — the same cut drawTrail makes
+// on the stage, minus the fade, which an export does not have: a run here lasts
+// as long as the level is flat instead of stopping at a chunk boundary.
+function runsOf(row) {
+  if (trailColour !== 'gravity') return [{ colour: row.colour, pts: row.pts }];
+  const dots = trailStyle === 'dots';
+  const out = [];
+  let a = 0;
+  let shade = shadeOf(row.pts[0][3]);
+  for (let i = 1; i < row.pts.length; i++) {
+    const next = shadeOf(row.pts[i][3]);
+    if (next === shade) continue;
+    // The line hands the point at the step on to the next run as well, so the
+    // segment across it is drawn once, in the older shade. Shared, not repeated:
+    // dots take the point once or it is drawn twice over.
+    out.push({ colour: shade, pts: row.pts.slice(a, dots ? i : i + 1) });
+    a = i;
+    shade = next;
+  }
+  out.push({ colour: shade, pts: row.pts.slice(a) });
+  return out;
+}
+
 // --- SVG -------------------------------------------------------------------
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -182,7 +216,7 @@ function describe(w, rows) {
 
   lines.push(flightOn ? 'g: driven by the flight profile'
     : `g: ${env.g.toFixed(2)} m/s^2`);
-  lines.push(`style: ${trailStyle}`);
+  lines.push(`style: ${trailStyle}, colour: ${trailColour}`);
   return lines.join('\n');
 }
 
@@ -193,7 +227,7 @@ function toSVG(rows, meta) {
   const n = (v) => v.toFixed(2);
   const dots = trailStyle === 'dots';
 
-  const body = rows.map((row) => {
+  const body = rows.flatMap(runsOf).map((row) => {
     if (dots) {
       const r = n(f.dot);
       return `<g fill="${row.colour}">`
@@ -215,7 +249,7 @@ function toSVG(rows, meta) {
 
 // --- PNG -------------------------------------------------------------------
 
-// The same rows through the same mapping, so the two formats are one picture.
+// The same runs through the same mapping, so the two formats are one picture.
 // Transparent: nothing is painted but the traces.
 function toPNG(rows) {
   const f = frameOf();
@@ -229,7 +263,7 @@ function toPNG(rows) {
   c2.lineCap = 'round';
   c2.lineJoin = 'round';
 
-  for (const row of rows) {
+  for (const row of rows.flatMap(runsOf)) {
     c2.fillStyle = row.colour;
     c2.strokeStyle = row.colour;
     c2.beginPath();
@@ -384,7 +418,9 @@ function paintStatus() {
       text = t('export.empty');
     } else {
       // Points rather than pendulums, which the toggles above already say.
-      // Nothing is dropped after this, so it is what the file will hold.
+      // Nothing is dropped after this, so it is what the file will hold —
+      // counted per row rather than per colour run, since the gravity mode's
+      // runs share the point they meet at rather than each holding one.
       const pts = rows.reduce((a, r) => a + r.pts.length, 0);
       text = w.live
         ? fmt('export.readyNow', { n: pts })

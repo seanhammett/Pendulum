@@ -72,7 +72,11 @@ function makeChain(slot) {
     trails: [[], [], []],
     // The same points kept longer for the exporter; see the tape section.
     // Allocated on first write.
-    tape: [null, null, null]
+    tape: [null, null, null],
+    // What the chain was doing while those points were recorded, for the
+    // caption an export writes. One ring for the chain, not one per bob;
+    // allocated on first write like the tapes above.
+    state: null
   };
 }
 
@@ -1277,6 +1281,68 @@ const tapeStart = (tp) => (tp && tp.len
   ? tp.buf[(((tp.head - tp.len + TAPE_CAP) % TAPE_CAP) * TAPE_W) + 2]
   : Infinity);
 
+// --- The state tape --------------------------------------------------------
+//
+// The point tape says where a bob went; this says what the chain was doing.
+// An export captions itself with the state its recording began from, and a
+// recording begins wherever the span begins — a moment already well in the
+// past by the time the span completes, so it has to have been kept rather than
+// read off the chain.
+//
+// One ring per chain rather than one per bob: θ and ω describe the chain, so a
+// triple keeps seven numbers a sample where its two traced bobs cost eight.
+// Sampled by the same clock at the same cadence as the points, so a point's
+// timestamp is also a sample's timestamp and a span beginning on a recorded
+// point is looked up exactly rather than interpolated.
+//
+// Radians, the units c.s holds; the caption converts on the way out.
+const stateW = (c) => 1 + 2 * c.n; // t, then n angles, then n rates
+const makeState = (c) => ({
+  w: stateW(c), buf: new Float64Array(TAPE_CAP * stateW(c)), head: 0, len: 0, next: 0
+});
+
+function statePush(sp, c, t) {
+  const j = sp.head * sp.w;
+  sp.buf[j] = t;
+  for (let i = 0; i < 2 * c.n; i++) sp.buf[j + 1 + i] = c.s[i];
+  sp.head = (sp.head + 1) % TAPE_CAP;
+  if (sp.len < TAPE_CAP) sp.len++;
+  sp.next += TAPE_DT;
+  if (sp.next < t) sp.next = t;
+}
+
+// The chain as it stood at time t, in degrees, or null when nothing was
+// recorded. The nearest sample rather than the one before, since t is normally
+// a sample time exactly and the ring is at most a sample step from any other
+// moment. Angles are wrapped as the readout wraps them, so the caption and the
+// initial-condition boxes say a given pose the same way.
+//
+// A linear scan: this runs once per export, like tapePoints, and never on a
+// frame.
+function stateAt(c, t) {
+  const sp = c.state;
+  if (!sp || !sp.len || sp.w !== stateW(c)) return null;
+  const from = (sp.head - sp.len + TAPE_CAP) % TAPE_CAP;
+  let best = -1;
+  let gap = Infinity;
+  for (let k = 0; k < sp.len; k++) {
+    const j = ((from + k) % TAPE_CAP) * sp.w;
+    const d = Math.abs(sp.buf[j] - t);
+    // Ordered by time, so once the gap starts widening the nearest is behind us.
+    if (d > gap) break;
+    gap = d;
+    best = j;
+  }
+  if (best < 0) return null;
+  const th = [];
+  const om = [];
+  for (let i = 0; i < c.n; i++) {
+    th.push(wrapDeg(sp.buf[best + 1 + i]));
+    om.push(deg(sp.buf[best + 1 + c.n + i]));
+  }
+  return { t: sp.buf[best], th, om };
+}
+
 // --- Loop ------------------------------------------------------------------
 
 function recordTrail() {
@@ -1298,6 +1364,13 @@ function recordTrail() {
       const tp = c.tape[i] || (c.tape[i] = makeTape());
       if (c.t >= tp.next) tapePush(tp, p[i][0], p[i][1], c.t, env.g);
     }
+
+    // Once for the chain, outside the loop over its bobs, and rebuilt rather
+    // than rewound when the link count has changed under it: a sample is as
+    // wide as the chain has links, so the old ring holds nothing this one can
+    // read.
+    if (!c.state || c.state.w !== stateW(c)) c.state = makeState(c);
+    if (c.t >= c.state.next) statePush(c.state, c, c.t);
   }
 }
 
@@ -2208,8 +2281,11 @@ function clearTrails() {
   for (const c of chains) {
     c.trails = [[], [], []];
     // Rewound rather than dropped: half a megabyte a bob, and this runs on every
-    // parameter change, not only on Clear.
+    // parameter change, not only on Clear. The state ring goes with them, so an
+    // export can never caption its points with a state recorded before the
+    // clear that dropped them.
     for (const tp of c.tape) if (tp) { tp.head = 0; tp.len = 0; tp.next = 0; }
+    if (c.state) { c.state.head = 0; c.state.len = 0; c.state.next = 0; }
   }
 }
 

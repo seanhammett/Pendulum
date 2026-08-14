@@ -3,7 +3,8 @@
 // --- Trace export ----------------------------------------------------------
 //
 // Saves the pattern traced during one section of the flight cycle — the whole
-// apesanteur segment, say — as a PNG or an SVG holding nothing but the traces.
+// apesanteur segment, say — as a PNG or an SVG holding the traces and, in the
+// bottom corners, the small caption that says which pendulums drew them.
 //
 // Loaded after index.js. Both are classic scripts, so index.js's top-level
 // bindings — world, PHASES, cycle, startTime, trailSeconds, simTime, flightTime,
@@ -20,10 +21,18 @@
 // tape, not the drawn trail, so a span stays available from the moment it has
 // been flown; see index.js's tape section.
 
-const EXPORT_R = 2048;        // output square, in pixels (PNG) or user units (SVG)
+// The stage the traces are drawn in, and the file's width; the file is a little
+// taller, by the band frameOf puts the caption in.
+const EXPORT_R = 2048;        // stage square, in pixels (PNG) or user units (SVG)
 const EXPORT_PAD = 0.02;      // margin, as a fraction of the square
 const EXPORT_STROKE = 0.0015; // trace width, ditto — about 3 units at 2048
 const EXPORT_DOT = 0.0016;    // dot radius, ditto
+const EXPORT_TEXT = 0.011;    // caption size, ditto — about 23 units at 2048
+const EXPORT_LEAD = 1.45;     // caption line spacing, in text sizes
+const EXPORT_FADE = 0.8;      // caption opacity: present without competing with the trace
+// Monospaced, so the columns of numbers line up down the corner whichever face
+// the reader's machine resolves the stack to.
+const EXPORT_FONT = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
 const fromBox = el('export-from');
 const toBox = el('export-to');
@@ -138,7 +147,18 @@ function recordedFrom() {
 // The stage's mapping: pivot centred, scaled to the largest reach in the world
 // rather than to what this segment covers, so two exports of the same world are
 // at the same scale. No bob radius in the margin, unlike draw(): no bobs here.
-function frameOf() {
+//
+// The stage stays the square it always was and the caption is given its own
+// band under it, so the file is EXPORT_R across and a little taller. The
+// alternative was to keep the square and shrink the pattern into it, which
+// would have made the scale depend on how many pendulums the caption names —
+// two exports of the same world at different sizes, which is the one thing the
+// scaling above exists to prevent.
+//
+// lines is how many the caption will hold, one per pendulum in the file: the
+// band is only as deep as it has to be, since the traces reach the foot of the
+// square and every unused line would push them up the page.
+function frameOf(lines = 0) {
   let reach = 0;
   for (const c of world) {
     let r = 0;
@@ -147,15 +167,90 @@ function frameOf() {
   }
   const R = EXPORT_R;
   const scale = (R / 2 - R * EXPORT_PAD) / reach;
+  const pad = R * EXPORT_PAD;
+  const text = R * EXPORT_TEXT;
+  const lead = text * EXPORT_LEAD;
+  // Deep enough that the tallest glyph of the top line clears the foot of the
+  // square: the last baseline sits a margin off the bottom, the ones above it a
+  // line apart, and a whole em is allowed above the top one for the ascent —
+  // more than any face needs, which leaves the band a hair generous rather than
+  // a hair short. The reach circle's lowest point is a margin above the foot of
+  // the square, so that margin is the gap between the pattern and the caption.
+  const band = lines ? pad + (lines - 1) * lead + text : 0;
   return {
-    R,
+    R,                                // the stage: the square the traces live in
+    H: Math.ceil(R + band),           // the file: the stage and the caption's band
     scale, // pixels per metre; toX and toY are the only users left
     stroke: R * EXPORT_STROKE,
     dot: R * EXPORT_DOT,
+    pad,
+    text,
+    lead,
     toX: (x) => R / 2 + x * scale,
     toY: (y) => R / 2 - y * scale
   };
 }
+
+// --- Where the recording began ---------------------------------------------
+
+// The chain's own clock at the oldest point it put in this file. Its own first
+// point rather than the window's lower bound: the window is a bound, and what
+// the file holds begins at the oldest point inside it. It also spares the
+// caller the flight-time conversion, since a point carries the chain's clock.
+const beganAt = (rows, c) =>
+  Math.min(...rows.filter((r) => r.chain === c).map((r) => r.pts[0][2]));
+
+// What the chain was doing at that moment, in degrees, or null when the state
+// tape cannot answer. Unreachable in practice — the ring is written beside the
+// points and cleared with them, so points without a state do not arise — but
+// both callers say so rather than invent a pose if it ever is.
+const startState = (rows, c) => stateAt(c, beganAt(rows, c));
+
+// --- The caption -----------------------------------------------------------
+//
+// The two numbers a pattern cannot show: what the pendulum is made of, and what
+// it was let go from. Both sit in the bottom corners, where the frame has room
+// — the mapping scales to the reach, so the traces live inside a circle and the
+// corners of the square are outside it.
+//
+// The initial conditions are where the chain actually was when this recording
+// began, from the state tape above — not the th0 and om0 boxes, which are where
+// the run began. A span in the middle of the seventh cycle starts from whatever
+// the flight had done to the piece by then, and that is the state the pattern
+// in the file grew out of.
+//
+// Written in symbols and units rather than words, so the file says the same
+// thing in either language and neither i18n nor the SVG's <desc> has to agree
+// with it.
+//
+// One line per pendulum, in world order, and only the pendulums that put a
+// trace in this file: a chain hanging with its traces switched off drew
+// nothing here to be the dimensions of.
+//
+// Fields are divided by a middle dot and never by a run of spaces: XML
+// collapses those and fillText does not, so the two formats would space the
+// same caption differently. A separator that is a glyph survives both.
+function captionOf(rows) {
+  const mine = [...new Set(rows.map((r) => r.chain))];
+  const num = (a, dp) => a.map((v) => v.toFixed(dp)).join(', ');
+  const arr = (c, a, dp) => num(a.slice(0, c.n), dp);
+
+  return {
+    left: mine.map((c) => `${chainName(c)} · L ${arr(c, c.L, 2)} m · m ${arr(c, c.m, 2)} kg`),
+    right: mine.map((c) => {
+      const s = startState(rows, c);
+      return s
+        ? `${chainName(c)} · θ₀ ${num(s.th, 1)}° · ω₀ ${num(s.om, 1)} °/s`
+        : `${chainName(c)} · start of recording not held`;
+    })
+  };
+}
+
+// The baseline of line i of a block whose last line sits on the bottom margin,
+// so a block grows upwards out of the foot of the file and one of three
+// pendulums is in the same place whether it is the only one or the last of
+// three. Measured from H, the foot of the band, not from the foot of the stage.
+const captionY = (f, lines, i) => f.H - f.pad - (lines.length - 1 - i) * f.lead;
 
 // --- Colour ----------------------------------------------------------------
 
@@ -212,6 +307,13 @@ function describe(w, rows) {
     lines.push(`pendulum ${chainName(c)}, bob ${mine.map((r) => r.bob).join(' and ')}: `
       + `n=${c.n} L=${arr(c.L, 2)} m=${arr(c.m, 2)} b=${c.b} `
       + `th0=${arr(c.th0, 1)} om0=${arr(c.om0, 1)}`);
+    // Named apart from th0 and om0, which are where the run was released from:
+    // by the time a span in the seventh cycle begins the piece is nowhere near
+    // them. This pair is what the caption in the corner shows, so the text the
+    // file carries and the text drawn on it cannot disagree.
+    const s = startState(rows, c);
+    lines.push(`  at the start of this recording (t=${beganAt(rows, c).toFixed(2)} s): `
+      + (s ? `th=${arr(s.th, 1)} om=${arr(s.om, 1)}` : 'not held'));
   }
 
   lines.push(flightOn ? 'g: driven by the flight profile'
@@ -220,10 +322,13 @@ function describe(w, rows) {
   return lines.join('\n');
 }
 
-// Traces only — no rods, bobs, pivot or background rect, so the pattern drops
-// onto whatever it is placed on. Solid rather than faded.
+// Traces and caption only — no rods, bobs, pivot or background rect, so the
+// pattern drops onto whatever it is placed on. Solid rather than faded.
 function toSVG(rows, meta) {
-  const f = frameOf();
+  // The caption comes first: how many lines it holds is what the band under the
+  // stage is measured from.
+  const cap = captionOf(rows);
+  const f = frameOf(cap.left.length);
   const n = (v) => v.toFixed(2);
   const dots = trailStyle === 'dots';
 
@@ -241,21 +346,32 @@ function toSVG(rows, meta) {
       + ' stroke-linecap="round" stroke-linejoin="round"/>';
   }).join('\n  ');
 
+  // The font is stated once on the group rather than on every line.
+  const block = (lines, x, anchor) => lines
+    .map((s, i) => `<text x="${n(x)}" y="${n(captionY(f, lines, i))}"`
+      + ` text-anchor="${anchor}">${esc(s)}</text>`)
+    .join('\n    ');
+  const caption = `<g font-family="${EXPORT_FONT}" font-size="${n(f.text)}"`
+    + ` fill="${COLOUR.muted}" opacity="${EXPORT_FADE}">\n    `
+    + block(cap.left, f.pad, 'start') + '\n    '
+    + block(cap.right, f.R - f.pad, 'end') + '\n  </g>';
+
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
-    + `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f.R} ${f.R}"`
-    + ` width="${f.R}" height="${f.R}">\n`
-    + `  <desc>${esc(meta)}</desc>\n  ${body}\n</svg>\n`;
+    + `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f.R} ${f.H}"`
+    + ` width="${f.R}" height="${f.H}">\n`
+    + `  <desc>${esc(meta)}</desc>\n  ${body}\n  ${caption}\n</svg>\n`;
 }
 
 // --- PNG -------------------------------------------------------------------
 
 // The same runs through the same mapping, so the two formats are one picture.
-// Transparent: nothing is painted but the traces.
+// Transparent: nothing is painted but the traces and the caption.
 function toPNG(rows) {
-  const f = frameOf();
+  const cap = captionOf(rows);
+  const f = frameOf(cap.left.length);
   const cv = document.createElement('canvas');
   cv.width = f.R;
-  cv.height = f.R;
+  cv.height = f.H;
   const c2 = cv.getContext('2d');
   const dots = trailStyle === 'dots';
 
@@ -281,6 +397,16 @@ function toPNG(rows) {
       }
     }
     if (dots) c2.fill(); else c2.stroke();
+  }
+
+  // In the band under the traces, as in the SVG, and in the same two corners.
+  c2.globalAlpha = EXPORT_FADE;
+  c2.fillStyle = COLOUR.muted;
+  c2.font = `${f.text}px ${EXPORT_FONT}`;
+  c2.textBaseline = 'alphabetic';
+  for (const [lines, x, align] of [[cap.left, f.pad, 'left'], [cap.right, f.R - f.pad, 'right']]) {
+    c2.textAlign = align;
+    lines.forEach((s, i) => c2.fillText(s, x, captionY(f, lines, i)));
   }
 
   return new Promise((resolve) => cv.toBlob(resolve, 'image/png'));
@@ -328,7 +454,10 @@ async function save(ext) {
   const name = fileName(w, ext);
   if (ext === 'svg') {
     const svg = toSVG(rows, describe(w, rows));
-    download(new Blob([svg], { type: 'image/svg+xml' }), name);
+    // The charset is stated as well as declared inside the file: the caption
+    // carries θ, ω and the degree sign, and a reader that takes the type at its
+    // word rather than reading the XML declaration would otherwise be guessing.
+    download(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), name);
   } else {
     download(await toPNG(rows), name);
   }
